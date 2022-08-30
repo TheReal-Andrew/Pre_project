@@ -28,13 +28,15 @@ network.add(    #Add component
     "Bus",      #Component type
     "Island",   #Component name
     x = 7.34,   #Longitude (for plotting)
-    y = 56.43)  #Latitude (for plotting)
+    y = 56.43   #Latitude (for plotting)
+    )  
 
 network.add(
     "Bus",
     "Thorsminde",
     x = 8.12,
-    y = 56.37)
+    y = 56.37
+    )
 
 #%% Add links
 
@@ -81,8 +83,11 @@ network.add(
 
 
 #%% Plotting
+
 network.plot(
-    margin = 5,
-    color_geomap = True
+    margin = 1,
+    color_geomap = True,
+    boundaries = [-2, 13, 61, 50],
+    projection=ccrs.EqualEarth()
     )
 
