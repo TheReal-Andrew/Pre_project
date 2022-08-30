@@ -27,8 +27,8 @@ network.set_snapshots(    #Set up snapshots of unitless time
 network.add(    #Add component
     "Bus",      #Component type
     "Island",   #Component name
-    x = 7.34,   #Longitude (for plotting)
-    y = 56.43   #Latitude (for plotting)
+    x = 6.68,   #Longitude (for plotting)
+    y = 56.52   #Latitude (for plotting)
     )  
 
 network.add(
