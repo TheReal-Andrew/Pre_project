@@ -38,22 +38,14 @@ network.add(
 
 #%% Add links
 
-# network.add(
-#     "Link",
-#     "Link1",
-#     bus0 = "Island",
-#     bus1 = "Thorsminde",
-#     efficiency = 1,
-#     marginal_cost = 0,
-#     p_min_pu = -1
-#     )
-
 network.add(
-    "Line",
-    "Line1",
+    "Link",
+    "Link1",
     bus0 = "Island",
-    bus1 = "Thorsminde"
+    bus1 = "Thorsminde",
+    p_nom = 30
     )
+
 
 #%% Add generators
 
