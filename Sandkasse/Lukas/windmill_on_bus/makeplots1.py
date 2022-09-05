@@ -4,9 +4,8 @@ Created on Mon Aug 29 18:58:40 2022
 
 @author: lukas
 """
-
+import numpy as np
 import matplotlib.pyplot as plt
-
 
 def makeplots(network,subplots=True, aspect_ratio=0.2,xscale=6,yscale=12,location = "upper left"):
     #This function plots the network loads, produced power, energy in and out
@@ -17,36 +16,43 @@ def makeplots(network,subplots=True, aspect_ratio=0.2,xscale=6,yscale=12,locatio
     #%% create subplots
     if subplots == True:
         
-        fig, axs = plt.subplots(4)  #Set up subplot with 4 plots
-        plt.figure(dpi=300)         #Set resolution
+        fig, axs = plt.subplots(4)  # Set up subplot with 4 plots
+        plt.figure(dpi=300)         # Set resolution
         
     #---- Subplot 1 ----------------------------
         network.loads_t.p.plot(              #Plot loads 
             ax = axs[0],                     #Choose axis in subplot
             ylabel = "Consumed power, [MW]", #Set ylabel
-            figsize = (xscale,yscale)        #Set scaling
+            figsize = (xscale,yscale),        #Set scaling
             )
+        axs[0].grid(visible = True, which = 'both')
         
     #---- Subplot 2 ----------------------------
         network.generators_t.p.plot(      #Plot generated power
             ax=axs[1],                    #Choose axis in subplot
             ylabel="Produced power [MW]", #Set ylabel
-            figsize = (xscale,yscale)     #Set scaling
+            figsize = (xscale,yscale),    #Set scaling
+            #grid = True
             )
+        axs[1].grid(visible = True, which = 'both')
     
     #---- Subplot 3 ----------------------------
         network.stores_t.p.plot(        #Plot energy in and out of battery
             ax = axs[2],                #Choose axis in subplot
-            ylabel="Active power [MW]", #Set ylabel
+            ylabel="Active power flow [MW]", #Set ylabel
             figsize = (xscale,yscale)   #Set scaling
             )  
+        axs[2].grid(visible = True, which = 'both')
+            
         
     #---- Subplot 4 ----------------------------
         network.stores_t.e.plot(        #Plot stored energy
             ax = axs[3],                #Choose axis in subplot
             ylabel="Stored power [MW]", #Set ylabel
-            figsize = (xscale,yscale)   #Set scaling
+            figsize = (xscale,yscale),   #Set scaling
+            #grid = True
             )   
+        axs[3].grid(visible = True, which = 'both')
         
     #---- Legend location loop -----------------
         for i in range(4): #Loop through subplots and change legend location
