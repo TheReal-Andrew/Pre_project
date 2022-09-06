@@ -16,7 +16,7 @@ from makeplots1 import makeplots
 
 #%% Set up network
 
-n_steps   = np.arange(0, 40)   #Define number of timesteps
+n_steps   = np.arange(0, 100)   #Define number of timesteps
 
 network = pypsa.Network()       #Create PyPSA network
 
@@ -33,7 +33,7 @@ network.set_snapshots( #Set up snapshots of unitless time
 
 sin_wind = (np.sin(n_steps) + 1)/2
 
-cos_load = ((np.cos(n_steps) + 1)/2)*20
+cos_load = ((np.cos(n_steps/4) + 1)/2)*20
 
 #%% Add generators
 
