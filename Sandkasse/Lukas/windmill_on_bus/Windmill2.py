@@ -83,6 +83,10 @@ network.add(
     )
 
 
+#%% Solving
+
+network.lopf()
+
 #%% Plotting
 
 network.plot(
