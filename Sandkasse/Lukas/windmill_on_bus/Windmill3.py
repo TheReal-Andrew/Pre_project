@@ -83,7 +83,8 @@ network.add(
     "Store1",         #Component name
     bus = "My Bus",   #Bus on which component is
     e_nom = 10,       #Store capacity
-    e_initial = 10    #Initially stored energy
+    e_initial = 0,    #Initially stored energy
+    e_cyclic = True   #Set store to always end and start at same energy
     )
 
 #%% Solve system
