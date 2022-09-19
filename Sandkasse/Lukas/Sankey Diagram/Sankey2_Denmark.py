@@ -30,33 +30,30 @@ fig = go.Figure(
             'line': {'color': "Black", 
                      'width': 1},
             'label': [#Primary Energy
-                     "Coal",                   #0
-                     "Nuclear",                #1
-                     "Wind",                   #2
-                     "Crude Oil",              #3
-                     "Natural gas",            #4
-                     "Hydro",                  #5
-                     "Traditional Fuels",      #6
-                     "Other",                  #7
+                     "Biofuels & Waste",        #0
+                     "Coal",                    #1
+                     "Hydro",                   #2
+                     "Natural Gas",             #3
+                     "Oil",                     #4
+                     "Wind, Solar, etc",        #5
                 
-                     "Electricity Production", #8
+                     "Electricity Production",  #6
                      
                      #Final Energy
-                     "Refined PC.",            #9
-                     "Natural Gas",            #10
-                     "Coal, Coke",             #11
-                     "Electricity",            #12
-                     "Traditional Fuels",      #13
-                     "Other",                  #14
+                     "Refined PC.",             #7
+                     "Natural Gas",             #8
+                     "Coal, Coke",              #9
+                     "Electricity",             #10
+                     "Other",                   #11
                      
-                     "Energetic Services",     #15
+                     "Energetic Services",      #12
                      
                      #Sector
-                     "Transport",               #16
-                     "Agriculture",             #17
-                     "Industry",                #18
-                     "Commercial and Services", #19
-                     "Households",              #20       
+                     "Agriculture",             #13
+                     "Commerical & Co.",        #14
+                     "Industry",                #15
+                     "Residential",             #16
+                     "Transport",               #17       
                     ],
             'x': [x[0], x[0], x[0], x[0], x[0], x[0], x[0], x[0], x[1], x[2], x[2], x[2], x[2], x[2], x[2], x[3], x[4], x[4], x[4]],
             'y': [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]

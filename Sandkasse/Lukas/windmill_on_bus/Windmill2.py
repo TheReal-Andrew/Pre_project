@@ -5,6 +5,7 @@ Created on Tue Aug 30 09:22:58 2022
 @author: lukas
 """
 
+
 import pypsa
 import numpy as np
 import cartopy.crs as ccrs
@@ -82,6 +83,10 @@ network.add(
     )
 
 
+#%% Solving
+
+network.lopf()
+
 #%% Plotting
 
 network.plot(
@@ -90,4 +95,6 @@ network.plot(
     boundaries = [-2, 13, 61, 50],
     projection=ccrs.EqualEarth()
     )
+
+makeplots(network)
 
