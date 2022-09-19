@@ -73,11 +73,11 @@ network.add(
     )
 
 #Add generators to each country bus with varying marginal costs
-for i in range(1, bus_df.shape[0]-1):
+for i in network.buses.index.values[1:]:
     network.add(
         "Generator",
-        "Gen " + bus_df.Name[i],
-        bus   = bus_df.Name[i],
+        "Gen " + i,
+        bus   = i,
         p_nom = 2000, 
         marginal_cost = (np.sin(n_steps) + 1)/2 + 10,
         )
@@ -97,12 +97,12 @@ network.add(
 #%% Add Loads ------------------------------------------------------
 
 # Add varying cos loads to each country bus
-for i in range(1, bus_df.shape[0]-1):
+for i in network.buses.index.values[1:]:
     network.add(
         "Load",
-        "Load " + bus_df.Name[i],
-        bus   = bus_df.Name[i],
-        p_set = ((np.cos(n_steps/(2+0.2*i)) + 1)/2)*(50*(1+i*0.4)), 
+        "Load " + i,
+        bus   = i,
+        p_set = ((np.cos(n_steps/(2+2*np.random.rand(1))) + 1)/2)*(50*(1+np.random.rand(1)*2)), 
         )
 
 #%% Plotting -------------------------------------------------------

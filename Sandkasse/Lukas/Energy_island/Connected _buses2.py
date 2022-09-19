@@ -29,7 +29,7 @@ bus_df = pd.DataFrame(
     ["Belgium",      3.20, 51.32], #Assumed Zeebrugge
     ["Britain",     -1.45, 55.01], #Assumed North Shield
     ]), 
-    columns = ["Name", "x", "y"]   #Give columns titles
+    columns = ["Name", "x", "y"]   # Give columns titles
     )
 
 #%% Add buses -----------------------------------------------------
@@ -47,7 +47,7 @@ for i in range(bus_df.shape[0]): #i becomes integers
 #List of link destionations from buses
 link_destinations = network.buses.index.values
 
-for i in link_destinations: #i becomes each string in the array
+for i in link_destinations[1:]: #i becomes each string in the array
     network.add(            #Add component
         "Link",             #Component type
         "Island to " + i,   #Component name
