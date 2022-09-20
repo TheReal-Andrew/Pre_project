@@ -2,7 +2,7 @@
 """
 Created on Tue Sep  6 10:44:50 2022
 
-@author: lukas
+@author: lukas & Anders
 """
 
 import pypsa
