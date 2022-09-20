@@ -12,24 +12,28 @@ import cartopy.crs as ccrs
 import pandas as pd
 from makeplots1 import makeplots
 
+# Load Data
+cprice = pd.read_csv('data/market/price_2030.csv', index_col = 0)
+cload  = pd.read_csv('data/market/load_2030.csv',  index_col = 0)
+
 #%% Set up network & bus info -------------------------------------
 
 network = pypsa.Network()       #Create network
-n_steps = np.arange(0, 100)     #Define number of timesteps
-network.set_snapshots(n_steps)  #Set snapshots of network to the timesteps
+t = pd.date_range('2019-01-01 00:00', '2019-12-31 23:00', freq = 'H')
+network.set_snapshots(t)  #Set snapshots of network to the timesteps
 
 #Create dataframe with info on buses. Names, x (Longitude) and y (Latitude) 
 bus_df = pd.DataFrame(
-    np.array([                     #Create numpy array with bus info
-    ["Island",       6.68, 56.52], #
-    ["Thorsminde",   8.12, 56.37], #
-    ["Norway",       8.02, 58.16], #Assumed Kristiansand
-    ["Germany",      8.58, 53.54], #Assumed Bremerhaven
-    ["Netherlands",  6.84, 53.44], #Assumed Eemshaven
-    ["Belgium",      3.20, 51.32], #Assumed Zeebrugge
-    ["Britain",     -1.45, 55.01], #Assumed North Shield
+    np.array([                                #Create numpy array with bus info
+    ["Island",          "EI",   6.68, 56.52], #
+    ["Denmark",         "DK",   8.12, 56.37], #Assumed Thorsminde
+    ["Norway",          "NO",   8.02, 58.16], #Assumed Kristiansand
+    ["Germany",         "DE",   8.58, 53.54], #Assumed Bremerhaven
+    ["Netherlands",     "NL",   6.84, 53.44], #Assumed Eemshaven
+    ["Belgium",         "BE",   3.20, 51.32], #Assumed Zeebrugge
+    ["United Kingdom",  "UK",  -1.45, 55.01], #Assumed North Shield
     ]), 
-    columns = ["Name", "x", "y"]   #Give columns titles
+    columns = ["Country", "Abbreviation", "X", "Y"]   #Give columns titles
     )
 
 #%% Add buses -----------------------------------------------------
@@ -37,9 +41,9 @@ bus_df = pd.DataFrame(
 for i in range(bus_df.shape[0]): #i becomes integers
     network.add(            #Add component
         "Bus",              #Component type
-        bus_df.Name[i],     #Component name
-        x = bus_df.x[i], #Longitude (for plotting)
-        y = bus_df.y[i], #Latitude (for plotting)
+        bus_df.Country[i],     #Component name
+        x = bus_df.X[i], #Longitude (for plotting)
+        y = bus_df.Y[i], #Latitude (for plotting)
         )
 
 #%% Add links -----------------------------------------------------
@@ -59,7 +63,7 @@ for i in link_destinations: #i becomes each string in the array
 #%% Add Generators -------------------------------------------------
 
 # Prepare wind and load series
-sin_wind = (np.sin(n_steps) + 1)/2
+# sin_wind = (np.sin(1) + 1)/2
 #cos_load = ((np.cos(n_steps/4) + 1)/2)
 
 #Add wind turbine
@@ -68,18 +72,21 @@ network.add(
     "Wind",               #Component name
     bus = "Island",       #Bus on which component is
     p_nom = 2000,         #Nominal power [MW]
-    p_max_pu = sin_wind,  #time-series of power coefficients
+    p_max_pu = 2,  #time-series of power coefficients
     marginal_cost = 0.1   #Cost per MW from this source 
     )
 
 #Add generators to each country bus with varying marginal costs
-for i in network.buses.index.values[1:]:
+for i in range(1, bus_df.shape[1]):
     network.add(
         "Generator",
-        "Gen " + i,
-        bus   = i,
+        "Gen " + bus_df.Country[i],
+        bus   = bus_df.Country[i],
         p_nom = 2000, 
-        marginal_cost = (np.sin(n_steps) + 1)/2 + 10,
+        p_nom_extendable = True,
+        capital_cost = 0,
+        marginal_cost = cprice[bus_df.Abbreviation[i]].values,
+        
         )
 
 
@@ -97,13 +104,14 @@ network.add(
 #%% Add Loads ------------------------------------------------------
 
 # Add varying cos loads to each country bus
-for i in network.buses.index.values[1:]:
+for i in range(1, bus_df.shape[1]): #i becomes integers
     network.add(
         "Load",
-        "Load " + i,
-        bus   = i,
-        p_set = ((np.cos(n_steps/(2+2*np.random.rand(1))) + 1)/2)*(50*(1+np.random.rand(1)*2)), 
+        "Load " + bus_df.Country[i],
+        bus   = bus_df.Country[i],
+        p_set = cload[bus_df.Abbreviation[i]].values, 
         )
+    
 
 #%% Plotting -------------------------------------------------------
 
