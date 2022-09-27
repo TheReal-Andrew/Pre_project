@@ -13,8 +13,11 @@ import pandas as pd
 from makeplots1 import makeplots
 
 # Load Data
-cprice = pd.read_csv('data/market/price_2030.csv', index_col = 0)
-cload  = pd.read_csv('data/market/load_2030.csv',  index_col = 0)
+cprice          = pd.read_csv('data/market/price_2030.csv', index_col = 0)
+cload           = pd.read_csv('data/market/load_2030.csv',  index_col = 0)
+
+link_cost_url   = 'https://github.com/PyPSA/technology-data/blob/master/inputs/manual_input.csv?raw=true'
+link_cost       = pd.read_csv(link_cost,index_col=0)
 
 #%% Set up network & bus info -------------------------------------
 
@@ -25,7 +28,7 @@ network.set_snapshots(t)  #Set snapshots of network to the timesteps
 #Create dataframe with info on buses. Names, x (Longitude) and y (Latitude) 
 bus_df = pd.DataFrame(
     np.array([                                #Create numpy array with bus info
-    ["Island",          "EI",   6.68, 56.52], #
+    ["Island",          "EI",   6.68, 56.52], #Energy Island
     ["Denmark",         "DK",   8.12, 56.37], #Assumed Thorsminde
     ["Norway",          "NO",   8.02, 58.16], #Assumed Kristiansand
     ["Germany",         "DE",   8.58, 53.54], #Assumed Bremerhaven
@@ -38,12 +41,12 @@ bus_df = pd.DataFrame(
 
 #%% Add buses -----------------------------------------------------
 #Adding busses from bus_info to network
-for i in range(bus_df.shape[0]): #i becomes integers
-    network.add(            #Add component
-        "Bus",              #Component type
-        bus_df.Country[i],     #Component name
-        x = bus_df.X[i], #Longitude (for plotting)
-        y = bus_df.Y[i], #Latitude (for plotting)
+for i in range(bus_df.shape[0]):    #i becomes integers
+    network.add(                    #Add component
+        "Bus",                      #Component type
+        bus_df.Country[i],          #Component name
+        x = bus_df.X[i],            #Longitude (for plotting)
+        y = bus_df.Y[i],            #Latitude (for plotting)
         )
 
 #%% Add links -----------------------------------------------------
@@ -51,13 +54,16 @@ for i in range(bus_df.shape[0]): #i becomes integers
 #List of link destionations from buses
 link_destinations = network.buses.index.values
 
-for i in link_destinations: #i becomes each string in the array
-    network.add(            #Add component
-        "Link",             #Component type
-        "Island to " + i,   #Component name
-        bus0 = "Island",    #Start Bus
-        bus1 = i,           #End Bus
-        p_nom = 200         #Power capacity of link
+for i in link_destinations:         #i becomes each string in the array
+    network.add(                    #Add component
+        "Link",                     #Component type
+        "Island to " + i,           #Component name
+        bus0    = "Island",         #Start Bus
+        bus1    = i,                #End Bus
+        carrier = "DC",             #Define carrier type
+        p_nom   = 200,              #Power capacity of link
+        p_nom_extendable = True,    #Extendable links
+        capital_cost = 
         )
 
 #%% Add Generators -------------------------------------------------
@@ -73,6 +79,7 @@ network.add(
     bus = "Island",       #Bus on which component is
     p_nom = 2000,         #Nominal power [MW]
     p_max_pu = 2,  #time-series of power coefficients
+    carrier = "Wind",
     marginal_cost = 0.1   #Cost per MW from this source 
     )
 
