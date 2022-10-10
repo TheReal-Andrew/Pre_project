@@ -17,7 +17,8 @@ cprice          = pd.read_csv('data/market/price_2030.csv', index_col = 0)
 cload           = pd.read_csv('data/market/load_2030.csv',  index_col = 0)
 
 link_cost_url   = 'https://github.com/PyPSA/technology-data/blob/master/inputs/manual_input.csv?raw=true'
-link_cost       = pd.read_csv(link_cost,index_col=0)
+link_cost       = pd.read_csv(link_cost_url)
+dff = link_cost.loc[link_cost['parameter'].str.startswith('investment') & link_cost['technology'].str.startswith('HVDC submarine')]
 
 #%% Set up network & bus info -------------------------------------
 
@@ -63,7 +64,9 @@ for i in link_destinations:         #i becomes each string in the array
         carrier = "DC",             #Define carrier type
         p_nom   = 200,              #Power capacity of link
         p_nom_extendable = True,    #Extendable links
-        capital_cost = 
+        
+        # dff = link_cost.loc[link_cost['parameter'].str.startswith('investment') & link_cost['technology'].str.startswith('HVDC submarine')],
+        capital_cost = dff.loc[dff['year'] == 2030].value                 
         )
 
 #%% Add Generators -------------------------------------------------
