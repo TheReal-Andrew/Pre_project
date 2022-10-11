@@ -82,7 +82,7 @@ network.add(
     "Generator",          #Component type
     "Wind",               #Component name
     bus = "Island",       #Bus on which component is
-    p_nom = 2000,         #Nominal power [MW]
+    p_nom = 20000,         #Nominal power [MW]
     p_max_pu = 2,         #time-series of power coefficients
     carrier = "Wind",
     marginal_cost = 0.1   #Cost per MW from this source 
@@ -94,7 +94,7 @@ for i in range(1, bus_df.shape[1]):
         "Generator",
         "Gen " + bus_df.Country[i],
         bus   = bus_df.Country[i],
-        p_nom = 2000, 
+        p_nom = 0, 
         p_nom_extendable = True,
         capital_cost = 0,
         marginal_cost = cprice[bus_df.Abbreviation[i]].values,
@@ -103,14 +103,15 @@ for i in range(1, bus_df.shape[1]):
 
 
 #%% Add stores
-# network.add(
-#     "Store",          #Component type
-#     "Store1",         #Component name
-#     bus = "Island",   #Bus on which component is
-#     e_nom = 100,       #Store capacity
-#     e_initial = 0,    #Initially stored energy
-#     e_cyclic = True,  #Set store to always end and start at same energy
-#     )
+network.add(
+    "Store",          #Component type
+    "Store1",         #Component name
+    bus = "Island",   #Bus on which component is
+    e_nom = 0,        #Store capacity
+    e_initial = 0,    #Initially stored energy
+    e_cyclic = True,  #Set store to always end and start at same energy
+    e_nom_extendable = True #Allow expansion of capacity
+    )
 
 
 #%% Add Loads ------------------------------------------------------
@@ -123,7 +124,13 @@ for i in range(1, bus_df.shape[1]): #i becomes integers
         bus   = bus_df.Country[i],
         p_set = cload[bus_df.Abbreviation[i]].values, 
         )
-    
+
+network.add(
+    "Load",
+    "Datacenter Load",
+    bus = "Island",
+    p_set = 1000,
+    )
 
 #%% Plotting -------------------------------------------------------
 
@@ -136,6 +143,6 @@ network.plot(
     projection=ccrs.EqualEarth()      #Choose cartopy.crs projection
     )
 
-network.lopf() #Solve dynamic system
+#network.lopf() #Solve dynamic system
 
 makeplots(network) #Plot dynamic results
