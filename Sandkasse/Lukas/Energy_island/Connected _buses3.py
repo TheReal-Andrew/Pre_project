@@ -8,7 +8,7 @@ Created on Tue Sep  6 10:44:50 2022
 
 import pypsa
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import pandas as pd
 from island_library import makeplots
@@ -39,7 +39,7 @@ bus_df = pd.DataFrame(
     ["Germany",         "DE",   8.58, 53.54], #Assumed Bremerhaven
     ["Netherlands",     "NL",   6.84, 53.44], #Assumed Eemshaven
     ["Belgium",         "BE",   3.20, 51.32], #Assumed Zeebrugge
-    ["United Kingdom",  "UK",  -1.45, 55.01], #Assumed North Shield
+    ["United Kingdom",  "GB",  -1.45, 55.01], #Assumed North Shield
     ]), 
     columns = ["Country", "Abbreviation", "X", "Y"]   #Give columns titles
     )
@@ -59,46 +59,42 @@ for i in range(bus_df.shape[0]):    #i becomes integers
 #List of link destionations from buses
 link_destinations = network.buses.index.values
 
-for i in link_destinations:         #i becomes each string in the array
+for i in link_destinations[1:]:     #i becomes each string in the array
     network.add(                    #Add component
         "Link",                     #Component type
-        "Island to " + i,           #Component name
+        "Island_to_" + i,           #Component name
         bus0    = "Island",         #Start Bus
         bus1    = i,                #End Bus
         carrier = "DC",             #Define carrier type
+        p_min_pu = -1,              #Make links bi-directional
         p_nom   = 200,              #Power capacity of link
         p_nom_extendable = True,    #Extendable links
-        capital_cost = link_inv.loc[link_inv['year'] == 2030].value,               
+        capital_cost = link_inv.loc[link_inv['year'] == 2030].value,         
         )
 
 #%% Add Generators -------------------------------------------------
-
-# Prepare wind and load series
-# sin_wind = (np.sin(1) + 1)/2
-#cos_load = ((np.cos(n_steps/4) + 1)/2)
 
 #Add wind turbine
 network.add(
     "Generator",          #Component type
     "Wind",               #Component name
     bus = "Island",       #Bus on which component is
-    p_nom = 20000,         #Nominal power [MW]
-    p_max_pu = 2,         #time-series of power coefficients
+    p_nom = 3000,         #Nominal power [MW]
+    p_max_pu = 1,         #time-series of power coefficients
     carrier = "Wind",
     marginal_cost = 0.1   #Cost per MW from this source 
     )
 
 #Add generators to each country bus with varying marginal costs
-for i in range(1, bus_df.shape[1]):
+for i in range(1, bus_df.shape[0]):
     network.add(
         "Generator",
-        "Gen " + bus_df.Country[i],
+        "Gen_" + bus_df.Country[i],
         bus   = bus_df.Country[i],
         p_nom = 0, 
-        p_nom_extendable = True,
-        capital_cost = 0,
+        p_nom_extendable = True,     #Make sure country can always deliver to price
+        capital_cost = 0,            #Same as above
         marginal_cost = cprice[bus_df.Abbreviation[i]].values,
-        
         )
 
 
@@ -107,20 +103,21 @@ network.add(
     "Store",          #Component type
     "Store1",         #Component name
     bus = "Island",   #Bus on which component is
-    e_nom = 0,        #Store capacity
+    e_nom = 3000,        #Store capacity
     e_initial = 0,    #Initially stored energy
     e_cyclic = True,  #Set store to always end and start at same energy
-    e_nom_extendable = True #Allow expansion of capacity
+    #e_nom_extendable = True, #Allow expansion of capacity
+    #e_nom_max = 3000,
     )
 
 
 #%% Add Loads ------------------------------------------------------
 
 # Add varying cos loads to each country bus
-for i in range(1, bus_df.shape[1]): #i becomes integers
+for i in range(1, bus_df.shape[0]): #i becomes integers
     network.add(
         "Load",
-        "Load " + bus_df.Country[i],
+        "Load_" + bus_df.Country[i],
         bus   = bus_df.Country[i],
         p_set = cload[bus_df.Abbreviation[i]].values, 
         )
@@ -145,6 +142,26 @@ network.plot(
 
 #%% Solver
 
-#network.lopf() #Solve dynamic system
+network.lopf() #Solve dynamic system
 
 makeplots(network) #Plot dynamic results
+
+#%% Plotting
+# plt.plot(figsize = (14,7))
+# plt.figure(dpi=300)         # Set resolution
+
+network.links_t.p0.iloc[:,1].plot(
+    figsize = (14,7),
+    label = "Island to DK",)
+
+network.links_t.p0.iloc[:,2].plot(
+    figsize = (14,7),
+    label = "Island to NO",)
+
+network.links_t.p0.iloc[:,3].plot(
+    figsize = (14,7),
+    label = "Island to DE",)
+
+plt.legend()
+plt.ylabel("Power flow [MW]")
+plt.title("Power flow from Island to countries")

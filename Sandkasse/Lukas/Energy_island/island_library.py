@@ -10,7 +10,7 @@ Created on Mon Aug 29 18:58:40 2022
 
 
 #%% Makeplots
-def makeplots(network,subplots=True, aspect_ratio=0.2,xscale=6,yscale=12,location = "upper left"):
+def makeplots(network,subplots=True, aspect_ratio=0.2,xscale=12,yscale=24,location = "upper left"):
     #This function plots the network loads, produced power, energy in and out
     #of the battery, and the energy level in the battery. 
     #By default, this is plotted in one subplot, but can be plotted in 
