@@ -12,10 +12,10 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import pandas as pd
 from island_library import makeplots
+import island_library as il
 
 # Load Data price and load data
-cprice        = pd.read_csv('data/market/price_2030.csv', index_col = 0)
-cload         = pd.read_csv('data/market/load_2030.csv',  index_col = 0)
+cprice, cload = il.get_load_and_price(2030)
 
 #Load link info
 link_cost_url = 'https://github.com/PyPSA/technology-data/blob/master/inputs/manual_input.csv?raw=true'
@@ -142,7 +142,7 @@ network.plot(
 
 #%% Solver
 
-network.lopf() #Solve dynamic system
+#network.lopf() #Solve dynamic system
 
 makeplots(network) #Plot dynamic results
 
