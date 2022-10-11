@@ -1,3 +1,4 @@
+#%% Import
 # -*- coding: utf-8 -*-
 """
 Created on Tue Sep  6 10:44:50 2022
@@ -10,15 +11,18 @@ import numpy as np
 import matplotlib as plt
 import cartopy.crs as ccrs
 import pandas as pd
-from makeplots1 import makeplots
+from island_library import makeplots
 
-# Load Data
-cprice          = pd.read_csv('data/market/price_2030.csv', index_col = 0)
-cload           = pd.read_csv('data/market/load_2030.csv',  index_col = 0)
+# Load Data price and load data
+cprice        = pd.read_csv('data/market/price_2030.csv', index_col = 0)
+cload         = pd.read_csv('data/market/load_2030.csv',  index_col = 0)
 
-link_cost_url   = 'https://github.com/PyPSA/technology-data/blob/master/inputs/manual_input.csv?raw=true'
-link_cost       = pd.read_csv(link_cost_url)
-dff = link_cost.loc[link_cost['parameter'].str.startswith('investment') & link_cost['technology'].str.startswith('HVDC submarine')]
+#Load link info
+link_cost_url = 'https://github.com/PyPSA/technology-data/blob/master/inputs/manual_input.csv?raw=true'
+link_cost     = pd.read_csv(link_cost_url)
+link_inv      = link_cost.loc[link_cost['parameter'].str.startswith('investment') & link_cost['technology'].str.startswith('HVDC submarine')]
+link_life     = link_cost.loc[link_cost['parameter'].str.startswith('lifetime') & link_cost['technology'].str.startswith('HVDC submarine')]
+link_FOM      = link_cost.loc[link_cost['parameter'].str.startswith('FOM') & link_cost['technology'].str.startswith('HVDC submarine')]
 
 #%% Set up network & bus info -------------------------------------
 
@@ -64,9 +68,7 @@ for i in link_destinations:         #i becomes each string in the array
         carrier = "DC",             #Define carrier type
         p_nom   = 200,              #Power capacity of link
         p_nom_extendable = True,    #Extendable links
-        
-        # dff = link_cost.loc[link_cost['parameter'].str.startswith('investment') & link_cost['technology'].str.startswith('HVDC submarine')],
-        capital_cost = dff.loc[dff['year'] == 2030].value                 
+        capital_cost = link_inv.loc[link_inv['year'] == 2030].value,               
         )
 
 #%% Add Generators -------------------------------------------------
@@ -81,7 +83,7 @@ network.add(
     "Wind",               #Component name
     bus = "Island",       #Bus on which component is
     p_nom = 2000,         #Nominal power [MW]
-    p_max_pu = 2,  #time-series of power coefficients
+    p_max_pu = 2,         #time-series of power coefficients
     carrier = "Wind",
     marginal_cost = 0.1   #Cost per MW from this source 
     )
@@ -101,14 +103,14 @@ for i in range(1, bus_df.shape[1]):
 
 
 #%% Add stores
-network.add(
-    "Store",          #Component type
-    "Store1",         #Component name
-    bus = "Island",   #Bus on which component is
-    e_nom = 100,       #Store capacity
-    e_initial = 0,    #Initially stored energy
-    e_cyclic = True,  #Set store to always end and start at same energy
-    )
+# network.add(
+#     "Store",          #Component type
+#     "Store1",         #Component name
+#     bus = "Island",   #Bus on which component is
+#     e_nom = 100,       #Store capacity
+#     e_initial = 0,    #Initially stored energy
+#     e_cyclic = True,  #Set store to always end and start at same energy
+#     )
 
 
 #%% Add Loads ------------------------------------------------------
@@ -126,7 +128,7 @@ for i in range(1, bus_df.shape[1]): #i becomes integers
 #%% Plotting -------------------------------------------------------
 
 # Geographical map
-plt.rc("figure", figsize=(15, 15))  #Set plot resolution
+plt.rc("figure", figsize=(15, 15))    #Set plot resolution
 
 network.plot(
     color_geomap = True,              #Coloring on oceans
