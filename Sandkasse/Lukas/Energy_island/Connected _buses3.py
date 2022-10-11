@@ -143,6 +143,8 @@ network.plot(
     projection=ccrs.EqualEarth()      #Choose cartopy.crs projection
     )
 
+#%% Solver
+
 #network.lopf() #Solve dynamic system
 
 makeplots(network) #Plot dynamic results
