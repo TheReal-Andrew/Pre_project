@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import pandas as pd
-from island_library import makeplots
+#from island_library import makeplots
 import island_library as il
 
 # Load Data price and load data
@@ -142,9 +142,9 @@ network.plot(
 
 #%% Solver
 
-#network.lopf() #Solve dynamic system
+network.lopf(pyomo = False) #Solve dynamic system
 
-makeplots(network) #Plot dynamic results
+il.makeplots(network) #Plot dynamic results
 
 #%% Plotting
 # plt.plot(figsize = (14,7))
