@@ -18,7 +18,7 @@ import island_plt as ip #Library with plotting functions.
 cprice, cload = il.get_load_and_price(2030)
 
 # Load wind CF
-cf_wind_df = pd.read_csv(r'Data/Wind/wind_test.csv')
+cf_wind_df = pd.read_csv(r'Data/Wind/wind_test.csv',index_col = [0], sep=",")
 
 #Load link info
 link_cost_url = 'https://github.com/PyPSA/technology-data/blob/master/inputs/manual_input.csv?raw=true'
@@ -26,7 +26,6 @@ link_cost     = pd.read_csv(link_cost_url)
 link_inv      = link_cost.loc[link_cost['parameter'].str.startswith('investment') & link_cost['technology'].str.startswith('HVDC submarine')]
 link_life     = link_cost.loc[link_cost['parameter'].str.startswith('lifetime') & link_cost['technology'].str.startswith('HVDC submarine')]
 link_FOM      = link_cost.loc[link_cost['parameter'].str.startswith('FOM') & link_cost['technology'].str.startswith('HVDC submarine')]
-
 #%% Set up network & bus info -------------------------------------
 
 network = pypsa.Network()       #Create network
@@ -83,10 +82,12 @@ network.add(
     "Wind",               #Component name
     bus = "Island",       #Bus on which component is
     p_nom = 3000,         #Nominal power [MW]
-    p_max_pu = cf_wind_df['CF'],         #time-series of power coefficients
+    p_max_pu = cf_wind_df['electricity'],         #time-series of power coefficients
+#    p_max_pu = 1,         #time-series of power coefficients
     carrier = "Wind",
     marginal_cost = 0.1   #Cost per MW from this source 
     )
+#%% Add Generators -------------------------------------------------
 
 #Add generators to each country bus with varying marginal costs
 for i in range(1, bus_df.shape[0]):
@@ -168,3 +169,4 @@ network.links_t.p0.iloc[:,3].plot(
 plt.legend()
 plt.ylabel("Power flow [MW]")
 plt.title("Power flow from Island to countries")
+print('Done')

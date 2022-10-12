@@ -1,6 +1,3 @@
-# Renewables.ninja Wind (Point API) - 56.627, 6.668 - Version: 1.1 - License: https://creativecommons.org/licenses/by-nc/4.0/ - Reference: https://doi.org/10.1016/j.energy.2016.08.068
-# Units: time in UTC, local_time in unknown timezone, electricity in kW, wind_speed in m/s
-# {"units": {"time": "UTC", "local_time": "unknown timezone", "electricity": "kW", "wind_speed": "m/s"}, "params": {"local_time": true, "header": true, "lat": "56.62725", "lon": "6.66773", "date_from": "2019-01-01", "date_to": "2019-12-31", "dataset": "merra2", "capacity": "1", "height": "80", "turbine": "Vestas V90 2000", "raw": true}}
 time,local_time,electricity,wind_speed
 2019-01-01 00:00,,0.985,18.374
 2019-01-01 01:00,,0.971,19.303
