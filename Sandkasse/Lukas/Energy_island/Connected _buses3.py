@@ -11,8 +11,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import pandas as pd
-import island_lib as il
-import island_plt as ip
+import island_lib as il #Library with data and calculation functions 
+import island_plt as ip #Library with plotting functions.
 
 # Load Data price and load data
 cprice, cload = il.get_load_and_price(2030)
