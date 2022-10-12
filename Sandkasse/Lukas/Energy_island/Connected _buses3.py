@@ -11,11 +11,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import pandas as pd
-import island_lib as il #Library with data and calculation functions 
-import island_plt as ip #Library with plotting functions.
+#import island_lib as il #Library with data and calculation functions 
+#import island_plt as ip #Library with plotting functions.
 
 # Load Data price and load data
-cprice, cload = il.get_load_and_price(2030)
+#cprice, cload = il.get_load_and_price(2030)
+
+# Load wind CF
+cf_wind_df = pd.read_csv (r'Data\Wind\ninja_wind_56.6272_6.6677_corrected.csv')
 
 #Load link info
 link_cost_url = 'https://github.com/PyPSA/technology-data/blob/master/inputs/manual_input.csv?raw=true'
@@ -80,7 +83,7 @@ network.add(
     "Wind",               #Component name
     bus = "Island",       #Bus on which component is
     p_nom = 3000,         #Nominal power [MW]
-    p_max_pu = 1,         #time-series of power coefficients
+    p_max_pu = cf_wind_df['CF'],         #time-series of power coefficients
     carrier = "Wind",
     marginal_cost = 0.1   #Cost per MW from this source 
     )
@@ -142,7 +145,7 @@ network.plot(
 
 #%% Solver
 
-network.lopf(pyomo = False) #Solve dynamic system
+#network.lopf(pyomo = False) #Solve dynamic system
 
 ip.makeplots(network) #Plot dynamic results
 
