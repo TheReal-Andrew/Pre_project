@@ -11,14 +11,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import pandas as pd
-#import island_lib as il #Library with data and calculation functions 
-#import island_plt as ip #Library with plotting functions.
+import island_lib as il #Library with data and calculation functions 
+import island_plt as ip #Library with plotting functions.
 
 # Load Data price and load data
-#cprice, cload = il.get_load_and_price(2030)
+cprice, cload = il.get_load_and_price(2030)
 
 # Load wind CF
-cf_wind_df = pd.read_csv (r'Data\Wind\ninja_wind_56.6272_6.6677_corrected.csv')
+cf_wind_df = pd.read_csv(r'Data/Wind/wind_test.csv')
 
 #Load link info
 link_cost_url = 'https://github.com/PyPSA/technology-data/blob/master/inputs/manual_input.csv?raw=true'
