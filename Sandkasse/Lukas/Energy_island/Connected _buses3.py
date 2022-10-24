@@ -13,12 +13,21 @@ import cartopy.crs as ccrs
 import pandas as pd
 import island_lib as il #Library with data and calculation functions 
 import island_plt as ip #Library with plotting functions.
+from ttictoc import tic, toc 
+
+tic()
+
+n_points = 1000
 
 # Load Data price and load data
 cprice, cload = il.get_load_and_price(2030)
 
+cprice = cprice[:n_points]
+cload  = cload[:n_points]
+
 # Load wind CF
 cf_wind_df = pd.read_csv(r'Data/Wind/wind_test.csv',index_col = [0], sep=",")
+cf_wind_df = cf_wind_df[:n_points]
 
 #Load link info
 link_cost_url = 'https://github.com/PyPSA/technology-data/blob/master/inputs/manual_input.csv?raw=true'
@@ -29,7 +38,8 @@ link_FOM      = link_cost.loc[link_cost['parameter'].str.startswith('FOM') & lin
 #%% Set up network & bus info -------------------------------------
 
 network = pypsa.Network()       #Create network
-t = pd.date_range('2019-01-01 00:00', '2019-12-31 23:00', freq = 'H')
+#t = pd.date_range('2019-01-01 00:00', '2019-12-31 23:00', freq = 'H')
+t = np.arange(0, len(cprice))
 network.set_snapshots(t)  #Set snapshots of network to the timesteps
 
 #Create dataframe with info on buses. Names, x (Longitude) and y (Latitude) 
@@ -61,17 +71,21 @@ for i in range(bus_df.shape[0]):    #i becomes integers
 #List of link destionations from buses
 link_destinations = network.buses.index.values
 
+
+
 for i in link_destinations[1:]:     #i becomes each string in the array
     network.add(                    #Add component
         "Link",                     #Component type
         "Island_to_" + i,           #Component name
-        bus0    = "Island",         #Start Bus
-        bus1    = i,                #End Bus
-        carrier = "DC",             #Define carrier type
-        p_min_pu = -1,              #Make links bi-directional
-        p_nom   = 200,              #Power capacity of link
+        bus0      = "Island",         #Start Bus
+        bus1      = i,                #End Bus
+        carrier   = "DC",             #Define carrier type
+        p_min_pu  = -1,              #Make links bi-directional
+        p_nom     = 200,              #Power capacity of link [MW]
+        p_nom_max = 1000,
         p_nom_extendable = True,    #Extendable links
-        capital_cost = link_inv.loc[link_inv['year'] == 2030].value,         
+        capital_cost = link_inv.loc[link_inv['year'] == 2030].value,     
+        marginal_cost = link_inv.loc[link_inv['year'] == 2030].value*0.02,
         )
 
 #%% Add Generators -------------------------------------------------
@@ -81,12 +95,12 @@ network.add(
     "Generator",          #Component type
     "Wind",               #Component name
     bus = "Island",       #Bus on which component is
-    p_nom = 3000,         #Nominal power [MW]
-    p_max_pu = cf_wind_df['electricity'],         #time-series of power coefficients
-#    p_max_pu = 1,         #time-series of power coefficients
+    p_nom = 10000,         #Nominal power [MW]
+    p_max_pu = cf_wind_df['electricity'].values,         #time-series of power coefficients
     carrier = "Wind",
-    marginal_cost = 0.1   #Cost per MW from this source 
+    marginal_cost = 0.01   #Cost per MW from this source 
     )
+
 #%% Add Generators -------------------------------------------------
 
 #Add generators to each country bus with varying marginal costs
@@ -130,7 +144,7 @@ network.add(
     "Load",
     "Datacenter Load",
     bus = "Island",
-    p_set = 1000,
+    p_set = 4000,
     )
 
 #%% Plotting -------------------------------------------------------
@@ -144,9 +158,13 @@ network.plot(
     projection=ccrs.EqualEarth()      #Choose cartopy.crs projection
     )
 
+print("System build time: " + str(toc()))
 #%% Solver
 
-#network.lopf(pyomo = False) #Solve dynamic system
+tic()
+network.lopf(pyomo = False) #Solve dynamic system
+
+print(toc())
 
 ip.makeplots(network) #Plot dynamic results
 
@@ -154,19 +172,4 @@ ip.makeplots(network) #Plot dynamic results
 # plt.plot(figsize = (14,7))
 # plt.figure(dpi=300)         # Set resolution
 
-network.links_t.p0.iloc[:,1].plot(
-    figsize = (14,7),
-    label = "Island to DK",)
-
-network.links_t.p0.iloc[:,2].plot(
-    figsize = (14,7),
-    label = "Island to NO",)
-
-network.links_t.p0.iloc[:,3].plot(
-    figsize = (14,7),
-    label = "Island to DE",)
-
-plt.legend()
-plt.ylabel("Power flow [MW]")
-plt.title("Power flow from Island to countries")
-print('Done')
+ip.powerflow(network)
