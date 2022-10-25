@@ -78,6 +78,7 @@ def loads_generators(network, size = (12, 12), location = "upper left"):
 #%% Correlation Matrix
 
 def corr_matrix(data, title='', fsize = 20, size = (15,15)):
+    import seaborn as sn
     import matplotlib.pyplot as plt
     import numpy as np
     
@@ -88,24 +89,29 @@ def corr_matrix(data, title='', fsize = 20, size = (15,15)):
     fig = plt.figure(figsize = size)
     axes = fig.add_subplot(111)
     
-    #Use matshow to visually represent correlation matrix values
-    axes.matshow(data.corr())
+    #Show correlation matrix heatmap with Seaborn
+    sn.heatmap(data.corr(), annot=True, linewidth = 1)
+    plt.show()
     
-    #Change ticks to be titles instead of numbers
-    axes.set_xticklabels([''] + columns)
-    axes.set_yticklabels([''] + columns)
+    # OLD CODE - coded with Matplotlib
+    # #Use matshow to visually represent correlation matrix values
+    # axes.matshow(data.corr())
     
-    #Set and format title
-    axes.set_title(title,
-                   fontweight = "bold",
-                   fontsize = fsize)
+    # #Change ticks to be titles instead of numbers
+    # axes.set_xticklabels([''] + columns)
+    # axes.set_yticklabels([''] + columns)
     
-    #Add correlation values in each cell
-    for (i, j), z in np.ndenumerate(data.corr()):
-        axes.text(j, i, '{:0.1f}'.format(z), ha='center', va='center',
-            bbox=dict(boxstyle='square', facecolor='white', edgecolor='0.3'))
+    # #Set and format title
+    # axes.set_title(title,
+    #                fontweight = "bold",
+    #                fontsize = fsize)
+    
+    # #Add correlation values in each cell
+    # for (i, j), z in np.ndenumerate(data.corr()):
+    #     axes.text(j, i, '{:0.1f}'.format(z), ha='center', va='center',
+    #         bbox=dict(boxstyle='square', facecolor='white', edgecolor='0.3'))
 
-    fig.tight_layout()
+    # fig.tight_layout()
     
     
     
