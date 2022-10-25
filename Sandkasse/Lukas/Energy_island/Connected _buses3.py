@@ -8,13 +8,10 @@ Created on Tue Sep  6 10:44:50 2022
 
 import pypsa
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
 import island_lib as il #Library with data and calculation functions 
 import island_plt as ip #Library with plotting functions.
 from ttictoc import tic, toc 
-
-tic()
 
 n_points = 1000
 
@@ -118,11 +115,9 @@ network.add(
     "Store",          #Component type
     "Store1",         #Component name
     bus = "Island",   #Bus on which component is
-    e_nom = 3000,        #Store capacity
+    e_nom = 3000,     #Store capacity
     e_initial = 0,    #Initially stored energy
     e_cyclic = True,  #Set store to always end and start at same energy
-    #e_nom_extendable = True, #Allow expansion of capacity
-    #e_nom_max = 3000,
     )
 
 #%% Add Loads ------------------------------------------------------
@@ -143,17 +138,27 @@ network.add(
     p_set = 4000,
     )
 
-print("System build time: " + str(toc()))
 #%% Solver
 
-tic()
+tic() #Start timer
+
 network.lopf(
     pyomo = False,
     keep_shadowprices = ["Bus"]) #Solve dynamic system
 
-print("Solving time: " + str(toc()) )
+print("Solving time: " + str(toc()) ) #Print 
 
 #%% Plotting
-ip.geomap(network)
-ip.loads_generators(network) #Plot dynamic results
-ip.powerflow(network)
+ip.geomap(network)                  #Plot geographic map with links and buses
+ip.loads_generators(network)        #Plot dynamic results
+ip.powerflow(network)               #Plot powerflow on links
+ip.corr_matrix(
+    network.links_t.p0,
+    "Powerflow correlation")  #Correlation matrix of powerflow over lines
+ip.corr_matrix(
+    network.generators_t.p,
+    "Generator correlation") #Correlation matrix of generators
+
+
+
+
