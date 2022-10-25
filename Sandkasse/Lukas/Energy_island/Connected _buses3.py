@@ -9,7 +9,6 @@ Created on Tue Sep  6 10:44:50 2022
 import pypsa
 import numpy as np
 import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
 import pandas as pd
 import island_lib as il #Library with data and calculation functions 
 import island_plt as ip #Library with plotting functions.
@@ -71,17 +70,15 @@ for i in range(bus_df.shape[0]):    #i becomes integers
 #List of link destionations from buses
 link_destinations = network.buses.index.values
 
-
-
 for i in link_destinations[1:]:     #i becomes each string in the array
     network.add(                    #Add component
         "Link",                     #Component type
         "Island_to_" + i,           #Component name
-        bus0      = "Island",         #Start Bus
-        bus1      = i,                #End Bus
-        carrier   = "DC",             #Define carrier type
-        p_min_pu  = -1,              #Make links bi-directional
-        p_nom     = 200,              #Power capacity of link [MW]
+        bus0      = "Island",       #Start Bus
+        bus1      = i,              #End Bus
+        carrier   = "DC",           #Define carrier type
+        p_min_pu  = -1,             #Make links bi-directional
+        p_nom     = 200,            #Power capacity of link [MW]
         p_nom_max = 1000,
         p_nom_extendable = True,    #Extendable links
         capital_cost = link_inv.loc[link_inv['year'] == 2030].value,     
@@ -128,7 +125,6 @@ network.add(
     #e_nom_max = 3000,
     )
 
-
 #%% Add Loads ------------------------------------------------------
 
 # Add varying cos loads to each country bus
@@ -147,29 +143,17 @@ network.add(
     p_set = 4000,
     )
 
-#%% Plotting -------------------------------------------------------
-
-# Geographical map
-plt.rc("figure", figsize=(15, 15))    #Set plot resolution
-
-network.plot(
-    color_geomap = True,              #Coloring on oceans
-    boundaries = [-3, 12, 59, 50.5],  #Boundaries of the plot as [x1,x2,y1,y2]
-    projection=ccrs.EqualEarth()      #Choose cartopy.crs projection
-    )
-
 print("System build time: " + str(toc()))
 #%% Solver
 
 tic()
-network.lopf(pyomo = False) #Solve dynamic system
+network.lopf(
+    pyomo = False,
+    keep_shadowprices = ["Bus"]) #Solve dynamic system
 
-print(toc())
-
-ip.makeplots(network) #Plot dynamic results
+print("Solving time: " + str(toc()) )
 
 #%% Plotting
-# plt.plot(figsize = (14,7))
-# plt.figure(dpi=300)         # Set resolution
-
+ip.geomap(network)
+ip.loads_generators(network) #Plot dynamic results
 ip.powerflow(network)
