@@ -17,3 +17,15 @@ def get_annuity(i, n):
     annuity = i/(1.-1./(1.+i)**n)
     return annuity
 
+#%% Remove outliers
+def remove_outliers(df,columns,n_std):
+    for col in columns:
+        print('Working on column: {}'.format(col))
+        
+        mean = df[col].mean()
+        sd = df[col].std()
+        
+        df = df[(df[col] <= mean+(n_std*sd))]
+        
+    return df
+

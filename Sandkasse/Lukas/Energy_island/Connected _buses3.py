@@ -7,11 +7,14 @@ Created on Tue Sep  6 10:44:50 2022
 """
 
 import pypsa
+from pypsa.linopt import get_dual
+
 import numpy as np
 import pandas as pd
 import island_lib as il #Library with data and calculation functions 
 import island_plt as ip #Library with plotting functions.
 from ttictoc import tic, toc 
+
 
 n_points = 1000
 
@@ -75,8 +78,8 @@ for i in link_destinations[1:]:     #i becomes each string in the array
         bus1      = i,              #End Bus
         carrier   = "DC",           #Define carrier type
         p_min_pu  = -1,             #Make links bi-directional
-        p_nom     = 200,            #Power capacity of link [MW]
-        p_nom_max = 1000,
+        p_nom     = 2000,            #Power capacity of link [MW]
+        p_nom_max = 2000,
         p_nom_extendable = True,    #Extendable links
         capital_cost = link_inv.loc[link_inv['year'] == 2030].value,     
         marginal_cost = link_inv.loc[link_inv['year'] == 2030].value*0.02,
@@ -148,17 +151,31 @@ network.lopf(
 
 print("Solving time: " + str(toc()) ) #Print 
 
+opt_prices = get_dual(network, "Bus", "marginal_price")
+opt_prices2 = il.remove_outliers(opt_prices, opt_prices.columns, 5)
+
 #%% Plotting
 ip.geomap(network)                  #Plot geographic map with links and buses
 ip.loads_generators(network)        #Plot dynamic results
 ip.powerflow(network)               #Plot powerflow on links
+#%%
 ip.corr_matrix(
     network.links_t.p0,
     "Powerflow correlation")  #Correlation matrix of powerflow over lines
 ip.corr_matrix(
     network.generators_t.p,
     "Generator correlation") #Correlation matrix of generators
+ip.corr_matrix(
+    opt_prices2,
+    "Price correlation", vmin = -1)
+#%%
 
+ip.plot_bus_prices(opt_prices2)
 
-
+ip.plot_price_diff(opt_prices2)
+    
+#%%   
+# data2 = il.remove_outliers(opt_prices, opt_prices.columns, 3)
+# fig = plt.figure()
+# plt.hist(data2["Denmark"].values, 50)
 

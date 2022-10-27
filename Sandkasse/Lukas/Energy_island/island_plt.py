@@ -77,42 +77,89 @@ def loads_generators(network, size = (12, 12), location = "upper left"):
 
 #%% Correlation Matrix
 
-def corr_matrix(data, title='', fsize = 20, size = (15,15)):
+def corr_matrix(data, title='', fsize = 20, size = (15,15),  vmin = 0 ):
     import seaborn as sn
+    import matplotlib
+    import matplotlib.pyplot as plt
+    import numpy as np
+    matplotlib.rcParams['font.family'] = ['cmss10']
+    
+    #Show correlation matrix heatmap with 
+    corr = data.corr()
+    
+    mask = np.triu(np.ones_like(corr))
+    
+    cmap = sn.diverging_palette(10, 130, as_cmap=True)
+    ax = sn.heatmap(corr,
+               annot=True, mask = mask, square = True, cbar_kws={"shrink": .82},
+               linewidth = 1, cmap = cmap, vmin = vmin)
+    
+    ax.set_title(title, fontsize = 20, fontweight = "bold",)
+    
+    plt.show()
+    
+#%% Price diff
+
+def plot_price_diff(opt_prices):
     import matplotlib.pyplot as plt
     import numpy as np
     
-    #Get column names as list
-    columns = data.columns.tolist()
+    fig, axs = plt.subplots(6, sharey = True)  # Set up subplot
+    plt.figure(dpi=600)         # Set resolution
+    country_price = opt_prices.iloc[:,1:]
     
-    #Create figure
-    fig = plt.figure(figsize = size)
-    axes = fig.add_subplot(111)
-    
-    #Show correlation matrix heatmap with Seaborn
-    sn.heatmap(data.corr(), annot=True, linewidth = 1)
-    plt.show()
-    
-    # OLD CODE - coded with Matplotlib
-    # #Use matshow to visually represent correlation matrix values
-    # axes.matshow(data.corr())
-    
-    # #Change ticks to be titles instead of numbers
-    # axes.set_xticklabels([''] + columns)
-    # axes.set_yticklabels([''] + columns)
-    
-    # #Set and format title
-    # axes.set_title(title,
-    #                fontweight = "bold",
-    #                fontsize = fsize)
-    
-    # #Add correlation values in each cell
-    # for (i, j), z in np.ndenumerate(data.corr()):
-    #     axes.text(j, i, '{:0.1f}'.format(z), ha='center', va='center',
-    #         bbox=dict(boxstyle='square', facecolor='white', edgecolor='0.3'))
+    colors = {"DK":"tab:red", 
+              "NO":"forestgreen", 
+              "DE":"gold", 
+              "NE":"tab:orange", 
+              "BE":"tab:brown", 
+              "GB":"tab:blue"}
 
-    # fig.tight_layout()
+    for i in range(len(country_price.columns)):
+        diff = country_price.iloc[:,i] - opt_prices.iloc[:,0]
+        
+        axs[i].plot(diff.values,
+                    color = colors[list(colors)[i]])
+        axs[i].grid()
+        
+        axs[i].set_ylabel("Euro per MWh")
+        
+        axs[i].set_title("Price difference, Island to " +str(country_price.columns[i]))
+        
+        axs[i].fill_between(np.arange(len(diff)), diff,
+                            color = colors[list(colors)[i]],
+                            alpha = 0.2)
+        
+    fig.tight_layout()
     
+#%% Bus Prices
+def plot_bus_prices(opt_prices):
+    import matplotlib.pyplot as plt
+    import numpy as np
+    
+    fig, axs = plt.subplots(7, sharey = True)  # Set up subplot
+    plt.figure(dpi=600)         # Set resolution
+    
+    colors = {"IL":"black",
+              "DK":"tab:red", 
+              "NO":"forestgreen", 
+              "DE":"gold", 
+              "NE":"tab:orange", 
+              "BE":"tab:brown", 
+              "GB":"tab:blue"}
+    
+    for i in range(len(opt_prices.columns)):
+        axs[i].plot(opt_prices.iloc[:,i].values,
+                    color = colors[list(colors)[i]])
+        #axs[i].set_ylim([None, opt_prices.values.ravel().max()])
+        axs[i].grid()
+        axs[i].set_ylabel("Euro per MWh")
+        axs[i].set_title(str(opt_prices.columns[i]) + " - Electricity price")
+        axs[i].fill_between(np.arange(len(opt_prices)),opt_prices.iloc[:,i].values,
+                            color = colors[list(colors)[i]],
+                            alpha = 0.2)
+        
+    fig.tight_layout()
     
     
     
