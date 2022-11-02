@@ -4,12 +4,39 @@ Created on Mon Aug 29 18:58:40 2022
 
 @author: lukas & anders
 """
+#%% Import packages, set colors and set up plotting
+import seaborn as sn
+import matplotlib.pyplot as plt
+import matplotlib
+from matplotlib import style
+import numpy as np
+import cartopy.crs as ccrs
+import pandas as pd
+
+# Set up colors
+colors = {"IL":"black",
+          "DK":"tab:red", 
+          "NO":"forestgreen", 
+          "DE":"gold", 
+          "NE":"tab:orange", 
+          "BE":"tab:brown", 
+          "GB":"tab:blue"}
+
+#Set up plot parameters
+color_bg      = "0.99"  #Choose background color
+color_gridaxe = "0.85"  #Choose grid and spine color
+rc = {"axes.edgecolor"     : color_gridaxe} 
+plt.style.use(('ggplot', rc)) #Set style with extra spines
+plt.rcParams['figure.dpi'] = 300 #Set resolution
+matplotlib.rcParams['font.family'] = ['cmss10'] #Change font to Computer Modern Sans Serif
+plt.rcParams['axes.unicode_minus'] = False      #Re-enable minus signs on axes))
+plt.rcParams['axes.facecolor']= "0.99"         #Set plot background color
+plt.rcParams.update({"axes.grid" : True, "grid.color": color_gridaxe}) #Set grid color
+plt.rcParams['axes.grid'] = True
 
 #%% Geographical plot
-def geomap(network, bounds = [-3, 12, 59, 50.5], size = (15,15)):
+def plot_geomap(network, bounds = [-3, 12, 59, 50.5], size = (15,15)):
     #Plots geographical map with buses and links shown
-    import matplotlib.pyplot as plt
-    import cartopy.crs as ccrs
     
     plt.rc("figure", figsize = size)   #Set plot resolution
 
@@ -20,40 +47,28 @@ def geomap(network, bounds = [-3, 12, 59, 50.5], size = (15,15)):
         )
 
 #%% Powerflow plot
-def powerflow(network, size = (17,13)):
+def plot_powerflow(network, size = (17,13), colors = colors):
     #Plots power flow from island to country buses.
-    import matplotlib.pyplot as plt
-    import numpy as np
-    
-    fig, axs = plt.subplots(3, 2)  # Set up subplot with 4 plots
-    plt.figure(dpi=300)            # Set resolution
-    axs = axs.ravel()
-    
-    colors = {"DK":"tab:red", 
-              "NO":"forestgreen", 
-              "DE":"gold", 
-              "NE":"tab:orange", 
-              "BE":"tab:brown", 
-              "GB":"tab:blue"}
+    fig_PF, axs_PF = plt.subplots(3, 2)  # Set up subplot with 4 plots
+    #plt.figure(dpi=300)            # Set resolution
+    axs_PF = axs_PF.ravel()
     
     for i in np.arange(0,6):
         network.links_t.p0.iloc[:,i].plot(
-            ax = axs[i],
+            ax = axs_PF[i],
             figsize = size,
             title = network.links_t.p0.columns[i],
-            color = colors[list(colors)[i]],
+            color = colors[list(colors)[i+1]],
             )
         
-    fig.tight_layout()
+    fig_PF.tight_layout()
 
 
 #%% Power consumption and power production plots
-def loads_generators(network, size = (12, 12), location = "upper left"):
+def plot_loads_generators(network, size = (12, 12), location = "upper left"):
     #Plots all power consumption and power generation over time.
-    import matplotlib.pyplot as plt
-    
     fig, axs = plt.subplots(2)  # Set up subplot
-    plt.figure(dpi=600)         # Set resolution
+    #plt.figure(dpi=600)         # Set resolution
     
     #---- Subplot 1 ----
     network.loads_t.p.plot(              #Plot loads 
@@ -77,17 +92,13 @@ def loads_generators(network, size = (12, 12), location = "upper left"):
 
 #%% Correlation Matrix
 
-def corr_matrix(data, title='', fsize = 20, size = (15,15),  vmin = 0 ):
-    import seaborn as sn
-    import matplotlib
-    import matplotlib.pyplot as plt
-    import numpy as np
-    matplotlib.rcParams['font.family'] = ['cmss10']
-    
+def plot_corr_matrix(data, title='', fsize = 20, size = (15,15),  vmin = 0 ):
     #Show correlation matrix heatmap with 
     corr = data.corr()
     
     mask = np.triu(np.ones_like(corr))
+    
+    plt.figure()
     
     cmap = sn.diverging_palette(10, 130, as_cmap=True)
     ax = sn.heatmap(corr,
@@ -100,60 +111,43 @@ def corr_matrix(data, title='', fsize = 20, size = (15,15),  vmin = 0 ):
     
 #%% Price diff
 
-def plot_price_diff(opt_prices):
-    import matplotlib.pyplot as plt
-    import numpy as np
-    
+def plot_price_diff(opt_prices, colors = colors):
     fig, axs = plt.subplots(6, sharey = True)  # Set up subplot
-    plt.figure(dpi=600)         # Set resolution
     country_price = opt_prices.iloc[:,1:]
-    
-    colors = {"DK":"tab:red", 
-              "NO":"forestgreen", 
-              "DE":"gold", 
-              "NE":"tab:orange", 
-              "BE":"tab:brown", 
-              "GB":"tab:blue"}
 
     for i in range(len(country_price.columns)):
+        #Calcultae difference between country and island price
         diff = country_price.iloc[:,i] - opt_prices.iloc[:,0]
         
+        #plot, add plot color, add grid
         axs[i].plot(diff.values,
-                    color = colors[list(colors)[i]])
-        axs[i].grid()
+                    color = colors[list(colors)[i+1]], )
         
-        axs[i].set_ylabel("Euro per MWh")
+        #Set ylabel and title
+        axs[i].set_ylabel("Euro/MWh")
+        axs[i].set_title(str(country_price.columns[i]) + " price minus Island price")
         
-        axs[i].set_title("Price difference, Island to " +str(country_price.columns[i]))
-        
+        #Add fill between plot and horizontal line at 0.
         axs[i].fill_between(np.arange(len(diff)), diff,
-                            color = colors[list(colors)[i]],
+                            color = colors[list(colors)[i+1]],
                             alpha = 0.2)
         
+    #Set tight layout for better layout formatting    
     fig.tight_layout()
     
 #%% Bus Prices
-def plot_bus_prices(opt_prices):
-    import matplotlib.pyplot as plt
-    import numpy as np
-    
-    fig, axs = plt.subplots(7, sharey = True)  # Set up subplot
-    plt.figure(dpi=600)         # Set resolution
-    
-    colors = {"IL":"black",
-              "DK":"tab:red", 
-              "NO":"forestgreen", 
-              "DE":"gold", 
-              "NE":"tab:orange", 
-              "BE":"tab:brown", 
-              "GB":"tab:blue"}
+def plot_bus_prices(opt_prices, colors = colors):
+    fig, axs = plt.subplots(len(opt_prices.columns), sharey = True)  # Set up subplot
+    #.figure(dpi=600)         # Set resolution
     
     for i in range(len(opt_prices.columns)):
         axs[i].plot(opt_prices.iloc[:,i].values,
-                    color = colors[list(colors)[i]])
+                    color = colors[list(colors)[i]]
+                    )
         #axs[i].set_ylim([None, opt_prices.values.ravel().max()])
-        axs[i].grid()
-        axs[i].set_ylabel("Euro per MWh")
+        
+        axs[i].grid(True)
+        axs[i].set_ylabel("Euro/MWh")
         axs[i].set_title(str(opt_prices.columns[i]) + " - Electricity price")
         axs[i].fill_between(np.arange(len(opt_prices)),opt_prices.iloc[:,i].values,
                             color = colors[list(colors)[i]],
@@ -161,7 +155,12 @@ def plot_bus_prices(opt_prices):
         
     fig.tight_layout()
     
+#%% Scatter matrix
+def plot_scatter(df):
+    mask = np.triu(np.ones_like((df.shape[1], df.shape[1])))
     
+    pd.plotting.scatter_matrix(df,
+            grid=False, color = "tab:blue", diagonal = "kde")
     
     
     

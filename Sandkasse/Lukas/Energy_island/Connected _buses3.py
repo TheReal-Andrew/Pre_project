@@ -25,8 +25,8 @@ cprice = cprice[:n_points]
 cload  = cload[:n_points]
 
 # Load wind CF
-cf_wind_df = pd.read_csv(r'Data/Wind/wind_test.csv',index_col = [0], sep=",")
-cf_wind_df = cf_wind_df[:n_points]
+cf_wind_df1 = pd.read_csv(r'Data/Wind/wind_test.csv',index_col = [0], sep=",")
+cf_wind_df = cf_wind_df1[:n_points]
 
 #Load link info
 link_cost_url = 'https://github.com/PyPSA/technology-data/blob/master/inputs/manual_input.csv?raw=true'
@@ -78,7 +78,7 @@ for i in link_destinations[1:]:     #i becomes each string in the array
         bus1      = i,              #End Bus
         carrier   = "DC",           #Define carrier type
         p_min_pu  = -1,             #Make links bi-directional
-        p_nom     = 2000,            #Power capacity of link [MW]
+        p_nom     = 2000,           #Power capacity of link [MW]
         p_nom_max = 2000,
         p_nom_extendable = True,    #Extendable links
         capital_cost = link_inv.loc[link_inv['year'] == 2030].value,     
@@ -151,27 +151,27 @@ network.lopf(
 
 print("Solving time: " + str(toc()) ) #Print 
 
+#Normalize
 opt_prices = get_dual(network, "Bus", "marginal_price")
 opt_prices2 = il.remove_outliers(opt_prices, opt_prices.columns, 5)
 
 #%% Plotting
-ip.geomap(network)                  #Plot geographic map with links and buses
-ip.loads_generators(network)        #Plot dynamic results
-ip.powerflow(network)               #Plot powerflow on links
-#%%
-ip.corr_matrix(
-    network.links_t.p0,
-    "Powerflow correlation")  #Correlation matrix of powerflow over lines
-ip.corr_matrix(
+ip.plot_geomap(network)                  #Plot geographic map with links and buses
+ip.plot_loads_generators(network)        #Plot dynamic results
+
+ip.plot_powerflow(network)               #Plot powerflow on links
+
+ip.plot_corr_matrix(
     network.generators_t.p,
     "Generator correlation") #Correlation matrix of generators
-ip.corr_matrix(
+ip.plot_corr_matrix(
     opt_prices2,
     "Price correlation", vmin = -1)
-#%%
+ip.plot_corr_matrix(
+    network.links_t.p0,
+    "Powerflow correlation")
 
 ip.plot_bus_prices(opt_prices2)
-
 ip.plot_price_diff(opt_prices2)
     
 #%%   
@@ -179,3 +179,4 @@ ip.plot_price_diff(opt_prices2)
 # fig = plt.figure()
 # plt.hist(data2["Denmark"].values, 50)
 
+ip.plot_bus_prices(opt_prices)
