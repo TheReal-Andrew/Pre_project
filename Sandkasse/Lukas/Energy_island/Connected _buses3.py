@@ -7,7 +7,7 @@ Created on Tue Sep  6 10:44:50 2022
 """
 
 import pypsa
-from pypsa.linopt import get_dual
+from pypsa.linopt import get_dual, get_var, get_sol
 
 import numpy as np
 import pandas as pd
