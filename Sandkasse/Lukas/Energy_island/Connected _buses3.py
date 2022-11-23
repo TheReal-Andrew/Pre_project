@@ -32,7 +32,7 @@ cprice = cprice[:n_points]
 cload  = cload[:n_points]
 
 # Load wind CF
-cf_wind_df1 = pd.read_csv(r'Data/Wind/wind_test.csv',index_col = [0], sep=",")
+cf_wind_df1 = pd.read_csv(r'data/Wind/wind_test.csv',index_col = [0], sep=",")
 cf_wind_df = cf_wind_df1[:n_points]
 
 #Load link info
