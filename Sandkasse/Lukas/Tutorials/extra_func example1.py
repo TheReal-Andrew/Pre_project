@@ -104,7 +104,8 @@ def extra_functionalities(n, snapshots):
     
 n.lopf(pyomo = False,
        extra_functionality = extra_functionalities,
-       keep_shadowprices = ["StorageUnit"],
+       keep_shadowprices = True,
+       keep_references = True,
        )
     
     
