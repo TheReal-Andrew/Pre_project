@@ -10,7 +10,7 @@ Should_MGA   = True
 Should_MAA   = True
 n_snapshots  = 2000
 n_objective  = 16780122009.380981
-mga_slack    = 0.1
+mga_slack    = 0.01
 
 #%% Import
 import pypsa 

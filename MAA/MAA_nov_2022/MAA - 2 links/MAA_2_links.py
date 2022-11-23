@@ -5,12 +5,12 @@ Created on Thu Nov 10 12:41:30 2022
 @author: lukas
 """
 
-should_solve = False
-Should_MGA   = True
-Should_MAA   = True
+should_solve = True
+Should_MGA   = False
+Should_MAA   = False
 n_snapshots  = 2000
 n_objective  = 16780122009.380968
-mga_slack    = 0.5
+mga_slack    = 0.0001
 
 #%% Import
 import pypsa 
@@ -165,14 +165,20 @@ n.snapshot_weightings = n.snapshot_weightings[:n_snapshots]
 # Change carrier for optimization
 n.links.loc[["Island_to_Denmark","Island_to_Germany"], "carrier"] = ["AC_DK", "AC_DE"]
 
+n_optimum = n.copy()
+
 if should_solve:
-    n.lopf(pyomo = False,
+    n_optimum.lopf(pyomo = False,
           solver_name = 'gurobi'
           )
     
-    print("Network objective value:" + str(n.objective))
+    print("Network objective value:" + str(n_optimum.objective))
+    
+    n_objective = n_optimum.objective
 else:
     pass
+
+# n_optimum = n.copy()
 
 #%% Carriers
 
@@ -215,7 +221,7 @@ else:
 
 #%% MAA Functions
 def search_direction(direction,mga_variables):
-    options = dict(mga_slack=0.01,
+    options = dict(mga_slack=mga_slack,
                     mga_variables=[variables[v] for v in mga_variables])
 
     res = n.lopf(pyomo=False,

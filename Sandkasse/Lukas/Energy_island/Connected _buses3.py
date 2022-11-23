@@ -15,9 +15,10 @@ import pandas as pd
 import island_lib as il #Library with data and calculation functions 
 import island_plt as ip #Library with plotting functions.
 from ttictoc import tic, toc 
+from Plotting import plot_map
 
 #%% ### ---- Options ---- ###
-should_export = True # Export the network to hdf5?
+should_export = False # Export the network to hdf5?
 should_solve = True  #Solve the system or not?
 should_plot = False   #Produce plots or not? Also activates solving the system
 n_points = 2000      #Number of datapoints over the year to use. Max 8760
@@ -127,8 +128,6 @@ n.add(
     marginal_cost = 2.7,  #Cost per MW from this source 
     )
 
-#%% Add Generators -------------------------------------------------
-
 #Add generators to each country bus with varying marginal costs
 for i in range(1, bus_df.shape[0]):
     n.add(
@@ -143,7 +142,7 @@ for i in range(1, bus_df.shape[0]):
         )
 
 
-#%% Add stores
+#%% Add store
 n.add(
     "Store",          #Component type
     "Store1",         #Component name
@@ -156,8 +155,8 @@ n.add(
 
 #%% Add Loads ------------------------------------------------------
 
-# Add varying cos loads to each country bus
-for i in range(1, bus_df.shape[0]): #i becomes integers
+# Add country loads
+for i in range(1, bus_df.shape[0]): 
     n.add(
         "Load",
         "Load_" + bus_df.Country[i],
@@ -166,6 +165,7 @@ for i in range(1, bus_df.shape[0]): #i becomes integers
         carrier = "AC"
         )
 
+# Add datacenter load on Island
 n.add(
     "Load",
     "Datacenter Load",
@@ -173,6 +173,11 @@ n.add(
     p_set = 4000,
     carrier = "AC",
     )
+
+#%% Extra Functionality
+
+def area_use(n, snapshots):
+    vars_p = get_var()
 
 #%% Export network
 
@@ -190,7 +195,9 @@ if should_solve or should_plot:
     n.lopf(
         pyomo = False,
         solver_name = 'gurobi',
-        keep_shadowprices = ["Bus"],) #Solve dynamic system
+        keep_shadowprices = True,
+        keep_references = True
+        ) #Solve dynamic system
     
     print("Solving time: " + str(toc()) ) #Print 
     

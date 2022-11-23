@@ -23,14 +23,14 @@ colors = {"IL":"black",
           "GB":"tab:blue"}
 
 #Set up plot parameters
-color_bg      = "0.99"  #Choose background color
-color_gridaxe = "0.85"  #Choose grid and spine color
-rc = {"axes.edgecolor"     : color_gridaxe} 
-plt.style.use(('ggplot', rc)) #Set style with extra spines
-plt.rcParams['figure.dpi'] = 300 #Set resolution
-matplotlib.rcParams['font.family'] = ['cmss10'] #Change font to Computer Modern Sans Serif
-plt.rcParams['axes.unicode_minus'] = False      #Re-enable minus signs on axes))
-plt.rcParams['axes.facecolor']= "0.99"         #Set plot background color
+color_bg      = "0.99"          #Choose background color
+color_gridaxe = "0.85"          #Choose grid and spine color
+rc = {"axes.edgecolor":color_gridaxe} 
+plt.style.use(('ggplot', rc))           #Set style with extra spines
+plt.rcParams['figure.dpi'] = 300        #Set resolution
+matplotlib.rcParams['font.family'] = ['cmss10']     #Change font to Computer Modern Sans Serif
+plt.rcParams['axes.unicode_minus'] = False          #Re-enable minus signs on axes))
+plt.rcParams['axes.facecolor']= "0.99"              #Set plot background color
 plt.rcParams.update({"axes.grid" : True, "grid.color": color_gridaxe}) #Set grid color
 plt.rcParams['axes.grid'] = True
 
