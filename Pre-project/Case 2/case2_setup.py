@@ -25,10 +25,10 @@ tech_life = tech_cost.loc[tech_cost['parameter'].str.startswith('lifetime') & te
 tech_FOM  = tech_cost.loc[tech_cost['parameter'].str.startswith('FOM') & tech_cost['technology'].str.startswith('HVDC submarine')]
 
 #%% Set up network with chosen timesteps
-network               = pypsa.Network()                   
-network.set_snapshots = pd.date_range('2019-01-01 00:00', 
-                                      '2019-12-31 23:00', 
-                                      freq = 'H')
+network                 = pypsa.Network()                   
+network.set_snapshots(pd.date_range('2019-01-01 00:00', 
+                                    '2019-12-31 23:00', 
+                                    freq = 'H'))
 
 #Create dataframe with info on buses. Names, x (Longitude) and y (Latitude) 
 bus_df = pd.DataFrame(
@@ -75,7 +75,7 @@ network.add(
     "Wind",                           #Component name
     bus           = "Island",         #Bus on which component is
     p_nom         = 3000,             #Nominal power [MW]
-    p_max_pu      = cf_wind_df['CF'], #Time-series of power coefficients
+    p_max_pu      = cf_wind_df['electricity'], #Time-series of power coefficients
     carrier       = "Wind",           #Carrier type (AC,DC,Wind,Solar,etc.)
     marginal_cost = 0.1)              #Cost per MW from this source 
     
@@ -90,7 +90,8 @@ for i in range(1, bus_df.shape[0]):
         p_nom            = 0, 
         p_nom_extendable = True,         #Make sure country can always deliver to price
         capital_cost     = 0,            #Same as above
-        marginal_cost    = cprice[bus_df.Abbreviation[i]].values)
+        marginal_cost    = cprice[bus_df.Abbreviation[i]].values
+        )
 
 #%% Add Loads ------------------------------------------------------
 
@@ -115,27 +116,27 @@ network.plot(
 
 #%% Solver
 
-#network.lopf(pyomo = False) #Solve dynamic system
+network.lopf(pyomo = False) #Solve dynamic system
 
-ip.makeplots(network) #Plot dynamic results
+#ip.makeplots(network) #Plot dynamic results
 
 #%% Plotting
 # plt.plot(figsize = (14,7))
 # plt.figure(dpi=300)         # Set resolution
 
-network.links_t.p0.iloc[:,1].plot(
-    figsize = (14,7),
-    label = "Island to DK",)
+# network.links_t.p0.iloc[:,1].plot(
+#     figsize = (14,7),
+#     label = "Island to DK",)
 
-network.links_t.p0.iloc[:,2].plot(
-    figsize = (14,7),
-    label = "Island to NO",)
+# network.links_t.p0.iloc[:,2].plot(
+#     figsize = (14,7),
+#     label = "Island to NO",)
 
-network.links_t.p0.iloc[:,3].plot(
-    figsize = (14,7),
-    label = "Island to DE",)
+# network.links_t.p0.iloc[:,3].plot(
+#     figsize = (14,7),
+#     label = "Island to DE",)
 
-plt.legend()
-plt.ylabel("Power flow [MW]")
-plt.title("Power flow from Island to countries")
-print('Done')
+# plt.legend()
+# plt.ylabel("Power flow [MW]")
+# plt.title("Power flow from Island to countries")
+# print('Done')
