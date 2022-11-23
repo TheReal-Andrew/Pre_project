@@ -16,7 +16,7 @@ import case2_island_plt as ip #Library with plotting functions.
 cprice, cload = il.get_load_and_price(2030)
 
 # Load wind capacity factor (CF)
-cf_wind_df = pd.read_csv(r'Data/Wind/wind_test.csv', index_col = [0], sep = ",")
+cf_wind_df = pd.read_csv(r'Data/Wind/wind_test.csv', sep = ",")
 
 #Load technology data
 tech_cost = pd.read_csv('https://github.com/PyPSA/technology-data/blob/master/inputs/manual_input.csv?raw=true')
@@ -71,13 +71,13 @@ for i in link_destinations[1:]:         #i becomes each string in the array
 
 #Add wind turbine
 network.add(
-    "Generator",                               #Component type
-    "Wind",                                    #Component name
-    bus           = "Island",                  #Bus on which component is
-    p_nom         = 3000,                      #Nominal power [MW]
+    "Generator",                      #Component type
+    "Wind",                           #Component name
+    bus           = "Island",         #Bus on which component is
+    p_nom         = 3000,             #Nominal power [MW]
     p_max_pu      = cf_wind_df['CF'], #Time-series of power coefficients
-    carrier       = "Wind",                    #Carrier type (AC,DC,Wind,Solar,etc.)
-    marginal_cost = 0.1)                       #Cost per MW from this source 
+    carrier       = "Wind",           #Carrier type (AC,DC,Wind,Solar,etc.)
+    marginal_cost = 0.1)              #Cost per MW from this source 
     
 #%% Add Generators -------------------------------------------------
 
