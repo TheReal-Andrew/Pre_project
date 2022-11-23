@@ -15,7 +15,7 @@ import pandas as pd
 import island_lib as il #Library with data and calculation functions 
 import island_plt as ip #Library with plotting functions.
 from ttictoc import tic, toc 
-from Plotting import plot_map
+#from Plotting import plot_map
 
 #%% ### ---- Options ---- ###
 should_export = False # Export the network to hdf5?

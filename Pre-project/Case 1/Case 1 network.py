@@ -31,6 +31,7 @@ plt.rcParams['axes.grid'] = True
 
 #%% Control
 
+should_solve = False
 n_hrs = 8760
 
 #%% Build network and import
@@ -73,13 +74,15 @@ n.add("Load",
       p_set = 1000,
       )
 
-# #Dummy store
-# n.add("Store",
-#       "DummyStore",
-#       bus = "Island",
-#       e_nom_extendable = True,
-#       e_nom_max = 10000
-#       )
+#Add storage
+n.add("Store",
+      "Store1",
+      bus = "Island",
+      e_nom_extendable = True,
+      e_nom_max = 1000,
+      e_cyclic = True,
+      standing_loss = 0.01,
+      )
 
 #Add "loads" in the form of negative generators
 n.add("Generator",
@@ -102,12 +105,17 @@ n.add("Generator",
 
 #%% Extra functionality
 def area_constraint(n, snapshots):
-    vars_gen = get_var(n, 'Generator', 'p_nom')
+    vars_gen   = get_var(n, 'Generator', 'p_nom')
+    vars_store = get_var(n, 'Store', 'p_nom')
     
     k1 = 10 #[m^2/MW]
     k2 = 15 #[m^2/MW]
+    k3 = 35 #[m^2/MW]
     
-    lhs = linexpr((k1, vars_gen["P2X"]), (k2, vars_gen["Data"]))
+    lhs = linexpr((k1, vars_gen["P2X"]),
+                  (k2, vars_gen["Data"]),
+                  (k3, vars_store["Data"]),
+                  )
     
     rhs = 10000 #[m^2]
     
@@ -117,12 +125,14 @@ def extra_functionalities(n, snapshots):
     area_constraint(n, snapshots)
 
 #%% Solve
-n.lopf(pyomo = False,
-       solver_name = 'gurobi',
-       keep_shadowprices = True,
-       keep_references = True,
-       extra_functionality = extra_functionalities,
-       )
+
+if should_solve:
+    n.lopf(pyomo = False,
+           solver_name = 'gurobi',
+           keep_shadowprices = True,
+           keep_references = True,
+           extra_functionality = extra_functionalities,
+           )
 
 #%%
 

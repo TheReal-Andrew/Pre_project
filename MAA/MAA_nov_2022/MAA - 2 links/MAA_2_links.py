@@ -1,3 +1,4 @@
+#%% Info
 # -*- coding: utf-8 -*-
 """
 Created on Thu Nov 10 12:41:30 2022
@@ -5,9 +6,11 @@ Created on Thu Nov 10 12:41:30 2022
 @author: lukas
 """
 
+#%% Control
+
 should_solve = True
-Should_MGA   = False
-Should_MAA   = False
+Should_MGA   = True
+Should_MAA   = True
 n_snapshots  = 2000
 n_objective  = 16780122009.380968
 mga_slack    = 0.0001
@@ -21,17 +24,30 @@ from pypsa.linopf import lookup, network_lopf, ilopf
 from pypsa.pf import get_switchable_as_dense as get_as_dense
 from pypsa.descriptors import get_extendable_i, get_non_extendable_i
 import matplotlib.pyplot as plt
+import matplotlib
 import pandas as pd
 from scipy.spatial import ConvexHull
 import os
 import sys
 
+#%% Plotting options
+#Set up plot parameters
+color_bg      = "0.99"          #Choose background color
+color_gridaxe = "0.85"          #Choose grid and spine color
+rc = {"axes.edgecolor":color_gridaxe} 
+plt.style.use(('ggplot', rc))           #Set style with extra spines
+plt.rcParams['figure.dpi'] = 300        #Set resolution
+plt.rcParams["figure.figsize"] = (10, 5) #Set figure size
+matplotlib.rcParams['font.family'] = ['cmss10']     #Change font to Computer Modern Sans Serif
+plt.rcParams['axes.unicode_minus'] = False          #Re-enable minus signs on axes))
+plt.rcParams['axes.facecolor']= "0.99"              #Set plot background color
+plt.rcParams.update({"axes.grid" : True, "grid.color": color_gridaxe}) #Set grid color
+plt.rcParams['axes.grid'] = True
+
 #%% MGA functions
 def extra_functionality(n,snapshots,options,direction):
     define_mga_constraint(n,snapshots,options['mga_slack'])
     define_mga_objective(n,snapshots,direction,options)
-
-
 
 def assign_carriers(n):
     """
@@ -293,8 +309,8 @@ if Should_MAA:
              'o', label = "near-optimal")
     
     #Plot optimal
-    plt.plot(n.links.p_nom_opt["Island_to_Denmark"], 
-             n.links.p_nom_opt["Island_to_Germany"],
+    plt.plot(n_optimum.links.p_nom_opt["Island_to_Denmark"], 
+             n_optimum.links.p_nom_opt["Island_to_Germany"],
              '.', markersize = 20, label = "optimum")
     
     plt.legend()
