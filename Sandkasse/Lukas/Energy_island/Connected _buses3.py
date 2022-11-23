@@ -123,7 +123,7 @@ n.add(
     "Wind",               #Component name
     bus = "Island",       #Bus on which component is
     p_nom = 10000,         #Nominal power [MW]
-    p_max_pu = cf_wind_df['electricity'].values,         #time-series of power coefficients
+    p_max_pu = cf_wind_df['electricity'].values,  #time-series of power coefficients
     carrier = "Wind",
     marginal_cost = 2.7,  #Cost per MW from this source 
     )
