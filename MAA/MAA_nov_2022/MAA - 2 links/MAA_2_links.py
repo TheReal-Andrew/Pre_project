@@ -13,7 +13,7 @@ Should_MGA   = True
 Should_MAA   = True
 n_snapshots  = 2000
 n_objective  = 16780122009.380968
-mga_slack    = 0.0001
+mga_slack    = 0.01
 
 #%% Import
 import pypsa 
@@ -211,7 +211,7 @@ variables = {'x1':('Link','AC_DK'),
 #%% MGA - Search 1 direction
 
 if Should_MGA or Should_MAA:
-    direction = [1,1] # 1 means minimize, -1 means maximize 
+    direction = [1, 1] # 1 means minimize, -1 means maximize 
     mga_variables = ['x1','x2'] # The variables that we are investigating
     
     options = dict(mga_slack=mga_slack,

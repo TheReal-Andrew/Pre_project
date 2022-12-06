@@ -7,12 +7,19 @@ Created on Tue Nov 22 14:40:56 2022
 """
 
 #%% Import
-import pypsa
+import pypsa 
 import numpy as np
-import pandas as pd
+from pypsa.linopt import get_var, linexpr, join_exprs, define_constraints, get_dual, get_con, write_objective, get_sol, define_variables
+from pypsa.descriptors import nominal_attrs
+from pypsa.linopf import lookup, network_lopf, ilopf
+from pypsa.pf import get_switchable_as_dense as get_as_dense
+from pypsa.descriptors import get_extendable_i, get_non_extendable_i
 import matplotlib.pyplot as plt
 import matplotlib
-from pypsa.linopt import get_var, get_dual, linexpr, join_exprs, define_constraints
+import pandas as pd
+from scipy.spatial import ConvexHull
+import os
+import sys
 
 #%% Plotting options
 #Set up plot parameters
@@ -48,14 +55,14 @@ cf_wind_df = pd.read_csv(r'Data/Wind/wind_test.csv',index_col = [0], sep=",")[:n
 #Add bus for the island
 n.add("Bus", "Island")
 
-#Add wind generator
+# #Add wind generator
 n.add("Generator",
       "Wind",
       bus = "Island",
       carrier = "wind",
       p_nom = 3000,
       p_max_pu = cf_wind_df['electricity'].values,
-      marginal_cost = 2.7,
+      marginal_cost = 10,
       )
 
 n.add("Generator",
@@ -63,7 +70,7 @@ n.add("Generator",
       bus = "Island",
       carrier = "Coal",
       p_nom_extendable = True,
-      marginal_cost = 10,
+      marginal_cost = 30,
       )
 
 #Dummy load
@@ -73,41 +80,51 @@ n.add("Load",
       p_set = 1000,
       )
 
-# #Dummy store
-# n.add("Store",
-#       "DummyStore",
-#       bus = "Island",
-#       e_nom_extendable = True,
-#       e_nom_max = 10000
-#       )
+# Store
+n.add("Store",
+      "Store1",
+      bus = "Island",
+      e_cyclic = True,
+      e_nom_extendable = True,
+      e_nom_max = 10000,
+      standing_loss = 0.1,
+      marginal_cost = 5,
+      )
 
 #Add "loads" in the form of negative generators
 n.add("Generator",
       "P2X",
       bus = "Island",
       p_nom_extendable = True,
+      p_nom_max = 10000,
       p_max_pu = 0,
       p_min_pu = -1,
-      marginal_cost = 30,
+      marginal_cost = 15, #System Gain
       )
 
-n.add("Generator",
-      "Data",
-      bus = "Island",
-      p_nom_extendable = True,
-      p_max_pu = 0,
-      p_min_pu = -1,
-      marginal_cost = 10,
-      )
+# n.add("Generator",
+#       "Data",
+#       bus = "Island",
+#       p_nom_extendable = True,
+#       p_nom_max = 10000,
+#       p_nom_min = 500,
+#       p_max_pu = -1,
+#       p_min_pu = -1,
+#       marginal_cost = 10, #System Gain
+#       )
 
 #%% Extra functionality
 def area_constraint(n, snapshots):
-    vars_gen = get_var(n, 'Generator', 'p_nom')
+    vars_gen   = get_var(n, 'Generator', 'p_nom')
+    vars_store = get_var(n, 'Store', 'e_nom')
     
-    k1 = 10 #[m^2/MW]
-    k2 = 15 #[m^2/MW]
+    k1 = 1 #[m^2/MW]
+    k2 = 1 #[m^2/MW]
+    k3 = 1 #[m^2/MW]
     
-    lhs = linexpr((k1, vars_gen["P2X"]), (k2, vars_gen["Data"]))
+    lhs = linexpr((k1, vars_gen["P2X"]), 
+                  (k2, vars_gen["Data"]), 
+                  (k3, vars_store))
     
     rhs = 10000 #[m^2]
     
@@ -121,10 +138,22 @@ n.lopf(pyomo = False,
        solver_name = 'gurobi',
        keep_shadowprices = True,
        keep_references = True,
-       extra_functionality = extra_functionalities,
+       # extra_functionality = extra_functionalities,
        )
 
-#%%
+#%% Plot area use
+k1 = 1 #[m^2/MW] For P2X
+# k2 = 1 #[m^2/MW] For Data
+# k3 = 1 #[m^2/MW] For Storage
 
+# P2X_A   = k1 * n.generators.loc["P2X"].p_nom_opt
+# Data_A  = k2 * n.generators.loc["Data"].p_nom_opt
+# Store_A = k3 * n.stores.loc["Store1"].e_nom_opt
+
+# plt.bar('Area use', P2X_A)
+# plt.bar('Area use', Data_A, bottom = P2X_A)
+# plt.bar('Area use', Store_A, bottom = P2X_A+Data_A)
+
+# plt.ylabel('m^2')
 
 
