@@ -99,7 +99,7 @@ else:
 def extra_functionality(n,snapshots,options,direction):
     define_mga_constraint(n,snapshots,options['mga_slack'])
     define_mga_objective(n,snapshots,direction,options)
-    #area_constraint(n, snapshots)
+    area_constraint(n, snapshots)
 
 def assign_carriers(n):
     """
