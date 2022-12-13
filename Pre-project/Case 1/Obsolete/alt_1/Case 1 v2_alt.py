@@ -17,7 +17,6 @@ from pypsa.descriptors import get_extendable_i, get_non_extendable_i
 import matplotlib.pyplot as plt
 import matplotlib
 import pandas as pd
-import island_lib as il
 from scipy.spatial import ConvexHull
 import os
 import sys
@@ -43,21 +42,19 @@ Should_solve  = True
 Should_pie    = True
 n_hrs = 8760
 
-filename = "/case1_v2.nc"
+filename = "/case1_v2_alt.nc"
 
 # Area affecting parameters
-k_P2X   = 60  # [m^2/MW] Area use for P2X
+k_P2X   = 2  # [m^2/MW] Area use for P2X
 mc_P2X  = 10  # [EUR/MW] Gain for system for P2X
 cc_P2X  = 100 # [EUR/MW] Capital cost for P2X
 
-k_Data  = 20  # [m^2/MW] Area use for Data
+k_Data  = 1  # [m^2/MW] Area use for Data
 mc_Data = 15  # [EUR/MW] Gain for system for Data
 cc_Data = 110 # [EUR/MW] Capital cost for Data
 
-k_Store  = 7  # [m^2/MW] Area use for Storage
+k_Store  = 1  # [m^2/MW] Area use for Storage
 cc_Store = 80 # [EUR/MW] Capital cost for Storage
-
-cc_Wind = il.get_annuity(0.07, 30) * 1.8e6 # [Euro/MW]
 
 #%%  NETWORK -----------------------------------
 
@@ -76,49 +73,52 @@ cf_wind_df = pd.read_csv(r'Data/Wind/wind_test.csv',index_col = [0], sep=",")[:n
 n.add("Bus", "Island")
 
 #Add wind generator
-n.add("Generator",
-      "Wind",
-      bus               = "Island",
-      carrier           = "wind",
-      # p_nom             = 3000,
-      p_nom_extendable  = True,
-      p_nom_min         = 3000,
-      p_nom_ma          = 3000,
-      p_max_pu          = cf_wind_df['electricity'].values,
-      marginal_cost     = 0,
-      capital_cost      = cc_Wind
+# n.add("Generator",
+#       "Wind",
+#       bus               = "Island",
+#       carrier           = "wind",
+#       p_nom             = 3000,
+#       p_max_pu          = cf_wind_df['electricity'].values,
+#       marginal_cost     = 0,
+#       )
+
+# Add varying Load
+n.add("Load",
+      "Load1",
+      bus = "Island",
+      p_set = 3000
       )
 
 #Add storage
 n.add("Store",
       "Store1",
       bus               = "Island",
-      carrier           = "Store1",
       e_nom_extendable  = True,
-      e_cyclic          = True,
-      e_nom_max         = 1000,
-      capital_cost      = cc_Store,
+      # e_cyclic          = True,
+      # capital_cost      = cc_Store,
       )
 
 #Add "loads" in the form of negative generators
 n.add("Generator",
-      "P2X",
+      "Gen1",
       bus               = "Island",
-      carrier           = "P2X",
+      carrier           = "Gen1",
       p_nom_extendable  = True,
-      p_max_pu          = 0,
-      p_min_pu          = -1,
+      p_nom_max         = 3000,
+      # p_max_pu          = 0,
+      # p_min_pu          = -1,
       marginal_cost     = mc_P2X,
       capital_cost      = cc_P2X,
       )
 
 n.add("Generator",
-      "Data",
+      "Gen2",
       bus               = "Island",
-      carrier           = "Data",
+      carrier           = "Gen2",
       p_nom_extendable  = True,
-      p_max_pu          = -0.99,
-      p_min_pu          = -1,
+      p_nom_max         = 3000,
+      # p_max_pu          = -0.99,
+      # p_min_pu          = -1,
       marginal_cost     = mc_Data,
       capital_cost      = cc_Data
       )
@@ -126,13 +126,13 @@ n.add("Generator",
 #%% Extra functionality
 def area_constraint(n, snapshots):
     vars_gen   = get_var(n, 'Generator', 'p_nom')
-    vars_store = get_var(n, 'Store', 'e_nom')
+    vars_store = get_var(n, 'Store',     'e_nom')
     
-    lhs = linexpr((k_P2X,   vars_gen["P2X"]), 
-                  (k_Data,  vars_gen["Data"]), 
+    lhs = linexpr((k_P2X, vars_gen["Gen1"]), 
+                  (k_Data, vars_gen["Gen2"]), 
                   (k_Store, vars_store))
     
-    rhs = 10000 #[m^2]
+    rhs = 4000 #[m^2]
     
     define_constraints(n, lhs, '=', rhs, 'Generator', 'Area_Use')
 
@@ -162,12 +162,12 @@ else:
 #%% Plot area use
 
 if Should_pie:
-    P2X_A   = k_P2X * n.generators.loc["P2X"].p_nom_opt
-    Data_A  = k_Data * n.generators.loc["Data"].p_nom_opt
+    P2X_A   = k_P2X * n.generators.loc["Gen1"].p_nom_opt
+    Data_A  = k_Data * n.generators.loc["Gen2"].p_nom_opt
     Store_A = k_Store * n.stores.loc["Store1"].e_nom_opt
     
     pie_data = [P2X_A, Data_A, Store_A]
-    labels   =  "P2X", "Data", "Store"
+    labels   =  "P2X", "Gen1", "Gen2"
 
     fig, ax = plt.subplots()
     ax.pie(pie_data, labels = labels, autopct='%1.1f%%')

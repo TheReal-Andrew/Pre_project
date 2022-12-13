@@ -44,20 +44,20 @@ n_snapshots  = 8670
 mga_slack    = 0.1
 
 # Area affecting parameters
-k_P2X   = 60  # [m^2/MW] Area use for P2X
-mc_P2X  = 1e5  # [EUR/MW] Gain for system for P2X
+k_P2X   = 2  # [m^2/MW] Area use for P2X
+mc_P2X  = 10  # [EUR/MW] Gain for system for P2X
 cc_P2X  = 100 # [EUR/MW] Capital cost for P2X
 
-k_Data  = 20  # [m^2/MW] Area use for Data
-mc_Data = 1.5e5  # [EUR/MW] Gain for system for Data
+k_Data  = 1  # [m^2/MW] Area use for Data
+mc_Data = 15  # [EUR/MW] Gain for system for Data
 cc_Data = 110 # [EUR/MW] Capital cost for Data
 
-k_Store  = 7  # [m^2/MW] Area use for Storage
+k_Store  = 1  # [m^2/MW] Area use for Storage
 cc_Store = 80 # [EUR/MW] Capital cost for Storage
 
 #%% Load and copy network
 
-n = pypsa.Network('case1_v2.nc') #Load network from netcdf file
+n = pypsa.Network('case1_v2_alt.nc') #Load network from netcdf file
 
 # Reduce snapshots used for faster computing
 n.snapshots = n.snapshots[:n_snapshots]
@@ -72,11 +72,11 @@ def area_constraint(n, snapshots):
     vars_gen   = get_var(n, 'Generator', 'p_nom')
     vars_store = get_var(n, 'Store', 'e_nom')
     
-    lhs = linexpr((k_P2X, vars_gen["P2X"]), 
-                  (k_Data, vars_gen["Data"]), 
+    lhs = linexpr((k_P2X, vars_gen["Gen1"]), 
+                  (k_Data, vars_gen["Gen2"]), 
                   (k_Store, vars_store))
     
-    rhs = 10000 #[m^2]
+    rhs = 4000 #[m^2]
     
     define_constraints(n, lhs, '=', rhs, 'Generator', 'Area_Use')
 
@@ -225,8 +225,8 @@ def get_var_values(n,mga_variables):
 #%% MAA Variables
 n.objective_optimum = n_objective
 
-variables = {'x1':('Generator','P2X'),
-             'x2':('Generator','Data'),
+variables = {'x1':('Generator','Gen1'),
+             'x2':('Generator','Gen2'),
             }
 
 #%% MGA - Search 1 direction
@@ -323,27 +323,23 @@ if Should_MAA:
     DK = solutions[:,0]
     DE = solutions[:,1]
     
-    for simplex in hull.simplices:
-    
-        plt.plot(solutions[simplex, 0], solutions[simplex, 1], 'k-')
-    
     plt.plot(DK, DE,
              'o', label = "near-optimal")
     
     #Plot optimal
-    plt.plot(n_optimum.generators.p_nom_opt["P2X"], 
-             n_optimum.generators.p_nom_opt["Data"],
+    plt.plot(n_optimum.generators.p_nom_opt["Gen1"], 
+             n_optimum.generators.p_nom_opt["Gen2"],
               '.', markersize = 20, label = "optimum")
-    plt.xlabel("Data")
-    plt.ylabel("P2X")
+    plt.xlabel("Gen1")
+    plt.ylabel("Gen2")
     
     # plt.legend()
     
     # plt.xlim([-500, n.links.p_nom_max.iloc[0]*1.05])
     # plt.ylim([-500, n.links.p_nom_max.iloc[1]*1.05])
     
-    # for simplex in hull.simplices:
+    for simplex in hull.simplices:
     
-    #     plt.plot(solutions[simplex, 0], solutions[simplex, 1], 'k-')
+        plt.plot(solutions[simplex, 0], solutions[simplex, 1], 'k-')
 else:
     pass
