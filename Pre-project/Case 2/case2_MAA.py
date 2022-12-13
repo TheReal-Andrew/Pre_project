@@ -8,9 +8,8 @@ Created on Thu Nov 10 12:41:30 2022
 should_solve = True
 Should_MGA   = True
 Should_MAA   = True
-n_snapshots  = 1000
-n_objective  = 16780122009.380968
-mga_slack    = 0.0001
+n_snapshots  = 8760
+mga_slack    = 0.1
 
 #%% Import
 import pypsa 
