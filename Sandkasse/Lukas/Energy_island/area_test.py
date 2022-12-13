@@ -88,7 +88,7 @@ n.add("Store",
       e_nom_extendable = True,
       e_nom_max = 10000,
       standing_loss = 0.1,
-      marginal_cost = 5,
+      # marginal_cost = 5, #System Cost
       )
 
 #Add "loads" in the form of negative generators
@@ -102,25 +102,24 @@ n.add("Generator",
       marginal_cost = 15, #System Gain
       )
 
-# n.add("Generator",
-#       "Data",
-#       bus = "Island",
-#       p_nom_extendable = True,
-#       p_nom_max = 10000,
-#       p_nom_min = 500,
-#       p_max_pu = -1,
-#       p_min_pu = -1,
-#       marginal_cost = 10, #System Gain
-#       )
+n.add("Generator",
+      "Data",
+      bus = "Island",
+      p_nom_extendable = True,
+      p_nom_max = 10000,
+      p_max_pu = -1,
+      p_min_pu = -1,
+      marginal_cost = 16, #System Gain
+      )
 
 #%% Extra functionality
 def area_constraint(n, snapshots):
     vars_gen   = get_var(n, 'Generator', 'p_nom')
     vars_store = get_var(n, 'Store', 'e_nom')
     
-    k1 = 1 #[m^2/MW]
-    k2 = 1 #[m^2/MW]
-    k3 = 1 #[m^2/MW]
+    k1 = 20 # P2X   [m^2/MW]
+    k2 = 19 # Data  [m^2/MW]
+    k3 = 21 # Store [m^2/MW]
     
     lhs = linexpr((k1, vars_gen["P2X"]), 
                   (k2, vars_gen["Data"]), 
@@ -138,22 +137,23 @@ n.lopf(pyomo = False,
        solver_name = 'gurobi',
        keep_shadowprices = True,
        keep_references = True,
-       # extra_functionality = extra_functionalities,
+       extra_functionality = extra_functionalities,
        )
 
 #%% Plot area use
-k1 = 1 #[m^2/MW] For P2X
-# k2 = 1 #[m^2/MW] For Data
-# k3 = 1 #[m^2/MW] For Storage
+k1 = 20 #[m^2/MW] For P2X
+k2 = 19 #[m^2/MW] For Data
+k3 = 21 #[m^2/MW] For Storage
 
-# P2X_A   = k1 * n.generators.loc["P2X"].p_nom_opt
-# Data_A  = k2 * n.generators.loc["Data"].p_nom_opt
-# Store_A = k3 * n.stores.loc["Store1"].e_nom_opt
+P2X_A   = k1 * n.generators.loc["P2X"].p_nom_opt
+Data_A  = k2 * n.generators.loc["Data"].p_nom_opt
+Store_A = k3 * n.stores.loc["Store1"].e_nom_opt
 
-# plt.bar('Area use', P2X_A)
-# plt.bar('Area use', Data_A, bottom = P2X_A)
-# plt.bar('Area use', Store_A, bottom = P2X_A+Data_A)
+plt.bar('Area use', P2X_A, label = "P2X")
+plt.bar('Area use', Data_A, bottom = P2X_A, label = "Data")
+plt.bar('Area use', Store_A, bottom = P2X_A+Data_A, label = "Storage")
 
-# plt.ylabel('m^2')
+plt.ylabel('m^2')
+plt.legend()
 
 
