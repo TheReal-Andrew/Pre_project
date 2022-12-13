@@ -25,10 +25,10 @@ cprice, cload = il.get_load_and_price(2030)
 cf_wind_df = pd.read_csv(r'Data/Wind/wind_test.csv', sep = ",")
 
 #Load technology data
-# tech_cost = pd.read_csv('https://github.com/PyPSA/technology-data/blob/master/inputs/manual_input.csv?raw=true')
-# tech_inv  = tech_cost.loc[tech_cost['parameter'].str.startswith('investment') & tech_cost['technology'].str.startswith('HVDC submarine')]
-# tech_life = tech_cost.loc[tech_cost['parameter'].str.startswith('lifetime') & tech_cost['technology'].str.startswith('HVDC submarine')]
-# tech_FOM  = tech_cost.loc[tech_cost['parameter'].str.startswith('FOM') & tech_cost['technology'].str.startswith('HVDC submarine')]
+tech_cost = pd.read_csv('https://github.com/PyPSA/technology-data/blob/master/inputs/manual_input.csv?raw=true')
+tech_inv  = tech_cost.loc[tech_cost['parameter'].str.startswith('investment') & tech_cost['technology'].str.startswith('HVDC submarine')]
+tech_life = tech_cost.loc[tech_cost['parameter'].str.startswith('lifetime') & tech_cost['technology'].str.startswith('HVDC submarine')]
+tech_FOM  = tech_cost.loc[tech_cost['parameter'].str.startswith('FOM') & tech_cost['technology'].str.startswith('HVDC submarine')]
 
 #%% Set up network with chosen timesteps
 network = pypsa.Network()                   
@@ -36,7 +36,6 @@ network = pypsa.Network()
 #                                     '2019-12-31 23:00', 
 #                                     freq = 'H'))
 t = pd.date_range('2030-01-01 00:00', '2030-12-31 23:00', freq = 'H')
-t = t[:n_points]
 network.set_snapshots(t)  #Set snapshots of network to the timesteps
 
 #Create dataframe with info on buses. Names, x (Longitude) and y (Latitude) 
@@ -74,15 +73,17 @@ for i in link_destinations[1:]:         #i becomes each string in the array
         bus1             = i,           #End Bus
         carrier          = "DC" + str(j),        #Define carrier type
         p_min_pu         = -1,          #Make links bi-directional
+        marginal_cost    = 0,
+        efficiency       = 1,
         p_nom            = 200,         #Power capacity of link
         p_nom_extendable = True,        #Extendable links
-        capital_cost     = 500)
+        capital_cost     = 0,)
         # capital_cost     = il.get_annuity(0.07, float(tech_life.value))    #Annuity factor
-        #                    * float(tech_inv.value)                               #Investment cost [EUR/MW/km] 
-        #                    * il.earth_distance(float(bus_df.X.loc[0]),  
-        #                                        float(bus_df.X.loc[j]), 
-        #                                        float(bus_df.Y.loc[0]), 
-        #                                        float(bus_df.Y.loc[j])))
+        #                     * float(tech_inv.value)                               #Investment cost [EUR/MW/km] 
+        #                     * il.earth_distance(float(bus_df.X.loc[0]),  
+        #                                         float(bus_df.X.loc[j]), 
+        #                                         float(bus_df.Y.loc[0]), 
+        #                                         float(bus_df.Y.loc[j])))
 
 #%% Add Generators -------------------------------------------------
 
@@ -91,24 +92,24 @@ network.add(
     "Generator",                      #Component type
     "Wind",                           #Component name
     bus           = "Island",         #Bus on which component is
-    p_nom         = 3000,             #Nominal power [MW]
-    p_max_pu      = cf_wind_df['electricity'], #Time-series of power coefficients
+    p_nom         = 30000000000000000000000000000000000,             #Nominal power [MW]
+    p_max_pu      = cf_wind_df['electricity'].values, #Time-series of power coefficients
     carrier       = "Wind",           #Carrier type (AC,DC,Wind,Solar,etc.)
-    marginal_cost = 0.1)              #Cost per MW from this source 
+    marginal_cost = 0)              #Cost per MW from this source 
     
 #%% Add Generators -------------------------------------------------
 
 #Add generators to each country bus with varying marginal costs
-for i in range(1, bus_df.shape[0]):
-    network.add(
-        "Generator",
-        "Gen_" + bus_df.Country[i],
-        bus              = bus_df.Country[i],
-        p_nom            = 0, 
-        p_nom_extendable = True,         #Make sure country can always deliver to price
-        capital_cost     = 0,            #Same as above
-        marginal_cost    = cprice[bus_df.Abbreviation[i]].values
-        )
+# for i in range(1, bus_df.shape[0]):
+#     network.add(
+#         "Generator",
+#         "Gen_" + bus_df.Country[i],
+#         bus              = bus_df.Country[i],
+#         p_nom            = 0, 
+#         p_nom_extendable = True,         #Make sure country can always deliver to price
+#         capital_cost     = 0,            #Same as above
+#         marginal_cost    = 10000000*cprice[bus_df.Abbreviation[i]].values
+#         )
 
 #%% Add Loads ------------------------------------------------------
 
@@ -119,6 +120,15 @@ for i in range(1, bus_df.shape[0]): #i becomes integers
         "Load_" + bus_df.Country[i],
         bus     = bus_df.Country[i],
         p_set   = cload[bus_df.Abbreviation[i]].values)
+    
+
+# network.add(
+#     "Store",
+#     "Store Energy Island",
+#     bus     = bus_df.Country[0],
+#     # p_set   = cload[bus_df.Abbreviation[i]].values)
+#     e_nom = 1000000000000,)
+       
    
 #%% Save network
 
@@ -138,9 +148,8 @@ network.plot(
     )
 
 #%% Solver
-
 network.lopf(pyomo = False,
-              solver_name='gurobi',) #Solve dynamic system
+             solver_name = 'gurobi')
 
 #ip.makeplots(network) #Plot dynamic results
 
