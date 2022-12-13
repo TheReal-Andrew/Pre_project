@@ -6,9 +6,9 @@ Created on Thu Nov 10 12:41:30 2022
 """
 
 should_solve = True
-Should_MGA   = False
-Should_MAA   = False
-n_snapshots  = 2000
+Should_MGA   = True
+Should_MAA   = True
+n_snapshots  = 1000
 n_objective  = 16780122009.380968
 mga_slack    = 0.0001
 
@@ -156,14 +156,14 @@ def get_var_values(n,mga_variables):
 
 #%% Load and solve network
 
-n = pypsa.Network('connected_buses3.nc') #Load network from netcdf file
+n = pypsa.Network('case2_setup.nc') #Load network from netcdf file
 
 # Reduce snapshots used for faster computing
 n.snapshots = n.snapshots[:n_snapshots]
 n.snapshot_weightings = n.snapshot_weightings[:n_snapshots] 
 
 # Change carrier for optimization
-n.links.loc[["Island_to_Denmark","Island_to_Germany"], "carrier"] = ["AC_DK", "AC_DE"]
+n.links.loc[["Island_to_Denmark","Island_to_Belgium"], "carrier"] = ["DC1", "DC2"]
 
 n_optimum = n.copy()
 
@@ -187,9 +187,8 @@ else:
 
 n.objective_optimum = n_objective
 
-variables = {'x1':('Link','AC_DK'),
-             'x2':('Link','AC_DE'),
-             'x3':('Generator','Wind'),
+variables = {'x1':('Link','DC1'),
+             'x2':('Link','DC2'),
             }
 
 #%% MGA - Search 1 direction
@@ -294,14 +293,11 @@ if Should_MAA:
     
     #Plot optimal
     plt.plot(n.links.p_nom_opt["Island_to_Denmark"], 
-             n.links.p_nom_opt["Island_to_Germany"],
+             n.links.p_nom_opt["Island_to_Belgium"],
              '.', markersize = 20, label = "optimum")
     
     plt.legend()
-    
-    plt.xlim([-500, n.links.p_nom_max.iloc[0]*1.05])
-    plt.ylim([-500, n.links.p_nom_max.iloc[1]*1.05])
-    
+       
     for simplex in hull.simplices:
     
         plt.plot(solutions[simplex, 0], solutions[simplex, 1], 'k-')
