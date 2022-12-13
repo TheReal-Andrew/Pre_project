@@ -11,6 +11,7 @@ import cartopy.crs as ccrs
 import pandas as pd
 import case2_island_lib as il #Library with data and calculation functions 
 import case2_island_plt as ip #Library with plotting functions.
+import os
 
 # Load power-price and consumer-load data
 cprice, cload = il.get_load_and_price(2030)
@@ -33,9 +34,9 @@ network.set_snapshots(pd.date_range('2019-01-01 00:00',
 #Create dataframe with info on buses. Names, x (Longitude) and y (Latitude) 
 bus_df = pd.DataFrame(
     np.array([                          #Create numpy array with bus info
-    ["Island",  "EI",   6.68, 56.52],   #Energy Island
-    ["Denmark", "DK",   8.12, 56.37],   #Assumed Thorsminde
-    ["Belgium", "BE",   3.20, 51.32]]), #Assumed Zeebrugge 
+    ["Island",  "EI",   float(6.68), float(56.52)],   #Energy Island
+    ["Denmark", "DK",   float(8.12), float(56.37)],   #Assumed Thorsminde
+    ["Belgium", "BE",   float(3.20), float(51.32)]]), #Assumed Zeebrugge 
     columns = ["Country",               #Give columns titles
                "Abbreviation", 
                "X", 
@@ -55,23 +56,24 @@ for i in range(bus_df.shape[0]):    #i becomes integers
 #List of link destionations from buses
 link_destinations = network.buses.index.values
 
+j = 0
 for i in link_destinations[1:]:         #i becomes each string in the array
+    j = j + 1
     network.add(                        #Add component
         "Link",                         #Component type
         "Island_to_" + i,               #Component name
         bus0             = "Island",    #Start Bus
         bus1             = i,           #End Bus
-        carrier          = "DC",        #Define carrier type
+        carrier          = "DC" + str(j),        #Define carrier type
         p_min_pu         = -1,          #Make links bi-directional
         p_nom            = 200,         #Power capacity of link
         p_nom_extendable = True,        #Extendable links
-        capital_cost     = il.get_annuity(0.07, tech_life.value)    #Annuity factor
-                           * tech_inv                               #Investment cost [EUR/MW/km] 
-                           * il.earth_distance(float(bus_df.X[0]),  #Distance between energy island and country
-                                               float(bus_df.X[i]), 
-                                               float(bus_df.Y[0]), 
-                                               float(bus_df.Y[i])),
-        )
+        capital_cost     = il.get_annuity(0.07, float(tech_life.value))    #Annuity factor
+                           * float(tech_inv.value)                               #Investment cost [EUR/MW/km] 
+                           * il.earth_distance(float(bus_df.X.loc[0]),  
+                                               float(bus_df.X.loc[j]), 
+                                               float(bus_df.Y.loc[0]), 
+                                               float(bus_df.Y.loc[j])))
 
 #%% Add Generators -------------------------------------------------
 
@@ -83,7 +85,7 @@ network.add(
     p_nom         = 3000,             #Nominal power [MW]
     p_max_pu      = cf_wind_df['electricity'], #Time-series of power coefficients
     carrier       = "Wind",           #Carrier type (AC,DC,Wind,Solar,etc.)
-    marginal_cost = 0)                #Cost per MW from this source 
+    marginal_cost = 0.1)              #Cost per MW from this source 
     
 #%% Add Generators -------------------------------------------------
 
@@ -108,6 +110,12 @@ for i in range(1, bus_df.shape[0]): #i becomes integers
         "Load_" + bus_df.Country[i],
         bus     = bus_df.Country[i],
         p_set   = cload[bus_df.Abbreviation[i]].values)
+   
+#%% Save network
+
+filename = '/case2_setup.nc'
+export_path = os.getcwd() + filename
+network.export_to_netcdf(export_path)
 
 #%% Plotting -------------------------------------------------------
 
