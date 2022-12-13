@@ -194,7 +194,7 @@ if should_solve or should_plot:
     tic() #Start timer
     n.lopf(
         pyomo = False,
-#       solver_name = 'gurobi',
+        solver_name = 'gurobi',
         keep_shadowprices = True,
         keep_references = True
         ) #Solve dynamic system

@@ -13,30 +13,38 @@ import case2_island_lib as il #Library with data and calculation functions
 import case2_island_plt as ip #Library with plotting functions.
 import os
 
+n_points = 8760
+
 # Load power-price and consumer-load data
 cprice, cload = il.get_load_and_price(2030)
+
+# cprice = cprice[:n_points]
+# cload  = cload[:n_points]
 
 # Load wind capacity factor (CF)
 cf_wind_df = pd.read_csv(r'Data/Wind/wind_test.csv', sep = ",")
 
 #Load technology data
-tech_cost = pd.read_csv('https://github.com/PyPSA/technology-data/blob/master/inputs/manual_input.csv?raw=true')
-tech_inv  = tech_cost.loc[tech_cost['parameter'].str.startswith('investment') & tech_cost['technology'].str.startswith('HVDC submarine')]
-tech_life = tech_cost.loc[tech_cost['parameter'].str.startswith('lifetime') & tech_cost['technology'].str.startswith('HVDC submarine')]
-tech_FOM  = tech_cost.loc[tech_cost['parameter'].str.startswith('FOM') & tech_cost['technology'].str.startswith('HVDC submarine')]
+# tech_cost = pd.read_csv('https://github.com/PyPSA/technology-data/blob/master/inputs/manual_input.csv?raw=true')
+# tech_inv  = tech_cost.loc[tech_cost['parameter'].str.startswith('investment') & tech_cost['technology'].str.startswith('HVDC submarine')]
+# tech_life = tech_cost.loc[tech_cost['parameter'].str.startswith('lifetime') & tech_cost['technology'].str.startswith('HVDC submarine')]
+# tech_FOM  = tech_cost.loc[tech_cost['parameter'].str.startswith('FOM') & tech_cost['technology'].str.startswith('HVDC submarine')]
 
 #%% Set up network with chosen timesteps
-network                 = pypsa.Network()                   
-network.set_snapshots(pd.date_range('2019-01-01 00:00', 
-                                    '2019-12-31 23:00', 
-                                    freq = 'H'))
+network = pypsa.Network()                   
+# network.set_snapshots(pd.date_range('2019-01-01 00:00', 
+#                                     '2019-12-31 23:00', 
+#                                     freq = 'H'))
+t = pd.date_range('2030-01-01 00:00', '2030-12-31 23:00', freq = 'H')
+t = t[:n_points]
+network.set_snapshots(t)  #Set snapshots of network to the timesteps
 
 #Create dataframe with info on buses. Names, x (Longitude) and y (Latitude) 
 bus_df = pd.DataFrame(
     np.array([                          #Create numpy array with bus info
-    ["Island",  "EI",   float(6.68), float(56.52)],   #Energy Island
-    ["Denmark", "DK",   float(8.12), float(56.37)],   #Assumed Thorsminde
-    ["Belgium", "BE",   float(3.20), float(51.32)]]), #Assumed Zeebrugge 
+    ["Island",  "EI",   6.68, 56.52],   #Energy Island
+    ["Denmark", "DK",   8.12, 56.37],   #Assumed Thorsminde
+    ["Belgium", "BE",   3.20, 51.32]]), #Assumed Zeebrugge 
     columns = ["Country",               #Give columns titles
                "Abbreviation", 
                "X", 
@@ -68,12 +76,13 @@ for i in link_destinations[1:]:         #i becomes each string in the array
         p_min_pu         = -1,          #Make links bi-directional
         p_nom            = 200,         #Power capacity of link
         p_nom_extendable = True,        #Extendable links
-        capital_cost     = il.get_annuity(0.07, float(tech_life.value))    #Annuity factor
-                           * float(tech_inv.value)                               #Investment cost [EUR/MW/km] 
-                           * il.earth_distance(float(bus_df.X.loc[0]),  
-                                               float(bus_df.X.loc[j]), 
-                                               float(bus_df.Y.loc[0]), 
-                                               float(bus_df.Y.loc[j])))
+        capital_cost     = 500)
+        # capital_cost     = il.get_annuity(0.07, float(tech_life.value))    #Annuity factor
+        #                    * float(tech_inv.value)                               #Investment cost [EUR/MW/km] 
+        #                    * il.earth_distance(float(bus_df.X.loc[0]),  
+        #                                        float(bus_df.X.loc[j]), 
+        #                                        float(bus_df.Y.loc[0]), 
+        #                                        float(bus_df.Y.loc[j])))
 
 #%% Add Generators -------------------------------------------------
 
@@ -113,9 +122,9 @@ for i in range(1, bus_df.shape[0]): #i becomes integers
    
 #%% Save network
 
-filename = '/case2_setup.nc'
-export_path = os.getcwd() + filename
-network.export_to_netcdf(export_path)
+# filename = '/case2_setup.nc'
+# export_path = os.getcwd() + filename
+# network.export_to_netcdf(export_path)
 
 #%% Plotting -------------------------------------------------------
 
@@ -130,7 +139,8 @@ network.plot(
 
 #%% Solver
 
-network.lopf(pyomo = False) #Solve dynamic system
+network.lopf(pyomo = False,
+              solver_name='gurobi',) #Solve dynamic system
 
 #ip.makeplots(network) #Plot dynamic results
 
