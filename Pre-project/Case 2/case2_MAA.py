@@ -8,7 +8,7 @@ Created on Thu Nov 10 12:41:30 2022
 should_solve = True
 Should_MGA   = False
 Should_MAA   = False
-n_snapshots  = 2000
+n_snapshots  = 1000
 n_objective  = 16780122009.380968
 mga_slack    = 0.0001
 

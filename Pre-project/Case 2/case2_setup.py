@@ -65,7 +65,13 @@ for i in link_destinations[1:]:         #i becomes each string in the array
         p_min_pu         = -1,          #Make links bi-directional
         p_nom            = 200,         #Power capacity of link
         p_nom_extendable = True,        #Extendable links
-        capital_cost     = tech_inv.loc[tech_inv['year'] == 2030].value)
+        capital_cost     = il.get_annuity(0.07, tech_life.value)    #Annuity factor
+                           * tech_inv                               #Investment cost [EUR/MW/km] 
+                           * il.earth_distance(float(bus_df.X[0]),  #Distance between energy island and country
+                                               float(bus_df.X[i]), 
+                                               float(bus_df.Y[0]), 
+                                               float(bus_df.Y[i])),
+        )
 
 #%% Add Generators -------------------------------------------------
 
@@ -77,7 +83,7 @@ network.add(
     p_nom         = 3000,             #Nominal power [MW]
     p_max_pu      = cf_wind_df['electricity'], #Time-series of power coefficients
     carrier       = "Wind",           #Carrier type (AC,DC,Wind,Solar,etc.)
-    marginal_cost = 0.1)              #Cost per MW from this source 
+    marginal_cost = 0)                #Cost per MW from this source 
     
 #%% Add Generators -------------------------------------------------
 
