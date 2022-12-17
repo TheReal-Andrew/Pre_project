@@ -57,7 +57,7 @@ cc_Store = 80 # [EUR/MW] Capital cost for Storage
 
 #%% Load and copy network
 
-n = pypsa.Network('case1_v2.nc') #Load network from netcdf file
+n = pypsa.Network('case1_v3.nc') #Load network from netcdf file
 
 # Reduce snapshots used for faster computing
 n.snapshots = n.snapshots[:n_snapshots]
@@ -68,25 +68,25 @@ n_optimum = n.copy()
 #%% Solve optimum network 
 
 # Extra functionality
-def area_constraint(n, snapshots):
-    vars_gen   = get_var(n, 'Generator', 'p_nom')
-    vars_store = get_var(n, 'Store', 'e_nom')
+# def area_constraint(n, snapshots):
+#     vars_gen   = get_var(n, 'Generator', 'p_nom')
+#     vars_store = get_var(n, 'Store', 'e_nom')
     
-    lhs = linexpr((k_P2X, vars_gen["P2X"]), 
-                  (k_Data, vars_gen["Data"]), 
-                  (k_Store, vars_store))
+#     lhs = linexpr((k_P2X, vars_gen["P2X"]), 
+#                   (k_Data, vars_gen["Data"]), 
+#                   (k_Store, vars_store))
     
-    rhs = 10000 #[m^2]
+#     rhs = 10000 #[m^2]
     
-    define_constraints(n, lhs, '=', rhs, 'Generator', 'Area_Use')
+#     define_constraints(n, lhs, '=', rhs, 'Generator', 'Area_Use')
 
-def extra_functionalities(n, snapshots):
-    area_constraint(n, snapshots)
+# def extra_functionalities(n, snapshots):
+#     area_constraint(n, snapshots)
 
 if Should_solve:
     n_optimum.lopf(pyomo = False,
           solver_name = 'gurobi',
-          extra_functionality = extra_functionalities,
+          # extra_functionality = extra_functionalities,
           )
     
     print("Network objective value:" + str(n_optimum.objective))
@@ -99,7 +99,7 @@ else:
 def extra_functionality(n,snapshots,options,direction):
     define_mga_constraint(n,snapshots,options['mga_slack'])
     define_mga_objective(n,snapshots,direction,options)
-    area_constraint(n, snapshots)
+    # area_constraint(n, snapshots)
 
 def assign_carriers(n):
     """
