@@ -13,26 +13,30 @@ import numpy as np
 import cartopy.crs as ccrs
 import pandas as pd
 
-# Set up colors
-colors = {"IL":"black",
-          "DK":"tab:red", 
-          "NO":"forestgreen", 
-          "DE":"gold", 
-          "NE":"tab:orange", 
-          "BE":"tab:brown", 
-          "GB":"tab:blue"}
+#%% Default colorscheme
+def get_plot_colors():
+    colors = {"IL":"black",
+              "DK":"tab:red", 
+              "NO":"forestgreen", 
+              "DE":"gold", 
+              "NE":"tab:orange", 
+              "BE":"tab:brown", 
+              "GB":"tab:blue"}
+    
+    return colors
 
-#Set up plot parameters
-color_bg      = "0.99"          #Choose background color
-color_gridaxe = "0.85"          #Choose grid and spine color
-rc = {"axes.edgecolor":color_gridaxe} 
-plt.style.use(('ggplot', rc))           #Set style with extra spines
-plt.rcParams['figure.dpi'] = 300        #Set resolution
-matplotlib.rcParams['font.family'] = ['cmss10']     #Change font to Computer Modern Sans Serif
-plt.rcParams['axes.unicode_minus'] = False          #Re-enable minus signs on axes))
-plt.rcParams['axes.facecolor']= "0.99"              #Set plot background color
-plt.rcParams.update({"axes.grid" : True, "grid.color": color_gridaxe}) #Set grid color
-plt.rcParams['axes.grid'] = True
+#%% Default plotting options
+def set_plot_options():
+    color_bg      = "0.99"          #Choose background color
+    color_gridaxe = "0.85"          #Choose grid and spine color
+    rc = {"axes.edgecolor":color_gridaxe} 
+    plt.style.use(('ggplot', rc))           #Set style with extra spines
+    plt.rcParams['figure.dpi'] = 300        #Set resolution
+    matplotlib.rcParams['font.family'] = ['cmss10']     #Change font to Computer Modern Sans Serif
+    plt.rcParams['axes.unicode_minus'] = False          #Re-enable minus signs on axes))
+    plt.rcParams['axes.facecolor']= "0.99"              #Set plot background color
+    plt.rcParams.update({"axes.grid" : True, "grid.color": color_gridaxe}) #Set grid color
+    plt.rcParams['axes.grid'] = True
 
 #%% Geographical plot
 def plot_geomap(network, bounds = [-3, 12, 59, 50.5], size = (15,15)):
@@ -47,7 +51,7 @@ def plot_geomap(network, bounds = [-3, 12, 59, 50.5], size = (15,15)):
         )
 
 #%% Powerflow plot
-def plot_powerflow(network, size = (17,13), colors = colors):
+def plot_powerflow(network, size = (17,13), colors = get_plot_colors()):
     #Plots power flow from island to country buses.
     fig_PF, axs_PF = plt.subplots(3, 2)  # Set up subplot with 4 plots
     #plt.figure(dpi=300)            # Set resolution
@@ -71,20 +75,26 @@ def plot_loads_generators(network, size = (12, 12), location = "upper left"):
     #plt.figure(dpi=600)         # Set resolution
     
     #---- Subplot 1 ----
-    network.loads_t.p.plot(              #Plot loads 
-        ax = axs[0],                     #Choose axis in subplot
-        ylabel = "Consumed power, [MW]", #Set ylabel
-        figsize = size,                  #Set scaling
-        grid = True,
-        )
+    try: 
+        network.loads_t.p.plot(              #Plot loads 
+            ax = axs[0],                     #Choose axis in subplot
+            ylabel = "Consumed power, [MW]", #Set ylabel
+            figsize = size,                  #Set scaling
+            grid = True,
+            )
+    except TypeError:
+        print('WARNING: island_plt.plot_loads_generators:  No load data to plot')
     
     #---- Subplot 2 ----
-    network.generators_t.p.plot(      #Plot generated power
-        ax      = axs[1],                    #Choose axis in subplot
-        ylabel  = "Produced power [MW]", #Set ylabel
-        figsize = size,               #Set scaling
-        grid = True,
-        )
+    try:
+        network.generators_t.p.plot(      #Plot generated power
+            ax      = axs[1],                    #Choose axis in subplot
+            ylabel  = "Produced power [MW]", #Set ylabel
+            figsize = size,               #Set scaling
+            grid = True,
+            )
+    except TypeError:
+        print('WARNING: island_plt.plot_loads_generators:  No generator data to plot')
         
     #---- Legend location loop ----
     for i in range(len(axs)): #Loop through subplots and change legend location
@@ -111,7 +121,7 @@ def plot_corr_matrix(data, title='', fsize = 20, size = (15,15),  vmin = 0 ):
     
 #%% Price diff
 
-def plot_price_diff(opt_prices, colors = colors):
+def plot_price_diff(opt_prices, colors = get_plot_colors()):
     fig, axs = plt.subplots(6, sharey = True)  # Set up subplot
     country_price = opt_prices.iloc[:,1:]
 
@@ -136,7 +146,7 @@ def plot_price_diff(opt_prices, colors = colors):
     fig.tight_layout()
     
 #%% Bus Prices
-def plot_bus_prices(opt_prices, colors = colors):
+def plot_bus_prices(opt_prices, colors = get_plot_colors()):
     fig, axs = plt.subplots(len(opt_prices.columns), sharey = True)  # Set up subplot
     #.figure(dpi=600)         # Set resolution
     
