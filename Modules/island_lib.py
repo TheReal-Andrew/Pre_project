@@ -31,11 +31,17 @@ def remove_outliers(df,columns,n_std):
 
 def earth_distance(lat1,lat2,lon1,lon2):
     import numpy as np
-    R = 6.3781 * 10e6  #Earths radius
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
+    R = 6378.1  #Earths radius
+    dlon = (lon2 - lon1) * np.pi/180
+    dlat = (lat2 - lat1) * np.pi/180
+    
+    lat1 = lat1 * np.pi/180
+    lat2 = lat2 * np.pi/180
+    
     a = (np.sin(dlat/2))**2 + np.cos(lat1) * np.cos(lat2) * (np.sin(dlon/2))**2
     c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a)) 
-    d = R*c/1000 #Spherical distance between two points
+    d = R*c #Spherical distance between two points
     
     return d
+
+print(earth_distance(6.68,8.12,56.52,56.37))
