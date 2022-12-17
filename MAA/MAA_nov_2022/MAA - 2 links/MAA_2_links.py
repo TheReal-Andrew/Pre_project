@@ -29,20 +29,10 @@ import pandas as pd
 from scipy.spatial import ConvexHull
 import os
 import sys
+import island_plt as ip
 
 #%% Plotting options
-#Set up plot parameters
-color_bg      = "0.99"          #Choose background color
-color_gridaxe = "0.85"          #Choose grid and spine color
-rc = {"axes.edgecolor":color_gridaxe} 
-plt.style.use(('ggplot', rc))           #Set style with extra spines
-plt.rcParams['figure.dpi'] = 300        #Set resolution
-plt.rcParams["figure.figsize"] = (10, 5) #Set figure size
-matplotlib.rcParams['font.family'] = ['cmss10']     #Change font to Computer Modern Sans Serif
-plt.rcParams['axes.unicode_minus'] = False          #Re-enable minus signs on axes))
-plt.rcParams['axes.facecolor']= "0.99"              #Set plot background color
-plt.rcParams.update({"axes.grid" : True, "grid.color": color_gridaxe}) #Set grid color
-plt.rcParams['axes.grid'] = True
+ip.set_plot_options()
 
 #%% MGA functions
 def extra_functionality(n,snapshots,options,direction):
