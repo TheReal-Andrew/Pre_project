@@ -138,13 +138,6 @@ def area_constraint(n, snapshots):
 def extra_functionalities(n, snapshots):
     area_constraint(n, snapshots)
 
-#%% EXPORT
-if Should_export:
-    filename = filename
-    export_path = os.getcwd() + filename
-    n.export_to_netcdf(export_path)
-else:
-    pass
 
 #%% SOLVE
 
@@ -155,6 +148,14 @@ if Should_solve:
            keep_references = True,
            extra_functionality = extra_functionalities,
            )
+else:
+    pass
+
+#%% EXPORT
+if Should_export:
+    filename = filename
+    export_path = os.getcwd() + filename
+    n.export_to_netcdf(export_path)
 else:
     pass
 
