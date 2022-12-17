@@ -233,7 +233,7 @@ variables = {'x1':('Generator','P2X'),
 
 if Should_MGA or Should_MAA:
     direction = [1, 1] # 1 means minimize, -1 means maximize 
-    mga_variables = ['x2','x3'] # The variables that we are investigating
+    mga_variables = ['x1','x2'] # The variables that we are investigating
     
     options = dict(mga_slack=mga_slack,
                     mga_variables=[variables[v] for v in mga_variables])
