@@ -205,7 +205,12 @@ def define_mga_objective(n,snapshots,direction,options):
     mga_variables = options['mga_variables']
     expr_list = []
     for dir_i,var_i in zip(direction,mga_variables):
-        model_vars = get_var(n,var_i[0],'p_nom')[n.df(var_i[0]).carrier == var_i[1]]
+        
+        if var_i[0] == 'Store':
+            model_vars = get_var(n,var_i[0],'e_nom')[n.df(var_i[0]).carrier == var_i[1]]
+        else:
+            model_vars = get_var(n,var_i[0],'p_nom')[n.df(var_i[0]).carrier == var_i[1]]
+            
         tmp_expr = linexpr((dir_i/len(model_vars),model_vars)).sum()
         expr_list.append(tmp_expr)
 
@@ -217,7 +222,11 @@ def get_var_values(n,mga_variables):
 
     variable_values = {}
     for var_i in variables:
-        val = n.df(variables[var_i][0]).query('carrier == "{}"'.format(variables[var_i][1])).p_nom_opt.sum()
+        
+        if variables[var_i][0] == 'Store':
+            val = n.df(variables[var_i][0]).query('carrier == "{}"'.format(variables[var_i][1])).e_nom_opt.sum()
+        else:
+            val = n.df(variables[var_i][0]).query('carrier == "{}"'.format(variables[var_i][1])).p_nom_opt.sum()
         variable_values[var_i] = val
 
     return variable_values
@@ -227,13 +236,14 @@ n.objective_optimum = n_objective
 
 variables = {'x1':('Generator','P2X'),
              'x2':('Generator','Data'),
+             'x3':('Store','Store1'),
             }
 
 #%% MGA - Search 1 direction
 
 if Should_MGA or Should_MAA:
     direction = [1, 1] # 1 means minimize, -1 means maximize 
-    mga_variables = ['x1','x2'] # The variables that we are investigating
+    mga_variables = ['x2','x3'] # The variables that we are investigating
     
     options = dict(mga_slack=mga_slack,
                     mga_variables=[variables[v] for v in mga_variables])
@@ -314,9 +324,12 @@ if Should_MAA:
 else:
     pass
 
+
+
 #%% Plot
+
 if Should_MAA:
-    Hull = ConvexHull(solutions)
+    hull = ConvexHull(solutions)
     
     plt.figure()
     
@@ -336,14 +349,6 @@ if Should_MAA:
               '.', markersize = 20, label = "optimum")
     plt.xlabel("Data")
     plt.ylabel("P2X")
-    
-    # plt.legend()
-    
-    # plt.xlim([-500, n.links.p_nom_max.iloc[0]*1.05])
-    # plt.ylim([-500, n.links.p_nom_max.iloc[1]*1.05])
-    
-    # for simplex in hull.simplices:
-    
-    #     plt.plot(solutions[simplex, 0], solutions[simplex, 1], 'k-')
+
 else:
     pass
