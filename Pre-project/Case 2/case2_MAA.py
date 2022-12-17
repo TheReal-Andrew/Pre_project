@@ -295,6 +295,9 @@ if Should_MAA:
              n.links.p_nom_opt["Island_to_Belgium"],
              '.', markersize = 20, label = "optimum")
     
+    plt.xlabel(n.links.index[0]+' capacity [MW]')
+    plt.ylabel(n.links.index[1]+' capacity [MW]')
+    
     plt.legend()
        
     for simplex in hull.simplices:

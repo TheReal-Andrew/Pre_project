@@ -9,8 +9,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import pandas as pd
-import case2_island_lib as il #Library with data and calculation functions 
-import case2_island_plt as ip #Library with plotting functions.
+import island_lib as il #Library with data and calculation functions 
+import island_plt as ip #Library with plotting functions.
 import os
 
 n_points = 8760
@@ -75,15 +75,15 @@ for i in link_destinations[1:]:         #i becomes each string in the array
         p_min_pu         = -1,          #Make links bi-directional
         marginal_cost    = 0,
         efficiency       = 1,
-        p_nom            = 0,         #Power capacity of link
+        p_nom            = 0,           #Power capacity of link
         p_nom_extendable = True,        #Extendable links
-        capital_cost     = 10)
-        # capital_cost     = il.get_annuity(0.07, float(tech_life.value))    #Annuity factor
-        #                     * float(tech_inv.value)                               #Investment cost [EUR/MW/km] 
-        #                     * il.earth_distance(float(bus_df.X.loc[0]),  
-        #                                         float(bus_df.X.loc[j]), 
-        #                                         float(bus_df.Y.loc[0]), 
-        #                                         float(bus_df.Y.loc[j])))
+        # capital_cost     = 10)
+        capital_cost     = il.get_annuity(0.07, float(tech_life.value))    #Annuity factor
+                            * float(tech_inv.value)                               #Investment cost [EUR/MW/km] 
+                            * il.earth_distance(float(bus_df.X.loc[0]),  
+                                                float(bus_df.X.loc[j]), 
+                                                float(bus_df.Y.loc[0]), 
+                                                float(bus_df.Y.loc[j])))
 
 #%% Add Generators -------------------------------------------------
 
