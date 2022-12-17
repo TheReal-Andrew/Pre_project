@@ -242,7 +242,7 @@ def search_direction(direction,mga_variables):
 #%% MAA - Run
 
 if Should_MAA:
-    MAA_convergence_tol = 0.05 # How much the volume stops changing before we stop, in %
+    MAA_convergence_tol = 0.01 # How much the volume stops changing before we stop, in %
     dim=len(mga_variables) # number of dimensions 
     dim_fullD = len(variables)
     old_volume = 0 
@@ -294,6 +294,9 @@ if Should_MAA:
     plt.plot(n.links.p_nom_opt["Island_to_Denmark"], 
              n.links.p_nom_opt["Island_to_Belgium"],
              '.', markersize = 20, label = "optimum")
+    
+    plt.xlabel(n.links.index[0]+' capacity [MW]')
+    plt.ylabel(n.links.index[1]+' capacity [MW]')
     
     plt.legend()
        

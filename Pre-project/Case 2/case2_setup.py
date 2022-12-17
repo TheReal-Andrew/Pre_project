@@ -9,8 +9,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import pandas as pd
-import case2_island_lib as il #Library with data and calculation functions 
-import case2_island_plt as ip #Library with plotting functions.
+import island_lib as il #Library with data and calculation functions 
+import island_plt as ip #Library with plotting functions.
 import os
 
 n_points = 8760
@@ -75,41 +75,41 @@ for i in link_destinations[1:]:         #i becomes each string in the array
         p_min_pu         = -1,          #Make links bi-directional
         marginal_cost    = 0,
         efficiency       = 1,
-        p_nom            = 200,         #Power capacity of link
+        p_nom            = 0,           #Power capacity of link
         p_nom_extendable = True,        #Extendable links
-        capital_cost     = 0,)
-        # capital_cost     = il.get_annuity(0.07, float(tech_life.value))    #Annuity factor
-        #                     * float(tech_inv.value)                               #Investment cost [EUR/MW/km] 
-        #                     * il.earth_distance(float(bus_df.X.loc[0]),  
-        #                                         float(bus_df.X.loc[j]), 
-        #                                         float(bus_df.Y.loc[0]), 
-        #                                         float(bus_df.Y.loc[j])))
+        # capital_cost     = 10)
+        capital_cost     = il.get_annuity(0.07, float(tech_life.value))    #Annuity factor
+                            * float(tech_inv.value)                               #Investment cost [EUR/MW/km] 
+                            * il.earth_distance(float(bus_df.X.loc[0]),  
+                                                float(bus_df.X.loc[j]), 
+                                                float(bus_df.Y.loc[0]), 
+                                                float(bus_df.Y.loc[j])))
 
 #%% Add Generators -------------------------------------------------
 
 #Add wind turbine
 network.add(
-    "Generator",                      #Component type
-    "Wind",                           #Component name
-    bus           = "Island",         #Bus on which component is
-    p_nom         = 30000000000000000000000000000000000,             #Nominal power [MW]
+    "Generator",                        #Component type
+    "Wind",                             #Component name
+    bus           = "Island",           #Bus on which component is
+    p_nom         = 3000,               #Nominal power [MW]
     p_max_pu      = cf_wind_df['electricity'].values, #Time-series of power coefficients
-    carrier       = "Wind",           #Carrier type (AC,DC,Wind,Solar,etc.)
-    marginal_cost = 0)              #Cost per MW from this source 
+    carrier       = "Wind",             #Carrier type (AC,DC,Wind,Solar,etc.)
+    marginal_cost = 10)                  #Cost per MW from this source 
     
 #%% Add Generators -------------------------------------------------
 
 #Add generators to each country bus with varying marginal costs
-# for i in range(1, bus_df.shape[0]):
-#     network.add(
-#         "Generator",
-#         "Gen_" + bus_df.Country[i],
-#         bus              = bus_df.Country[i],
-#         p_nom            = 0, 
-#         p_nom_extendable = True,         #Make sure country can always deliver to price
-#         capital_cost     = 0,            #Same as above
-#         marginal_cost    = 10000000*cprice[bus_df.Abbreviation[i]].values
-#         )
+for i in range(1, bus_df.shape[0]):
+    network.add(
+        "Generator",
+        "Gen_" + bus_df.Country[i],
+        bus              = bus_df.Country[i],
+        p_nom            = 0, 
+        p_nom_extendable = True,         #Make sure country can always deliver to price
+        capital_cost     = 0,            #Same as above
+        marginal_cost    = cprice[bus_df.Abbreviation[i]].values
+        )
 
 #%% Add Loads ------------------------------------------------------
 
@@ -119,22 +119,13 @@ for i in range(1, bus_df.shape[0]): #i becomes integers
         "Load",
         "Load_" + bus_df.Country[i],
         bus     = bus_df.Country[i],
-        p_set   = cload[bus_df.Abbreviation[i]].values)
-    
-
-# network.add(
-#     "Store",
-#     "Store Energy Island",
-#     bus     = bus_df.Country[0],
-#     # p_set   = cload[bus_df.Abbreviation[i]].values)
-#     e_nom = 1000000000000,)
-       
+        p_set   = cload[bus_df.Abbreviation[i]].values)       
    
 #%% Save network
 
-# filename = '/case2_setup.nc'
-# export_path = os.getcwd() + filename
-# network.export_to_netcdf(export_path)
+filename = '/case2_setup.nc'
+export_path = os.getcwd() + filename
+network.export_to_netcdf(export_path)
 
 #%% Plotting -------------------------------------------------------
 
@@ -151,25 +142,21 @@ network.plot(
 network.lopf(pyomo = False,
              solver_name = 'gurobi')
 
-#ip.makeplots(network) #Plot dynamic results
+ip.plot_powerflow(network) #Plot dynamic results
 
 #%% Plotting
-# plt.plot(figsize = (14,7))
-# plt.figure(dpi=300)         # Set resolution
+plt.plot(figsize = (14,14))
+plt.figure(dpi=300)         # Set resolution
 
-# network.links_t.p0.iloc[:,1].plot(
-#     figsize = (14,7),
-#     label = "Island to DK",)
+network.links_t.p0.iloc[:,1].plot(
+    figsize = (14,14),
+    label = "Island to DK",)
 
-# network.links_t.p0.iloc[:,2].plot(
-#     figsize = (14,7),
-#     label = "Island to NO",)
+network.links_t.p0.iloc[:,2].plot(
+    figsize = (14,14),
+    label = "Island to BE",)
 
-# network.links_t.p0.iloc[:,3].plot(
-#     figsize = (14,7),
-#     label = "Island to DE",)
-
-# plt.legend()
-# plt.ylabel("Power flow [MW]")
-# plt.title("Power flow from Island to countries")
-# print('Done')
+plt.legend()
+plt.ylabel("Power flow [MW]")
+plt.title("Power flow from Island to countries")
+print('Done')
