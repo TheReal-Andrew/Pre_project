@@ -15,26 +15,14 @@ from pypsa.linopf import lookup, network_lopf, ilopf
 from pypsa.pf import get_switchable_as_dense as get_as_dense
 from pypsa.descriptors import get_extendable_i, get_non_extendable_i
 import matplotlib.pyplot as plt
-import matplotlib
 import pandas as pd
 import island_lib as il
-from scipy.spatial import ConvexHull
+import island_plt as ip
 import os
 import sys
 
 #%% Plotting options
-#Set up plot parameters
-color_bg      = "0.99"          #Choose background color
-color_gridaxe = "0.85"          #Choose grid and spine color
-rc = {"axes.edgecolor":color_gridaxe} 
-plt.style.use(('ggplot', rc))           #Set style with extra spines
-plt.rcParams['figure.dpi'] = 300        #Set resolution
-plt.rcParams["figure.figsize"] = (10, 5) #Set figure size
-matplotlib.rcParams['font.family'] = ['cmss10']     #Change font to Computer Modern Sans Serif
-plt.rcParams['axes.unicode_minus'] = False          #Re-enable minus signs on axes))
-plt.rcParams['axes.facecolor']= "0.99"              #Set plot background color
-plt.rcParams.update({"axes.grid" : True, "grid.color": color_gridaxe}) #Set grid color
-plt.rcParams['axes.grid'] = True
+ip.set_plot_options()
 
 #%% CONTROL ------------------------------------
 
@@ -67,8 +55,8 @@ t = pd.date_range('2030-01-01 00:00', '2030-12-31 23:00', freq = 'H')[:n_hrs]
 n.set_snapshots(t)
 
 #Import data
-cf_wind_df = pd.read_csv(r'Data/Wind/wind_test.csv',index_col = [0], sep=",")[:n_hrs]
-
+cf_wind_df = pd.read_csv(r'C:\Users\lukas\Documents\GitHub\NorthSeaEnergyIsland\Data\Wind\wind_formatted.csv',
+                         index_col = [0], sep=",")[:n_hrs]
 
 ####### Components #######
 
