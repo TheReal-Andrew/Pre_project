@@ -17,22 +17,11 @@ def play_sound():
 #%% Get country Data
 def get_load_and_price(year): # require year
     import pandas as pd
-    
-    # Import the os module
-    import os
-
-    # Get the current working directory
-    cwd = os.getcwd()
-    
-    import sys
-    sys.path.append("../"+cwd)
-    
-    print(year + cwd)
-    
-    # cprice = pd.read_csv(r"Data/market/price_%d.csv"%year, index_col = 0)
-    # cload = pd.read_csv(r"Data/market/load_%d.csv"%year, index_col = 0)
-    cprice = 1
-    cload = 1
+        
+    cprice = pd.read_csv("Data/market/price_%d.csv"%year, index_col = 0)
+    cload = pd.read_csv("Data/market/load_%d.csv"%year, index_col = 0)
+    # cprice = 1
+    # cload = 1
     
     
     return cprice, cload
