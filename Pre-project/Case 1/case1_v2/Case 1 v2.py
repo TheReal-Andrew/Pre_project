@@ -151,22 +151,22 @@ else:
 
 if Should_pie:
     
-    def make_autopct(values):
-        def my_autopct(pct):
-            total = sum(values)
-            val = int(round(pct*total/100.0))
-            return '{p:.2f}% ({v:d} MW)'.format(p=pct,v=val)
-        return my_autopct
+    P2X_p   = n.generators.loc["P2X"].p_nom_opt
+    Data_p  = n.generators.loc["Data"].p_nom_opt
+    Store_p = n.stores.loc["Store1"].e_nom_opt
     
-    P2X_A   = k_P2X * n.generators.loc["P2X"].p_nom_opt
+    P2X_A   = k_P2X * P2X_p
     Data_A  = k_Data * n.generators.loc["Data"].p_nom_opt
     Store_A = k_Store * n.stores.loc["Store1"].e_nom_opt
     
+    tech_p  = [P2X_p, Data_p, Store_p]
     pie_data = [P2X_A, Data_A, Store_A]
     labels   =  "P2X", "Data", "Store"
 
-    fig, ax = plt.subplots()
-    ax.pie(pie_data, labels = labels, autopct = make_autopct(pie_data), textprops={'fontsize': 8})
+    fig, ax = plt.subplots(figsize = (10,5))
+    ax.pie(pie_data, labels = labels,
+           autopct = '%1.1f%%',
+           textprops={'fontsize': 10})
     ax.set_title('Share of area by technology')
     plt.legend()
 else:
