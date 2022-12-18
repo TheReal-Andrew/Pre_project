@@ -4,13 +4,15 @@ Created on Tue Sep  6 10:44:50 2022
 @author: Lukas & Anders
 """
 
+import sys
+sys.path.append("../../")
+from Modules import island_lib as il #Library with plotting functions.
+from Modules import island_plt as ip #Library with plotting functions.
 import pypsa
 import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import pandas as pd
-import island_lib as il #Library with data and calculation functions 
-import island_plt as ip #Library with plotting functions.
 import os
 
 n_points = 8760
@@ -22,7 +24,7 @@ cprice, cload = il.get_load_and_price(2030)
 # cload  = cload[:n_points]
 
 # Load wind capacity factor (CF)
-cf_wind_df = pd.read_csv(r'Data/Wind/wind_test.csv', sep = ",")
+cf_wind_df = pd.read_csv(r'../../Data/Wind/wind_test.csv', sep = ",")
 
 #Load technology data
 tech_cost = pd.read_csv('https://github.com/PyPSA/technology-data/blob/master/inputs/manual_input.csv?raw=true')
