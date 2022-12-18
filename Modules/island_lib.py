@@ -13,12 +13,28 @@ def play_sound():
     winsound.Beep(294, 800)
     winsound.Beep(311, 300)
     winsound.Beep(233, 800)
-
+    
 #%% Get country Data
 def get_load_and_price(year): # require year
     import pandas as pd
-    cprice = pd.read_csv('data/market/price_%d.csv'%year, index_col = 0)
-    cload = pd.read_csv('data/market/load_%d.csv'%year, index_col = 0)
+    
+    # Import the os module
+    import os
+
+    # Get the current working directory
+    cwd = os.getcwd()
+    
+    import sys
+    sys.path.append("../"+cwd)
+    
+    print(year + cwd)
+    
+    # cprice = pd.read_csv(r"Data/market/price_%d.csv"%year, index_col = 0)
+    # cload = pd.read_csv(r"Data/market/load_%d.csv"%year, index_col = 0)
+    cprice = 1
+    cload = 1
+    
+    
     return cprice, cload
 
 #%% Annuity
@@ -52,5 +68,3 @@ def earth_distance(lat1,lat2,lon1,lon2):
     d = R*c #Spherical distance between two points
     
     return d
-
-print(earth_distance(6.68,8.12,56.52,56.37))

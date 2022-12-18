@@ -4,6 +4,12 @@ Created on Tue Sep  6 10:44:50 2022
 @author: Lukas & Anders
 """
 
+# Import the os module
+import os
+
+# Get the current working directory
+cwd = os.getcwd()
+
 import sys
 sys.path.append("../../")
 from Modules import island_lib as il #Library with plotting functions.
@@ -24,7 +30,7 @@ cprice, cload = il.get_load_and_price(2030)
 # cload  = cload[:n_points]
 
 # Load wind capacity factor (CF)
-cf_wind_df = pd.read_csv(r'../../Data/Wind/wind_test.csv', sep = ",")
+cf_wind_df = pd.read_csv(r'../../Data/Wind/wind_formatted.csv', sep = ",")
 
 #Load technology data
 tech_cost = pd.read_csv('https://github.com/PyPSA/technology-data/blob/master/inputs/manual_input.csv?raw=true')
