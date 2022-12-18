@@ -21,6 +21,7 @@ from scipy.spatial import ConvexHull
 import os
 import sys
 import island_plt as ip
+import island_lib as il
 
 #%% Plotting options
 ip.set_plot_options()
@@ -304,14 +305,11 @@ if Should_MAA:
         i = 0
         
         for direction_i in directions:
-            
             i = i + 1
             res = search_direction(direction_i,mga_variables)
+            solutions = np.append(solutions,np.array([res]),axis=0)
             
             n.export_to_netcdf('01_case1_v2_res_' + str(i) + '.nc')
-            
-            solutions = np.append(solutions,np.array([res]),axis=0)
-    
     
         hull = ConvexHull(solutions)
     
@@ -346,8 +344,14 @@ if Should_MAA:
     plt.plot(n_optimum.generators.p_nom_opt["P2X"], 
              n_optimum.generators.p_nom_opt["Data"],
               '.', markersize = 20, label = "optimum")
-    plt.xlabel("Data")
-    plt.ylabel("P2X")
+    plt.xlabel("P2X")
+    plt.ylabel("Data")
 
 else:
     pass
+
+np.save('case1_v3_MAA_solutions', solutions)
+
+#%% Sound
+
+il.play_sound()

@@ -21,6 +21,7 @@ from scipy.spatial import ConvexHull
 import os
 import sys
 import island_plt as ip
+import island_lib as il
 
 #%% Plotting options
 ip.set_plot_options()
@@ -233,7 +234,7 @@ variables = {'x1':('Generator','P2X'),
 
 if Should_MGA or Should_MAA:
     direction = [1, 1] # 1 means minimize, -1 means maximize 
-    mga_variables = ['x2','x3'] # The variables that we are investigating
+    mga_variables = ['x1','x2'] # The variables that we are investigating
     
     options = dict(mga_slack=mga_slack,
                     mga_variables=[variables[v] for v in mga_variables])
@@ -299,9 +300,13 @@ if Should_MAA:
         directions_searched = np.concatenate([directions_searched,directions],axis=0)
     
         # Run computations in series
+        i = 0
         for direction_i in directions:
+            i = i + 1
             res = search_direction(direction_i,mga_variables)
             solutions = np.append(solutions,np.array([res]),axis=0)
+            
+            n.export_to_netcdf('01_case1_v3_res_' + str(i) + '.nc')
     
     
         hull = ConvexHull(solutions)
@@ -337,8 +342,13 @@ if Should_MAA:
     plt.plot(n_optimum.generators.p_nom_opt["P2X"], 
              n_optimum.generators.p_nom_opt["Data"],
               '.', markersize = 20, label = "optimum")
-    plt.xlabel("Data")
-    plt.ylabel("P2X")
+    plt.xlabel("P2X")
+    plt.ylabel("Data")
 
 else:
     pass
+
+np.save('case1_v3_MAA_solutions', solutions)
+
+#%% Sound
+il.play_sound()

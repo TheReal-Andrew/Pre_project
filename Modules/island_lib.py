@@ -5,6 +5,15 @@ Created on Mon Aug 29 18:58:40 2022
 @author: lukas & anders
 """
 
+#%% Sound
+def play_sound():
+    #Play sound. Used when calculations finish.
+    import winsound
+    import time
+    winsound.Beep(294, 800)
+    winsound.Beep(311, 300)
+    winsound.Beep(233, 800)
+
 #%% Get country Data
 def get_load_and_price(year): # require year
     import pandas as pd
