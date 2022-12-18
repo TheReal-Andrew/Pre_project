@@ -33,6 +33,8 @@ n_hrs = 8760
 
 filename = "/case1_v2.nc"
 
+# cc_P2X = capital_cost = il.get_annuity(0.07, 25)*600000*(1+0.05)
+
 # Area affecting parameters
 k_P2X   = 60  # [m^2/MW] Area use for P2X
 mc_P2X  = 10  # [EUR/MW] Gain for system for P2X
@@ -44,6 +46,12 @@ cc_Data = 110 # [EUR/MW] Capital cost for Data
 
 k_Store  = 7  # [m^2/MW] Area use for Storage
 cc_Store = 80 # [EUR/MW] Capital cost for Storage
+
+df = pd.DataFrame(data = {'P2X':[k_P2X, mc_P2X, cc_P2X],
+                          'Data':[k_Data, mc_Data, cc_Data],
+                          'Storage':[k_Store, 0,cc_Store],
+                          })
+
 
 cc_Wind = il.get_annuity(0.07, 30) * 1.8e6 # [Euro/MW]
 
@@ -119,16 +127,14 @@ def area_constraint(n, snapshots):
                   (k_Data,  vars_gen["Data"]), 
                   (k_Store, vars_store))
     
-    rhs = 10000 #[m^2]
+    rhs = 120_000 #[m^2]
     
-    define_constraints(n, lhs, '=', rhs, 'Generator', 'Area_Use')
+    define_constraints(n, lhs, '<=', rhs, 'Generator', 'Area_Use')
 
 def extra_functionalities(n, snapshots):
     area_constraint(n, snapshots)
 
-
 #%% SOLVE
-
 if Should_solve:
     n.lopf(pyomo = False,
            solver_name = 'gurobi',
@@ -148,7 +154,6 @@ else:
     pass
 
 #%% Plot area use
-
 if Should_pie:
     
     P2X_p   = n.generators.loc["P2X"].p_nom_opt
@@ -159,6 +164,9 @@ if Should_pie:
     Data_A  = k_Data * n.generators.loc["Data"].p_nom_opt
     Store_A = k_Store * n.stores.loc["Store1"].e_nom_opt
     
+    total_A = P2X_A + Data_A + Store_A
+    print(f" \n Area used on the island: {total_A} \n")
+    
     tech_p  = [P2X_p, Data_p, Store_p]
     pie_data = [P2X_A, Data_A, Store_A]
     labels   =  "P2X", "Data", "Store"
@@ -167,10 +175,11 @@ if Should_pie:
     ax.pie(pie_data, labels = labels,
            autopct = '%1.1f%%',
            textprops={'fontsize': 10})
-    ax.set_title('Share of area by technology')
+    plt.suptitle('Share of area by technology', fontsize = 18)
+    plt.title(f'Area used: {total_A:.0f} of {120_000} m$^2$', fontsize = 10)
     plt.legend()
 else:
     pass
 
 #%% Sound
-il.play_sound()
+# il.play_sound()

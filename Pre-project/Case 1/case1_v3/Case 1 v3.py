@@ -150,9 +150,16 @@ else:
 
 if Should_pie:
 
-    P2X_A   = k_P2X * n.generators.loc["P2X"].p_nom_opt
+    P2X_p   = n.generators.loc["P2X"].p_nom_opt
+    Data_p  = n.generators.loc["Data"].p_nom_opt
+    Store_p = n.stores.loc["Store1"].e_nom_opt
+    
+    P2X_A   = k_P2X * P2X_p
     Data_A  = k_Data * n.generators.loc["Data"].p_nom_opt
     Store_A = k_Store * n.stores.loc["Store1"].e_nom_opt
+    
+    total_A = P2X_A + Data_A + Store_A
+    print(f" \n Area used on the island: {total_A} \n")
     
     pie_data = [P2X_A, Data_A, Store_A]
     labels   =  "P2X", "Data", "Store"
@@ -161,7 +168,8 @@ if Should_pie:
     ax.pie(pie_data, labels = labels,
            autopct = '%1.1f%%',
            textprops={'fontsize': 10})
-    ax.set_title('Share of area by technology')
+    plt.suptitle('Share of area by technology', fontsize = 18)
+    plt.title(f'Area used: {total_A:.0f} m$^2$', fontsize = 10)
     plt.legend()
 else:
     pass

@@ -32,15 +32,15 @@ Should_solve = True
 Should_MGA   = True
 Should_MAA   = True
 n_snapshots  = 8670
-mga_slack    = 0.1
+mga_slack    = 0.01
 
 # Area affecting parameters
 k_P2X   = 60  # [m^2/MW] Area use for P2X
-mc_P2X  = 1e5  # [EUR/MW] Gain for system for P2X
+mc_P2X  = 10  # [EUR/MW] Gain for system for P2X
 cc_P2X  = 100 # [EUR/MW] Capital cost for P2X
 
 k_Data  = 20  # [m^2/MW] Area use for Data
-mc_Data = 1.5e5  # [EUR/MW] Gain for system for Data
+mc_Data = 15  # [EUR/MW] Gain for system for Data
 cc_Data = 110 # [EUR/MW] Capital cost for Data
 
 k_Store  = 7  # [m^2/MW] Area use for Storage
@@ -326,7 +326,7 @@ else:
 if Should_MAA:
     hull = ConvexHull(solutions)
     
-    plt.figure()
+    plt.figure(figsize = (8,4))
     
     DK = solutions[:,0]
     DE = solutions[:,1]
@@ -336,14 +336,18 @@ if Should_MAA:
         plt.plot(solutions[simplex, 0], solutions[simplex, 1], 'k-')
     
     plt.plot(DK, DE,
-             'o', label = "near-optimal")
+             'o', label = "Near-optimal")
     
     #Plot optimal
     plt.plot(n_optimum.generators.p_nom_opt["P2X"], 
              n_optimum.generators.p_nom_opt["Data"],
-              '.', markersize = 20, label = "optimum")
-    plt.xlabel("P2X")
-    plt.ylabel("Data")
+              '.', markersize = 20, label = "Optimal")
+    plt.xlabel("P2X capacity [MW]")
+    plt.ylabel("Data capacity [MW]")
+    plt.suptitle('MAA Analysis of island without area constraint', fontsize = 18)
+    plt.title(f'With MGA slack = {mga_slack}', fontsize = 10)
+    
+    plt.legend()
 
 else:
     pass
