@@ -9,11 +9,14 @@ should_solve = True
 Should_MGA   = True
 Should_MAA   = True
 n_snapshots  = 8760
-mga_slack    = 0.1
+mga_slack    = 0.05
 
 #%% Import
 import pypsa 
 import numpy as np
+import sys
+sys.path.append("../../")
+from Modules import island_lib as il #Library with plotting functions.
 from pypsa.linopt import get_var, linexpr, join_exprs, define_constraints, get_dual, get_con, write_objective, get_sol, define_variables
 from pypsa.descriptors import nominal_attrs
 from pypsa.linopf import lookup, network_lopf, ilopf
@@ -288,21 +291,27 @@ if Should_MAA:
     DE = solutions[:,1]
     
     plt.plot(DK, DE,
-             'o', label = "near-optimal")
+             'o', label = "near-optimal",
+             markersize=10)
     
     #Plot optimal
     plt.plot(n.links.p_nom_opt["Island_to_Denmark"], 
              n.links.p_nom_opt["Island_to_Belgium"],
-             '.', markersize = 20, label = "optimum")
+             '.', markersize = 30, label = "optimum")
     
-    plt.xlabel(n.links.index[0]+' capacity [MW]')
-    plt.ylabel(n.links.index[1]+' capacity [MW]')
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
     
-    plt.legend()
-       
+    plt.xlabel(n.links.index[0]+' capacity [MW]', fontsize=30)
+    plt.ylabel(n.links.index[1]+' capacity [MW]', fontsize=30)
+    
+    plt.legend(fontsize=30)
+    plt.grid() 
     for simplex in hull.simplices:
     
         plt.plot(solutions[simplex, 0], solutions[simplex, 1], 'k-')
 else:
     pass
 
+#%%
+il.play_sound()
