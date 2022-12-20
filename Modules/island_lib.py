@@ -13,9 +13,13 @@ def play_sound():
     winsound.Beep(311, 300)
     winsound.Beep(233, 800)
     
-def its_britney_bitch():
-    import playsound
-    playsound.playsound(r"C:\Users\aalin\Documents\GitHub\NorthSeaEnergyIsland\Modules\itsbritney.mp3")
+def its_britney_bitch(path):
+    import os
+    import random 
+    path=path
+    files=os.listdir(path)
+    d=random.choice(files)
+    os.startfile(path + '/' + d)
     
 def play_mario():
     import winsound
