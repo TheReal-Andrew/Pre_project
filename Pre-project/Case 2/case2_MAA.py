@@ -5,15 +5,20 @@ Created on Thu Nov 10 12:41:30 2022
 @author: lukas
 """
 
-should_solve = True
 Should_MGA   = True
 Should_MAA   = True
 n_snapshots  = 8760
 mga_slack    = 0.1
 
+import time
+startTime = time.time()
+
 #%% Import
 import pypsa 
 import numpy as np
+import sys
+sys.path.append("../../")
+from Modules import island_lib as il #Library with plotting functions.
 from pypsa.linopt import get_var, linexpr, join_exprs, define_constraints, get_dual, get_con, write_objective, get_sol, define_variables
 from pypsa.descriptors import nominal_attrs
 from pypsa.linopf import lookup, network_lopf, ilopf
@@ -156,6 +161,7 @@ def get_var_values(n,mga_variables):
 #%% Load and solve network
 
 n = pypsa.Network('case2_setup.nc') #Load network from netcdf file
+n_objective = n.objective
 
 # Reduce snapshots used for faster computing
 n.snapshots = n.snapshots[:n_snapshots]
@@ -165,19 +171,6 @@ n.snapshot_weightings = n.snapshot_weightings[:n_snapshots]
 n.links.loc[["Island_to_Denmark","Island_to_Belgium"], "carrier"] = ["DC1", "DC2"]
 
 n_optimum = n.copy()
-
-if should_solve:
-    n_optimum.lopf(pyomo = False,
-          solver_name = 'gurobi'
-          )
-    
-    print("Network objective value:" + str(n_optimum.objective))
-    
-    n_objective = n_optimum.objective
-else:
-    pass
-
-# n_optimum = n.copy()
 
 #%% Carriers
 
@@ -277,6 +270,9 @@ if Should_MAA:
 else:
     pass
 
+executionTime = (time.time() - startTime)
+print('Execution time in seconds: ' + str(executionTime))
+
 #%% Plot Hull
 
 if Should_MAA:
@@ -287,22 +283,36 @@ if Should_MAA:
     DK = solutions[:,0]
     DE = solutions[:,1]
     
-    plt.plot(DK, DE,
-             'o', label = "near-optimal")
+    plt.plot(DK/1000, DE/1000,
+             'o', label = "near-optimal",
+             markersize=10)
     
     #Plot optimal
-    plt.plot(n.links.p_nom_opt["Island_to_Denmark"], 
-             n.links.p_nom_opt["Island_to_Belgium"],
-             '.', markersize = 20, label = "optimum")
+    plt.plot(n_optimum.links.p_nom_opt["Island_to_Denmark"]/1000, 
+             n_optimum.links.p_nom_opt["Island_to_Belgium"]/1000,
+             '.', markersize = 30, label = "optimum")
     
-    plt.xlabel(n.links.index[0]+' capacity [MW]')
-    plt.ylabel(n.links.index[1]+' capacity [MW]')
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
     
-    plt.legend()
-       
+    plt.xlabel(n.links.index[0]+' capacity [GW]', fontsize=30)
+    plt.ylabel(n.links.index[1]+' capacity [GW]', fontsize=30)
+    
+    plt.legend(fontsize=30)
+    plt.grid() 
+    
+    
+    plt.suptitle('MAA for bi-directional links', fontsize = 35)
+    plt.title('MGA slack = ' + str(mga_slack) + ', execution time = ' + str(round(executionTime)) + ' s', fontsize = 30)
+    
     for simplex in hull.simplices:
     
-        plt.plot(solutions[simplex, 0], solutions[simplex, 1], 'k-')
+        plt.plot(solutions[simplex, 0]/1000, solutions[simplex, 1]/1000, 'k-')
+    
+    plt.tight_layout()
+    plt.savefig('MGA_slack_=_' + str(mga_slack) + '_Bi-directional_links.eps')
 else:
     pass
 
+#%%
+il.play_sound()

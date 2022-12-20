@@ -4,16 +4,11 @@ Created on Tue Sep  6 10:44:50 2022
 @author: Lukas & Anders
 """
 
-# Import the os module
-import os
-
-# Get the current working directory
-cwd = os.getcwd()
-
 import sys
 sys.path.append("../../")
-from Modules import island_lib as il #Library with plotting functions.
-from Modules import island_plt as ip #Library with plotting functions.
+import Modules.island_lib as il #Library with plotting functions.
+import Modules.island_plt as ip #Library with plotting functions.
+# importlib.reload(il)
 import pypsa
 import numpy as np
 import matplotlib.pyplot as plt
@@ -21,13 +16,12 @@ import cartopy.crs as ccrs
 import pandas as pd
 import os
 
+# importlib.reload(il)
+
 n_points = 8760
 
 # Load power-price and consumer-load data
 cprice, cload = il.get_load_and_price(2030)
-
-# cprice = cprice[:n_points]
-# cload  = cload[:n_points]
 
 # Load wind capacity factor (CF)
 cf_wind_df = pd.read_csv(r'../../Data/Wind/wind_formatted.csv', sep = ",")
@@ -40,9 +34,6 @@ tech_FOM  = tech_cost.loc[tech_cost['parameter'].str.startswith('FOM') & tech_co
 
 #%% Set up network with chosen timesteps
 network = pypsa.Network()                   
-# network.set_snapshots(pd.date_range('2019-01-01 00:00', 
-#                                     '2019-12-31 23:00', 
-#                                     freq = 'H'))
 t = pd.date_range('2030-01-01 00:00', '2030-12-31 23:00', freq = 'H')
 network.set_snapshots(t)  #Set snapshots of network to the timesteps
 
@@ -71,6 +62,7 @@ for i in range(bus_df.shape[0]):    #i becomes integers
 #List of link destionations from buses
 link_destinations = network.buses.index.values
 
+DR = 1.2
 j = 0
 for i in link_destinations[1:]:         #i becomes each string in the array
     j = j + 1
@@ -81,13 +73,11 @@ for i in link_destinations[1:]:         #i becomes each string in the array
         bus1             = i,           #End Bus
         carrier          = "DC" + str(j),        #Define carrier type
         p_min_pu         = -1,          #Make links bi-directional
-        marginal_cost    = 0,
-        efficiency       = 1,
         p_nom            = 0,           #Power capacity of link
         p_nom_extendable = True,        #Extendable links
-        # capital_cost     = 10)
         capital_cost     = il.get_annuity(0.07, float(tech_life.value))    #Annuity factor
-                            * float(tech_inv.value)                               #Investment cost [EUR/MW/km] 
+                            * float(tech_inv.value)                        #Investment cost [EUR/MW/km] 
+                            * DR
                             * il.earth_distance(float(bus_df.X.loc[0]),  
                                                 float(bus_df.X.loc[j]), 
                                                 float(bus_df.Y.loc[0]), 
@@ -103,7 +93,7 @@ network.add(
     p_nom         = 3000,               #Nominal power [MW]
     p_max_pu      = cf_wind_df['electricity'].values, #Time-series of power coefficients
     carrier       = "Wind",             #Carrier type (AC,DC,Wind,Solar,etc.)
-    marginal_cost = 10)                  #Cost per MW from this source 
+    marginal_cost = 20)                 #Cost per MW from this source 
     
 #%% Add Generators -------------------------------------------------
 
@@ -129,12 +119,6 @@ for i in range(1, bus_df.shape[0]): #i becomes integers
         bus     = bus_df.Country[i],
         p_set   = cload[bus_df.Abbreviation[i]].values)       
    
-#%% Save network
-
-filename = '/case2_setup.nc'
-export_path = os.getcwd() + filename
-network.export_to_netcdf(export_path)
-
 #%% Plotting -------------------------------------------------------
 
 # Geographical map
@@ -150,21 +134,38 @@ network.plot(
 network.lopf(pyomo = False,
              solver_name = 'gurobi')
 
-ip.plot_powerflow(network) #Plot dynamic results
+#%% Save network
+
+filename = '/case2_setup.nc'
+export_path = os.getcwd() + filename
+network.export_to_netcdf(export_path)
+
+#%%
+fig_PF, ax_PF = plt.subplots(1, 2, figsize=(16*2,9), dpi=300)
+
+ax_PF[0].plot(network.links_t.p0.iloc[:,0])
+ax_PF[1].plot(network.links_t.p0.iloc[:,1])
+
+#%%
+# ip.plot_powerflow(network) #Plot dynamic results
 
 #%% Plotting
-plt.plot(figsize = (14,14))
-plt.figure(dpi=300)         # Set resolution
+# plt.plot(figsize = (16*2,9))
+# plt.figure(dpi=300)         # Set resolution
 
-network.links_t.p0.iloc[:,1].plot(
-    figsize = (14,14),
-    label = "Island to DK",)
+# network.links_t.p0.iloc[:,1].plot(
+#     figsize = (16*2,9),
+#     label = "Island to DK",)
 
-network.links_t.p0.iloc[:,2].plot(
-    figsize = (14,14),
-    label = "Island to BE",)
+# network.links_t.p0.iloc[:,2].plot(
+#     figsize = (16*2,9),
+#     label = "Island to BE",)
 
-plt.legend()
-plt.ylabel("Power flow [MW]")
-plt.title("Power flow from Island to countries")
-print('Done')
+# plt.legend()
+# plt.ylabel("Power flow [MW]")
+# plt.title("Power flow from Island to countries")
+# print('Done')
+
+#%%
+# il.play_sound()
+il.its_britney_bitch()

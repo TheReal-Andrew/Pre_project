@@ -51,18 +51,18 @@ def plot_geomap(network, bounds = [-3, 12, 59, 50.5], size = (15,15)):
         )
 
 #%% Powerflow plot
-def plot_powerflow(network, size = (17,13), colors = get_plot_colors()):
+def plot_powerflow(network, size = [16*2,9], colors = get_plot_colors()):
     #Plots power flow from island to country buses.
-    fig_PF, axs_PF = plt.subplots(3, 2)  # Set up subplot with 4 plots
+    fig_PF, axs_PF = plt.subplots(1, 2)  # Set up subplot with 4 plots
     #plt.figure(dpi=300)            # Set resolution
     axs_PF = axs_PF.ravel()
-    
-    for i in np.arange(0,6):
+        
+    for i in np.arange(0,2):
         network.links_t.p0.iloc[:,i].plot(
             ax = axs_PF[i],
-            figsize = size,
+            # figsize = size,
             title = network.links_t.p0.columns[i],
-            color = colors[list(colors)[i+1]],
+            # color = colors[list(colors)[i+1]],
             )
         
     fig_PF.tight_layout()
