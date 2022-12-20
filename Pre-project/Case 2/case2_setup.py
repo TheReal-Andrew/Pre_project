@@ -6,14 +6,17 @@ Created on Tue Sep  6 10:44:50 2022
 
 import sys
 sys.path.append("../../")
-from Modules import island_lib as il #Library with plotting functions.
-from Modules import island_plt as ip #Library with plotting functions.
+import Modules.island_lib as il #Library with plotting functions.
+import Modules.island_plt as ip #Library with plotting functions.
+# importlib.reload(il)
 import pypsa
 import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import pandas as pd
 import os
+
+# importlib.reload(il)
 
 n_points = 8760
 
