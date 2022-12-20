@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import pandas as pd
 import os
+import datetime
 
 n_points = 8760
 
@@ -142,13 +143,77 @@ export_path = os.getcwd() + filename
 network.export_to_netcdf(export_path)
 
 #%%
-fig_PF, ax_PF = plt.subplots(2, 2, figsize=(16*2,9), dpi=300)
+fig_PF, ax_PF = plt.subplots(2, 1, figsize=(16,9), dpi=300)
 
-ax_PF[0,0].plot(network.links_t.p0.iloc[:,0])
-ax_PF[0,1].plot(network.links_t.p0.iloc[:,1])
+plt.sca(ax_PF[0])
+plt.xticks(fontsize=15, rotation = 45) 
+plt.yticks(fontsize=15)
+ax_PF[0].plot(network.links_t.p0.iloc[:,0],
+                color = ip.get_plot_colors()[list(ip.get_plot_colors())[1]])
+ax_PF[0].set_xlabel('Time [hr]', fontsize = 15)
+ax_PF[0].set_ylabel('Powerflow [MW]', fontsize = 15)
+ax_PF[0].set_xlim([datetime.date(2030, 1, 1), datetime.date(2030,12,31)])
+ax_PF[0].set_title('Direct powerflow from Energy Island to Denmark',
+                    fontsize = 25)
+ax_PF[0].grid()
+plt.tight_layout()
 
-ax_PF[1,0].plot(cprice['DK'].values)
-ax_PF[1,1].plot(cprice['BE'].values)
+plt.sca(ax_PF[1])
+plt.xticks(fontsize=15, rotation = 45)
+plt.yticks(fontsize=15)
+ax_PF[1].plot(network.links_t.p0.iloc[:,1],
+                color = ip.get_plot_colors()[list(ip.get_plot_colors())[5]])
+ax_PF[1].set_xlabel('Time [hr]', fontsize = 15)
+ax_PF[1].set_ylabel('Powerflow [MW]', fontsize = 15)
+ax_PF[1].set_xlim([datetime.date(2030, 1, 1), datetime.date(2030,12,31)])
+ax_PF[1].set_title('Direct powerflow from Energy Island to Belgium',
+                    fontsize = 25)
+ax_PF[1].grid()
+plt.tight_layout()
+
+
+fig_PF1, ax_PF1 = plt.subplots(2, 1, figsize=(16,9), dpi=300)
+
+
+plt.sca(ax_PF[0])
+plt.xticks(fontsize=15) 
+plt.yticks(fontsize=15)
+ax_PF1[0].plot(cprice['DK'].values,
+                color = ip.get_plot_colors()[list(ip.get_plot_colors())[1]])
+ax_PF1[0].set_xlabel('Time [hr]', fontsize = 15)
+ax_PF1[0].set_ylabel('Energy price [€/MWh]', fontsize = 15)
+ax_PF1[0].set_xlim(0,8760)
+ax_PF1[0].set_ylim(0,220)
+ax_PF1[0].set_title('Danish energy price for 2030',
+                    fontsize = 25)
+ax_PF1[0].grid()
+ax_PF1[0].text(0.83, 0.96, 
+               str(cprice['DK'].describe()), 
+               ha='left', va='top', 
+               transform=ax_PF1[0].transAxes,
+               fontsize = 14)
+
+
+plt.sca(ax_PF1[1])
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
+ax_PF1[1].plot(cprice['BE'].values,
+                color = ip.get_plot_colors()[list(ip.get_plot_colors())[5]])
+ax_PF1[1].set_xlabel('Time [hr]', fontsize = 15)
+ax_PF1[1].set_ylabel('Energy price [€/MWh]', fontsize = 15)
+ax_PF1[1].set_xlim(0,8760)
+ax_PF1[1].set_ylim(0,220)
+ax_PF1[1].set_title('Belgian energy price for 2030',
+                    fontsize = 25)
+ax_PF1[1].grid()
+ax_PF1[1].text(0.83, 0.96, 
+               str(cprice['BE'].describe()), 
+               ha='left', va='top', 
+               transform=ax_PF1[1].transAxes,
+               fontsize = 14)
+
+
+plt.tight_layout()
 
 #%%
-il.its_britney_bitch(r"C:\Users\aalin\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds")
+il.its_britney_bitch(r"C:\Users\Linda\Documents\Github\NorthSeaEnergyIsland\Data\Sounds")
