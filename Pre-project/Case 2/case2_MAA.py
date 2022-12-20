@@ -298,11 +298,14 @@ if Should_MAA:
     plt.xlabel(n.links.index[0]+' capacity [GW]', fontsize=30)
     plt.ylabel(n.links.index[1]+' capacity [GW]', fontsize=30)
     
+    plt.xlim(0,80)
+    plt.ylim(0,80)
+    
     plt.legend(fontsize=30)
     plt.grid() 
     
     
-    plt.suptitle('MAA for bi-directional links', fontsize = 35)
+    plt.suptitle('MAA for Bi-directional links', fontsize = 35)
     plt.title('MGA slack = ' + str(mga_slack) + ', execution time = ' + str(round(executionTime)) + ' s', fontsize = 30)
     
     for simplex in hull.simplices:
@@ -315,4 +318,4 @@ else:
     pass
 
 #%%
-il.play_sound()
+il.its_britney_bitch(r"C:\Users\aalin\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds")
