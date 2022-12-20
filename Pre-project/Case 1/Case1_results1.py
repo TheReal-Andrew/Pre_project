@@ -47,8 +47,8 @@ n_1b_opt = pypsa.Network('case 1b - no constraint\case_1b_opt.nc')
 n_1a_MAA = np.load('case 1a - constraint\case_1a_MAA_solutions.npy')
 n_1b_MAA = np.load('case 1b - no constraint\case_1b_MAA_solutions.npy')
 
-n_1b_MAA_10 = np.load('case 1a - constraint\case_1a_MAA_solutions_10pct.npy')
-n_1a_MAA_10 = np.load('case 1b - no constraint\case_1b_MAA_solutions_10pct.npy')
+n_1a_MAA_10 = np.load('case 1a - constraint\case_1a_MAA_solutions_10pct.npy')
+n_1b_MAA_10 = np.load('case 1b - no constraint\case_1b_MAA_solutions_10pct.npy')
 
 #%% Pieplot
 
@@ -99,7 +99,8 @@ make_pie(n_1b_opt, 'pie_1b.eps', area1 = 'Without area constraint', area2 = 'Max
 
 #%% Plot MAA
 
-def make_hull(solutions, n_optimal, mga_slack, name, title, ylim = [None, None]):
+def make_hull(solutions, n_optimal, mga_slack, name, title,
+              ylim = [None, None], xlim = [None, None]):
     hull = ConvexHull(solutions)
     
     fig = plt.figure(figsize = (10,5))
@@ -120,6 +121,7 @@ def make_hull(solutions, n_optimal, mga_slack, name, title, ylim = [None, None])
     plt.xlabel("P2X capacity [MW]")
     plt.ylabel("Data capacity [MW]")
     plt.ylim(ylim)
+    plt.xlim(xlim)
     plt.suptitle(title, fontsize = 22, y = 1)
     plt.title(f'With MGA slack = {mga_slack}', fontsize = 14)
     
@@ -128,12 +130,13 @@ def make_hull(solutions, n_optimal, mga_slack, name, title, ylim = [None, None])
     fig.savefig(name, format = 'eps', bbox_inches='tight')
     
 make_hull(n_1a_MAA, n_1a_opt, mga_slack, 'MAA_1a.eps',
-          'MAA Analysis of island with area constraint', [325, 575])
+          'MAA Analysis of island with area constraint',
+          ylim = [325, 575], xlim = [1100, 1700])
 
 make_hull(n_1b_MAA, n_1b_opt, mga_slack, 'MAA_1b.eps', 
           'MAA Analysis of island without area constraint', [325, 575])
 
-make_hull(n_1a_MAA_10, n_1b_opt, 0.1, 'MAA_1b_10.eps',
+make_hull(n_1a_MAA_10, n_1a_opt, 0.1, 'MAA_1b_10.eps',
           title = 'MAA Analysis of island with area constraint')
 
 make_hull(n_1b_MAA_10, n_1b_opt, 0.1, 'MAA_1b_10.eps',
