@@ -42,8 +42,11 @@ k_Data  = 20  # [m^2/MW] Area use for Data
 mc_Data = 15  # [EUR/MW] Gain for system for Data
 cc_Data = 110 # [EUR/MW] Capital cost for Data
 
-k_Store  = 7  # [m^2/MW] Area use for Storage
-cc_Store = 1 # [EUR/MWh] Capital cost for Storage
+k_Store  = 2.3  # [m^2/MW] Area use for Storage
+cc_Store = 0.36 # [EUR/MWh] Capital cost for Storage
+
+# k_Store  = 7  # [m^2/MW] Area use for Storage
+# cc_Store = 1 # [EUR/MWh] Capital cost for Storage
 
 cc_Wind = il.get_annuity(0.07, 30) * 1.8e6 # [Euro/MW]
 
@@ -83,7 +86,7 @@ n.add("Store",
       carrier           = "Store1",
       e_nom_extendable  = True,
       e_cyclic          = True,
-      e_nom_max         = 1000,
+      e_nom_max         = 15000,
       capital_cost      = cc_Store,
       )
 
@@ -149,6 +152,14 @@ else:
 #%% Plot area use
 
 if Should_pie:
+    
+    def autopct_format(values):
+        def my_format(pct):
+            total = sum(values)
+            val = int(round(pct*total/100.0))
+            return '{:.1f}%\n({v:d})'.format(pct, v=val)
+        return my_format
+
 
     P2X_p   = n.generators.loc["P2X"].p_nom_opt
     Data_p  = n.generators.loc["Data"].p_nom_opt
@@ -173,3 +184,6 @@ if Should_pie:
     plt.legend()
 else:
     pass
+
+#%% Sound
+il.its_britney_bitch(r'C:\Users\lukas\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds')

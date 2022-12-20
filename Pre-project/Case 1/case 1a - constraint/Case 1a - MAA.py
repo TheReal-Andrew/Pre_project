@@ -33,7 +33,7 @@ Should_solve = True
 Should_MGA   = True
 Should_MAA   = True
 n_snapshots  = 8670
-mga_slack    = 0.01
+mga_slack    = 0.1
 
 # Area affecting parameters
 k_P2X   = 60  # [m^2/MW] Area use for P2X
@@ -203,10 +203,8 @@ def define_mga_objective(n,snapshots,direction,options):
     expr_list = []
     for dir_i,var_i in zip(direction,mga_variables):
         
-        if var_i[0] == 'Store':
-            model_vars = get_var(n,var_i[0],'e_nom')[n.df(var_i[0]).carrier == var_i[1]]
-        else:
-            model_vars = get_var(n,var_i[0],'p_nom')[n.df(var_i[0]).carrier == var_i[1]]
+
+        model_vars = get_var(n,var_i[0],'p_nom')[n.df(var_i[0]).carrier == var_i[1]]
             
         tmp_expr = linexpr((dir_i/len(model_vars),model_vars)).sum()
         expr_list.append(tmp_expr)
@@ -317,7 +315,11 @@ if Should_MAA:
             
             n.export_to_netcdf('case_1a_res_' + str(i) + '.nc')
     
-        hull = ConvexHull(solutions)
+        try:
+            hull = ConvexHull(solutions)
+        except Exception as e:
+            print(e)
+            il.play_sound()
     
         delta_v = hull.volume - old_volume
         old_volume = hull.volume
@@ -361,8 +363,8 @@ if Should_MAA:
 else:
     pass
 
-np.save('case_1a_MAA_solutions', solutions)
+np.save('case_1a_MAA_solutions_10pct', solutions)
 
 #%% Sound
 
-il.play_sound()
+il.its_britney_bitch(r'C:\Users\lukas\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds')

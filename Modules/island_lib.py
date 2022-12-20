@@ -222,10 +222,8 @@ def remove_outliers(df,columns,n_std):
     for col in columns:
         print('Working on column: {}'.format(col))
         
-        mean = df[col].mean()
-        sd = df[col].std()
-        
-        df = df[(df[col] <= mean+(n_std*sd))]
+        df[col][ df[col] >= df[col].mean() + (n_std * df[col].std())] = \
+        df[col].mean() + (n_std * df[col].std())
         
     return df
 

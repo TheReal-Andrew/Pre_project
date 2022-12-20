@@ -95,7 +95,7 @@ n.add("Store",
       e_nom_extendable  = True,
       e_cyclic          = True,
       # e_nom_max         = 15000,
-      e_nom_max         = 30000,
+      e_nom_max         = 15000,
       capital_cost      = cc_Store,
       )
 
@@ -186,4 +186,4 @@ else:
     pass
 
 #%% Sound
-# il.play_sound()
+il.its_britney_bitch(r'C:\Users\lukas\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds')

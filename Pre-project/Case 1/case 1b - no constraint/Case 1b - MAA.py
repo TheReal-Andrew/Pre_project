@@ -32,7 +32,7 @@ Should_solve = True
 Should_MGA   = True
 Should_MAA   = True
 n_snapshots  = 8670
-mga_slack    = 0.01
+mga_slack    = 0.1
 
 # Area affecting parameters
 k_P2X   = 60  # [m^2/MW] Area use for P2X
@@ -43,8 +43,11 @@ k_Data  = 20  # [m^2/MW] Area use for Data
 mc_Data = 15  # [EUR/MW] Gain for system for Data
 cc_Data = 110 # [EUR/MW] Capital cost for Data
 
-k_Store  = 7  # [m^2/MW] Area use for Storage
-cc_Store = 80 # [EUR/MW] Capital cost for Storage
+k_Store  = 2.3  # [m^2/MW] Area use for Storage
+cc_Store = 0.36 # [EUR/MWh] Capital cost for Storage
+
+# k_Store  = 7  # [m^2/MW] Area use for Storage
+# cc_Store = 80 # [EUR/MW] Capital cost for Storage
 
 #%% Load and copy network
 
@@ -352,7 +355,7 @@ if Should_MAA:
 else:
     pass
 
-np.save('case_1b_MAA_solutions', solutions)
+np.save('case_1b_MAA_solutions_10pct', solutions)
 
 #%% Sound
-il.play_sound()
+il.its_britney_bitch(r'C:\Users\lukas\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds')
