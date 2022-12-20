@@ -168,4 +168,4 @@ ax_PF[1].plot(network.links_t.p0.iloc[:,1])
 
 #%%
 # il.play_sound()
-il.its_britney_bitch()
+il.its_britney_bitch(r"C:\Users\aalin\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds")
