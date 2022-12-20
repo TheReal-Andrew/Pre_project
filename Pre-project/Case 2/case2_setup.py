@@ -16,15 +16,13 @@ import cartopy.crs as ccrs
 import pandas as pd
 import os
 
-# importlib.reload(il)
-
 n_points = 8760
 
 # Load power-price and consumer-load data
 cprice, cload = il.get_load_and_price(2030)
 
-cprice = il.remove_outliers(cprice,['DK','BE'],2)
-cload = il.remove_outliers(cload,['DK','BE'],2)
+cprice = il.remove_outliers(cprice,['DK','BE'],1)
+cload = il.remove_outliers(cload,['DK','BE'],1)
 
 # Load wind capacity factor (CF)
 cf_wind_df = pd.read_csv(r'../../Data/Wind/wind_formatted.csv', sep = ",")
@@ -139,35 +137,18 @@ network.lopf(pyomo = False,
 
 #%% Save network
 
-filename = '/case2_setup.nc'
+filename = '/case2_bidirect.nc'
 export_path = os.getcwd() + filename
 network.export_to_netcdf(export_path)
 
 #%%
-fig_PF, ax_PF = plt.subplots(1, 2, figsize=(16*2,9), dpi=300)
+fig_PF, ax_PF = plt.subplots(2, 2, figsize=(16*2,9), dpi=300)
 
-ax_PF[0].plot(network.links_t.p0.iloc[:,0])
-ax_PF[1].plot(network.links_t.p0.iloc[:,1])
+ax_PF[0,0].plot(network.links_t.p0.iloc[:,0])
+ax_PF[0,1].plot(network.links_t.p0.iloc[:,1])
 
-#%%
-# ip.plot_powerflow(network) #Plot dynamic results
-
-#%% Plotting
-# plt.plot(figsize = (16*2,9))
-# plt.figure(dpi=300)         # Set resolution
-
-# network.links_t.p0.iloc[:,1].plot(
-#     figsize = (16*2,9),
-#     label = "Island to DK",)
-
-# network.links_t.p0.iloc[:,2].plot(
-#     figsize = (16*2,9),
-#     label = "Island to BE",)
-
-# plt.legend()
-# plt.ylabel("Power flow [MW]")
-# plt.title("Power flow from Island to countries")
-# print('Done')
+ax_PF[1,0].plot(cprice['DK'].values)
+ax_PF[1,1].plot(cprice['BE'].values)
 
 #%%
 il.its_britney_bitch(r"C:\Users\aalin\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds")

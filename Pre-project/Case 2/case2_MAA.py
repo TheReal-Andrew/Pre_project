@@ -160,7 +160,7 @@ def get_var_values(n,mga_variables):
 
 #%% Load and solve network
 
-n = pypsa.Network('case2_setup.nc') #Load network from netcdf file
+n = pypsa.Network('case2_bidirect.nc') #Load network from netcdf file
 n_objective = n.objective
 
 # Reduce snapshots used for faster computing
@@ -292,30 +292,32 @@ if Should_MAA:
              n_optimum.links.p_nom_opt["Island_to_Belgium"]/1000,
              '.', markersize = 30, label = "optimum")
     
-    plt.xticks(fontsize=20)
-    plt.yticks(fontsize=20)
+    plt.xticks(fontsize=25)
+    plt.yticks(fontsize=25)
     
-    plt.xlabel(n.links.index[0]+' capacity [GW]', fontsize=30)
-    plt.ylabel(n.links.index[1]+' capacity [GW]', fontsize=30)
+    plt.xlabel(n.links.index[0]+' capacity [GW]', fontsize=35)
+    plt.ylabel(n.links.index[1]+' capacity [GW]', fontsize=35)
     
-    plt.xlim(0,80)
-    plt.ylim(0,80)
+    plt.xlim(-1,80)
+    plt.ylim(-1,80)
     
-    plt.legend(fontsize=30)
+    plt.legend(fontsize=35)
     plt.grid() 
     
     
-    plt.suptitle('MAA for Bi-directional links', fontsize = 35)
-    plt.title('MGA slack = ' + str(mga_slack) + ', execution time = ' + str(round(executionTime)) + ' s', fontsize = 30)
+    plt.suptitle('MAA for Bi-direct links', fontsize = 40)
+    plt.title('MGA slack = ' + str(mga_slack) + ', execution time = ' + str(round(executionTime)) + ' s', fontsize = 35)
     
     for simplex in hull.simplices:
     
         plt.plot(solutions[simplex, 0]/1000, solutions[simplex, 1]/1000, 'k-')
     
     plt.tight_layout()
-    plt.savefig('MGA_slack_=_' + str(mga_slack) + '_Bi-directional_links.eps')
+    plt.savefig('MGA_slack_=_' + str(mga_slack) + '_Bi-direct_links.eps')
 else:
     pass
+
+np.save('case_2bi_MAA_solutions_10pct', solutions)
 
 #%%
 il.its_britney_bitch(r"C:\Users\aalin\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds")
