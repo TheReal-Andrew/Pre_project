@@ -23,6 +23,9 @@ n_points = 8760
 # Load power-price and consumer-load data
 cprice, cload = il.get_load_and_price(2030)
 
+cprice = il.remove_outliers(cprice,['DK','BE'],2)
+cload = il.remove_outliers(cload,['DK','BE'],2)
+
 # Load wind capacity factor (CF)
 cf_wind_df = pd.read_csv(r'../../Data/Wind/wind_formatted.csv', sep = ",")
 
@@ -167,5 +170,4 @@ ax_PF[1].plot(network.links_t.p0.iloc[:,1])
 # print('Done')
 
 #%%
-# il.play_sound()
 il.its_britney_bitch(r"C:\Users\aalin\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds")
