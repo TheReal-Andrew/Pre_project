@@ -13,6 +13,12 @@ def play_sound():
     winsound.Beep(311, 300)
     winsound.Beep(233, 800)
     
+def its_britney_bitch():
+    import vlc
+    
+    p = vlc.MediaPlayer("itsbritney.mp3")
+    p.play()    
+    
 def play_mario():
     import winsound
     import time

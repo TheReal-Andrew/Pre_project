@@ -20,9 +20,6 @@ n_points = 8760
 # Load power-price and consumer-load data
 cprice, cload = il.get_load_and_price(2030)
 
-# cprice = cprice[:n_points]
-# cload  = cload[:n_points]
-
 # Load wind capacity factor (CF)
 cf_wind_df = pd.read_csv(r'../../Data/Wind/wind_formatted.csv', sep = ",")
 
@@ -119,12 +116,6 @@ for i in range(1, bus_df.shape[0]): #i becomes integers
         bus     = bus_df.Country[i],
         p_set   = cload[bus_df.Abbreviation[i]].values)       
    
-#%% Save network
-
-filename = '/case2_setup.nc'
-export_path = os.getcwd() + filename
-network.export_to_netcdf(export_path)
-
 #%% Plotting -------------------------------------------------------
 
 # Geographical map
@@ -139,6 +130,12 @@ network.plot(
 #%% Solver
 network.lopf(pyomo = False,
              solver_name = 'gurobi')
+
+#%% Save network
+
+filename = '/case2_setup.nc'
+export_path = os.getcwd() + filename
+network.export_to_netcdf(export_path)
 
 #%%
 fig_PF, ax_PF = plt.subplots(1, 2, figsize=(16*2,9), dpi=300)
@@ -167,4 +164,5 @@ ax_PF[1].plot(network.links_t.p0.iloc[:,1])
 # print('Done')
 
 #%%
-il.play_sound()
+# il.play_sound()
+il.its_britney_bitch()
