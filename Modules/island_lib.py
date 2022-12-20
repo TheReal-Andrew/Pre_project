@@ -15,7 +15,7 @@ def play_sound():
     
 def its_britney_bitch():
     import playsound
-    playsound.playsound('itsbritney.mp3')
+    playsound.playsound(r"C:\Users\aalin\Documents\GitHub\NorthSeaEnergyIsland\Modules\itsbritney.mp3")
     
 def play_mario():
     import winsound
