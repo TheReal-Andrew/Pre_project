@@ -47,10 +47,13 @@ n_1b_opt = pypsa.Network('case 1b - no constraint\case_1b_opt.nc')
 n_1a_MAA = np.load('case 1a - constraint\case_1a_MAA_solutions.npy')
 n_1b_MAA = np.load('case 1b - no constraint\case_1b_MAA_solutions.npy')
 
+n_1b_MAA_10 = np.load('case 1a - constraint\case_1a_MAA_solutions_10pct.npy')
+n_1a_MAA_10 = np.load('case 1b - no constraint\case_1b_MAA_solutions_10pct.npy')
+
 #%% Pieplot
 
-def make_pie(n, name):
-    
+def make_pie(n, name, area1, area2):
+
     def autopct_format(values, k):
         def my_format(pct):
             total = sum(values)
@@ -67,30 +70,36 @@ def make_pie(n, name):
     Store_A = k_Store * n.stores.loc["Store1"].e_nom_opt
     
     total_A = P2X_A + Data_A + Store_A
-    print(f" \n Area used on the island: {total_A} \n")
     
     pie_data = [P2X_A, Data_A, Store_A]
     k        = [k_P2X, k_Data, k_Store] 
     labels   =  "P2X", "Data", "Store"
     
-    fig, ax = plt.subplots(figsize = (10,5))
-    ax.pie(pie_data, labels = labels,
+    fig, ax = plt.subplots(figsize = (6,6))
+    ax.pie(pie_data, 
+           # labels = labels,
            # autopct = '%1.1f%%',
            autopct = autopct_format(pie_data, k),
-           textprops={'fontsize': 10})
+           textprops={'fontsize': 10},
+           startangle=90)
+    # fig.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+    ax.axis('equal')
+    ax.margins(0, 0)
     plt.suptitle('Share of area by technology', fontsize = 18)
-    plt.title(f'Area used: {total_A:.0f} m$^2$', fontsize = 10)
-    plt.legend()
+    plt.title(area1 + '\n' +f'Area used: {total_A:.0f} m$^2$     ' + area2,
+              fontsize = 10,
+               pad = 6)
+    plt.legend(labels = labels)
     
     fig.savefig(name, format = 'eps', bbox_inches='tight')
     
-make_pie(n_1a_opt, 'pie_1a.eps')
+make_pie(n_1a_opt, 'pie_1a.eps', area1 = 'With area constraint', area2 = 'Max area: 120000 m$^2$')
 
-make_pie(n_1b_opt, 'pie_1b.eps')
+make_pie(n_1b_opt, 'pie_1b.eps', area1 = 'Without area constraint', area2 = 'Max area: No limit')
 
 #%% Plot MAA
 
-def make_hull(solutions, n_optimal, mga_slack, name):
+def make_hull(solutions, n_optimal, mga_slack, name, title, ylim = [None, None]):
     hull = ConvexHull(solutions)
     
     fig = plt.figure(figsize = (10,5))
@@ -110,17 +119,25 @@ def make_hull(solutions, n_optimal, mga_slack, name):
               '.', markersize = 20, label = "Optimal")
     plt.xlabel("P2X capacity [MW]")
     plt.ylabel("Data capacity [MW]")
-    plt.ylim([325, 575])
-    plt.suptitle('MAA Analysis of island without area constraint', fontsize = 22, y = 1)
+    plt.ylim(ylim)
+    plt.suptitle(title, fontsize = 22, y = 1)
     plt.title(f'With MGA slack = {mga_slack}', fontsize = 14)
     
     plt.legend(loc = 'center right')
     
     fig.savefig(name, format = 'eps', bbox_inches='tight')
     
-make_hull(n_1a_MAA, n_1a_opt, mga_slack, 'MAA_1a.eps')
+make_hull(n_1a_MAA, n_1a_opt, mga_slack, 'MAA_1a.eps',
+          'MAA Analysis of island with area constraint', [325, 575])
 
-make_hull(n_1b_MAA, n_1b_opt, mga_slack, 'MAA_1b.eps')
+make_hull(n_1b_MAA, n_1b_opt, mga_slack, 'MAA_1b.eps', 
+          'MAA Analysis of island without area constraint', [325, 575])
+
+make_hull(n_1a_MAA_10, n_1b_opt, 0.1, 'MAA_1b_10.eps',
+          title = 'MAA Analysis of island with area constraint')
+
+make_hull(n_1b_MAA_10, n_1b_opt, 0.1, 'MAA_1b_10.eps',
+          title = 'MAA Analysis of island without area constraint')
 
 #%% Sound
 il.its_britney_bitch(r'C:\Users\lukas\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds')
