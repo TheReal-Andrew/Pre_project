@@ -52,7 +52,7 @@ n_1b_MAA_10 = np.load('case 1b - no constraint\case_1b_MAA_solutions_10pct.npy')
 
 #%% Pieplot
 
-def make_pie(n, name, area1, area2):
+def make_pie(n, name, title, area1, area2):
 
     def autopct_format(values, k):
         def my_format(pct):
@@ -85,62 +85,23 @@ def make_pie(n, name, area1, area2):
     # fig.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
     ax.axis('equal')
     ax.margins(0, 0)
-    plt.suptitle('Share of area by technology', fontsize = 18)
+    plt.suptitle(title, fontsize = 18)
     plt.title(area1 + '\n' +f'Area used: {total_A:.0f} m$^2$     ' + area2,
               fontsize = 10,
                pad = 6)
     plt.legend(labels = labels)
     
-    fig.savefig(name, format = 'eps', bbox_inches='tight')
+    fig.savefig(name, format = 'pdf', bbox_inches='tight')
     
-make_pie(n_1a_opt, 'pie_1a.eps', area1 = 'With area constraint', area2 = 'Max area: 120000 m$^2$')
+make_pie(n_1a_opt, 'pie_1a.pdf', 
+         title = '1a - Share of area by technology',
+         area1 = 'With area constraint', 
+         area2 = 'Max area: 120000 m$^2$')
 
-make_pie(n_1b_opt, 'pie_1b.eps', area1 = 'Without area constraint', area2 = 'Max area: No limit')
-
-#%% Plot MAA
-
-# def make_hull(solutions, n_optimal, mga_slack, name, title,
-#               ylim = [None, None], xlim = [None, None]):
-#     hull = ConvexHull(solutions)
-    
-#     fig = plt.figure(figsize = (10,5))
-    
-#     x = solutions[:,0]
-#     y = solutions[:,1]
-    
-#     for simplex in hull.simplices:
-#         plt.plot(solutions[simplex, 0], solutions[simplex, 1], 'k-')
-    
-#     plt.plot(x, y,
-#              'o', label = "Near-optimal")
-    
-#     #Plot optimal
-#     plt.plot(n_optimal.generators.p_nom_opt["P2X"], 
-#              n_optimal.generators.p_nom_opt["Data"],
-#               '.', markersize = 20, label = "Optimal")
-#     plt.xlabel("P2X capacity [MW]")
-#     plt.ylabel("Data capacity [MW]")
-#     plt.ylim(ylim)
-#     plt.xlim(xlim)
-#     plt.suptitle(title, fontsize = 22, y = 1)
-#     plt.title(f'With MGA slack = {mga_slack}', fontsize = 14)
-    
-#     plt.legend(loc = 'center right')
-    
-#     fig.savefig(name, format = 'eps', bbox_inches='tight')
-    
-# make_hull(n_1a_MAA, n_1a_opt, mga_slack, 'MAA_1a.eps',
-#           'MAA Analysis of island with area constraint',
-#           ylim = [325, 575], xlim = [1100, 1700])
-
-# make_hull(n_1b_MAA, n_1b_opt, mga_slack, 'MAA_1b.eps', 
-#           'MAA Analysis of island without area constraint', [325, 575])
-
-# make_hull(n_1a_MAA_10, n_1a_opt, 0.1, 'MAA_1b_10.eps',
-#           title = 'MAA Analysis of island with area constraint')
-
-# make_hull(n_1b_MAA_10, n_1b_opt, 0.1, 'MAA_1b_10.eps',
-#           title = 'MAA Analysis of island without area constraint')
+make_pie(n_1b_opt, 'pie_1b.pdf', 
+         title = '1b - Share of area by technology',
+         area1 = 'Without area constraint', 
+         area2 = 'Max area: No limit')
 
 #%% MAA hulls in same plot
 
@@ -178,15 +139,69 @@ def make_hull2(sol1, sol10, n_optimal, name, title, loc = 'upper right',
     plt.title('Near-feasible space, with mga slack of 0.1 and 0.01', fontsize = 14)
     plt.legend(loc = loc)
     
-    fig.savefig(name, format = 'eps', bbox_inches='tight')
+    fig.savefig(name, format = 'pdf', bbox_inches='tight')
     
-make_hull2(n_1a_MAA, n_1a_MAA_10, n_1a_opt, 'MAA_1a_1_10.eps', 
+make_hull2(n_1a_MAA, n_1a_MAA_10, n_1a_opt, 'MAA_1a_1_10.pdf', 
            title = 'MAA analysis with area constraint', loc = 'lower center',
            ylim = [None, 600])
 
-make_hull2(n_1b_MAA, n_1b_MAA_10, n_1b_opt, 'MAA_1b_1_10.eps',
+make_hull2(n_1b_MAA, n_1b_MAA_10, n_1b_opt, 'MAA_1b_1_10.pdf',
            title = 'MAA analysis without area constraint', loc = 'lower center',
            ylim = [None, 600])
+
+#%% Table
+
+n1 = n_1a_opt
+P2X_p_1a   = n1.generators.loc["P2X"].p_nom_opt
+Data_p_1a  = n1.generators.loc["Data"].p_nom_opt
+Store_p_1a = n1.stores.loc["Store1"].e_nom_opt
+
+P2X_A_1a   = k_P2X * P2X_p_1a
+Data_A_1a  = k_Data * n1.generators.loc["Data"].p_nom_opt
+Store_A_1a = k_Store * n1.stores.loc["Store1"].e_nom_opt
+
+total_A_1a = P2X_A_1a + Data_A_1a + Store_A_1a
+n1_cost    = n1.objective
+
+n2 = n_1b_opt
+P2X_p_1b   = n2.generators.loc["P2X"].p_nom_opt
+Data_p_1b  = n2.generators.loc["Data"].p_nom_opt
+Store_p_1b = n2.stores.loc["Store1"].e_nom_opt
+
+P2X_A_1b   = k_P2X * P2X_p_1b
+Data_A_1b  = k_Data * n2.generators.loc["Data"].p_nom_opt
+Store_A_1b = k_Store * n2.stores.loc["Store1"].e_nom_opt
+
+total_A_1b = P2X_A_1b + Data_A_1b + Store_A_1b
+n2_cost    = n2.objective
+
+
+total_c   = ((total_A_1b - total_A_1a)/total_A_1b) * 100
+P2X_A_c   = ((P2X_A_1b - P2X_A_1a)/P2X_A_1b) * 100
+Data_A_c  = ((Data_A_1b - Data_A_1a)/Data_A_1b) * 100
+Store_A_c = ((Store_A_1b - Store_A_1a)/Store_A_1b) * 100
+cost_c    = ((n2_cost - n1_cost)/n2_cost) * 100
+
+# total_c   = ((total_A_1a - total_A_1b)/total_A_1a) * 100
+# P2X_A_c   = ((P2X_A_1a - P2X_A_1b)/P2X_A_1a) * 100
+# Data_A_c  = ((Data_A_1a - Data_A_1b)/Data_A_1a) * 100
+# Store_A_c = ((Store_A_1a - Store_A_1b)/Store_A_1a) * 100
+# cost_c    = ((n1_cost - n2_cost)/n1_cost) * 100
+
+data = np.array([[total_A_1b, n2_cost, P2X_A_1b, Data_A_1b, Store_A_1b], 
+                 [total_A_1a, n1_cost, P2X_A_1a, Data_A_1a, Store_A_1a],
+                 [total_c   , cost_c , P2X_A_c , Data_A_c , Store_A_c]])
+
+
+pd.options.display.float_format = '{:.2f}'.format
+
+table = pd.DataFrame(
+    data    = data,
+    columns = ['Total Area [m2]', 'System cost [Euro]', 'P2X Area [m2]', 'Data Area [m2]', 'Store Area [m2]'],
+    index   = ['Case 1b', 'Case 1a', 'Change [\%]'],
+    )
+
+pd.reset_option('display.float_format')
 
 #%% Sound
 il.its_britney_bitch(r'C:\Users\lukas\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds')
