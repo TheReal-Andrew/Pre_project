@@ -16,6 +16,7 @@ import cartopy.crs as ccrs
 import pandas as pd
 import os
 import datetime
+ip.set_plot_options()
 
 n_points = 8760
 
@@ -215,5 +216,73 @@ ax_PF1[1].text(0.83, 0.96,
 
 plt.tight_layout()
 
+#%% --------------------------------------------------------------------------
+fig_PF2, ax_PF2 = plt.subplots(2, 1, figsize=(16,9), dpi=300)
+ip.set_plot_options()
+
+plt.sca(ax_PF2[0])
+plt.xticks(fontsize=15) 
+plt.yticks(fontsize=15)
+ax_PF2[0].plot(cload['DK'].values,
+                color = ip.get_plot_colors()[list(ip.get_plot_colors())[1]])
+# ax_PF2[0].set_xlabel('Time [hr]', fontsize = 15)
+ax_PF2[0].set_ylabel('Energy demand [MWh]', fontsize = 15)
+ax_PF2[0].set_xlim(0,8760)
+ax_PF2[0].set_ylim(1900,10500)
+ax_PF2[0].set_title('Danish energy demand for 2030',
+                    fontsize = 25)
+ax_PF2[0].grid()
+ax_PF2[0].text(0.805, 0.93, 
+               str(cload['DK'].describe()),
+               weight = 'heavy',
+               ha='left', va='top', 
+               transform=ax_PF1[0].transAxes,
+               fontsize = 14)
+
+
+plt.sca(ax_PF2[1])
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
+ax_PF2[1].plot(cload['BE'].values,
+                color = ip.get_plot_colors()[list(ip.get_plot_colors())[5]])
+ax_PF2[1].set_xlabel('Time [hr]', fontsize = 15)
+ax_PF2[1].set_ylabel('Energy demand [MWh]', fontsize = 15)
+ax_PF2[1].set_xlim(0,8760)
+ax_PF2[1].set_ylim(1900,10500)
+ax_PF2[1].set_title('Belgian energy demand for 2030',
+                    fontsize = 25)
+ax_PF2[1].grid()
+ax_PF2[1].text(0.805, 0.54, 
+               str(cload['BE'].describe()),
+               weight = 'heavy',
+               ha='left', va='top', 
+               transform=ax_PF1[1].transAxes,
+               fontsize = 14,)
+
+
+plt.tight_layout()
+
+#%% --------------------------------------------------------------------------
+plt.figure(figsize=(16,4.5), dpi=300)
+ip.set_plot_options()
+# plt.sca(ax_PF3)
+plt.xticks(fontsize=15) 
+plt.yticks(fontsize=15)
+plt.plot(cf_wind_df['electricity'].values, color='blue')
+plt.xlabel('Time [hr]', fontsize = 15)
+plt.ylabel('Wind capacity factor [-]', fontsize = 15)
+plt.xlim(0,8760)
+# ax_PF3.set_ylim(1900,10500)
+plt.title('Wind capacity factor for 2030',
+                    fontsize = 25)
+plt.grid()
+plt.text(0.635, -0.75, 
+               str(cf_wind_df['electricity'].describe()),
+               weight = 'heavy',
+               ha='left', va='top', 
+               transform=ax_PF1[0].transAxes,
+               fontsize = 14)
+
+
 #%%
-il.its_britney_bitch(r"C:\Users\Linda\Documents\Github\NorthSeaEnergyIsland\Data\Sounds")
+il.its_britney_bitch(r"C:\Users\aalin\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds")
