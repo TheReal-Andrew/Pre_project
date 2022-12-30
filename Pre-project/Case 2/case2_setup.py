@@ -75,7 +75,7 @@ for i in link_destinations[1:]:         #i becomes each string in the array
         bus0             = "Island",    #Start Bus
         bus1             = i,           #End Bus
         carrier          = "DC" + str(j),        #Define carrier type
-        p_min_pu         = -1,          #Make links bi-directional
+        p_min_pu         = 0,          #Make links bi-directional
         p_nom            = 0,           #Power capacity of link
         p_nom_extendable = True,        #Extendable links
         capital_cost     = il.get_annuity(0.07, float(tech_life.value))    #Annuity factor
@@ -144,18 +144,35 @@ export_path = os.getcwd() + filename
 network.export_to_netcdf(export_path)
 
 #%%
+mean_DK7 = network.links_t.p0.iloc[:,0].resample('W').mean()
+mean_BE7 = network.links_t.p0.iloc[:,1].resample('W').mean()
+
 fig_PF, ax_PF = plt.subplots(2, 1, figsize=(16,9), dpi=300)
 
 plt.sca(ax_PF[0])
 plt.xticks(fontsize=15, rotation = 45) 
 plt.yticks(fontsize=15)
 ax_PF[0].plot(network.links_t.p0.iloc[:,0],
-                color = ip.get_plot_colors()[list(ip.get_plot_colors())[1]])
+              label='Hourly',
+              color = ip.get_plot_colors()[list(ip.get_plot_colors())[1]])
+ax_PF[0].plot(mean_DK7, color='k', 
+              linewidth = 3,
+              label = 'Weekly')
 ax_PF[0].set_xlabel('Time [hr]', fontsize = 15)
 ax_PF[0].set_ylabel('Powerflow [MW]', fontsize = 15)
 ax_PF[0].set_xlim([datetime.date(2030, 1, 1), datetime.date(2030,12,31)])
 ax_PF[0].set_title('Direct powerflow from Energy Island to Denmark',
                     fontsize = 25)
+ax_PF[0].set_ylim(-100,3000)
+ax_PF[0].legend(loc="upper right",
+                fontsize = 15)
+
+ax_PF[0].text(1.01, 1, 
+               str(round(network.links_t.p0.iloc[:,0].describe(),1).reset_index().to_string(header=None, index=None)),
+               ha='left', va='top', 
+               transform=ax_PF[0].transAxes,
+               fontsize = 14)
+
 ax_PF[0].grid()
 plt.tight_layout()
 
@@ -163,16 +180,31 @@ plt.sca(ax_PF[1])
 plt.xticks(fontsize=15, rotation = 45)
 plt.yticks(fontsize=15)
 ax_PF[1].plot(network.links_t.p0.iloc[:,1],
-                color = ip.get_plot_colors()[list(ip.get_plot_colors())[5]])
+              color = ip.get_plot_colors()[list(ip.get_plot_colors())[5]],
+              label = 'Hourly')
+ax_PF[1].plot(mean_BE7, color='k', 
+              linewidth = 3,
+              label = 'Weekly')
 ax_PF[1].set_xlabel('Time [hr]', fontsize = 15)
 ax_PF[1].set_ylabel('Powerflow [MW]', fontsize = 15)
 ax_PF[1].set_xlim([datetime.date(2030, 1, 1), datetime.date(2030,12,31)])
 ax_PF[1].set_title('Direct powerflow from Energy Island to Belgium',
                     fontsize = 25)
+ax_PF[1].set_ylim(-100,3000)
+ax_PF[1].legend(loc="lower right",
+                fontsize = 15)
+
+ax_PF[1].text(1.01, 1, 
+               str(round(network.links_t.p0.iloc[:,1].describe(),1).reset_index().to_string(header=None, index=None)), 
+               ha='left', va='top', 
+               transform=ax_PF[1].transAxes,
+               fontsize = 14)
+
 ax_PF[1].grid()
 plt.tight_layout()
 
 
+#%%
 fig_PF1, ax_PF1 = plt.subplots(2, 1, figsize=(16,9), dpi=300)
 
 
