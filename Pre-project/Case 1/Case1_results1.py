@@ -154,7 +154,7 @@ make_hull2(n_1b_MAA, n_1b_MAA_10, n_1b_opt, 'MAA_1b_1_10.pdf',
            )
 
 make_hull2(n_1a_MAA, n_1a_MAA_10, n_1a_opt, 'MAA_1a_z.pdf', 
-           title = '1a - MAA Zoomed', loc = 'lower center',
+           title = '1a - MAA Zoomed', loc = 'left center',
            ylim = [None, 600], 
             xlim = [800, 3000],
            )
