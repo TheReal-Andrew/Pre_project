@@ -142,12 +142,28 @@ def make_hull2(sol1, sol10, n_optimal, name, title, loc = 'upper right',
     fig.savefig(name, format = 'pdf', bbox_inches='tight')
     
 make_hull2(n_1a_MAA, n_1a_MAA_10, n_1a_opt, 'MAA_1a_1_10.pdf', 
-           title = 'MAA analysis with area constraint', loc = 'lower center',
-           ylim = [None, 600])
+           title = '1a - MAA analysis with area constraint', loc = 'lower center',
+           ylim = [None, 600], 
+            # xlim = [800, 3000],
+           )
 
 make_hull2(n_1b_MAA, n_1b_MAA_10, n_1b_opt, 'MAA_1b_1_10.pdf',
-           title = 'MAA analysis without area constraint', loc = 'lower center',
-           ylim = [None, 600])
+           title = '1b - MAA analysis without area constraint', loc = 'lower center',
+           ylim = [None, 600],
+            # xlim = [800, 3000],
+           )
+
+make_hull2(n_1a_MAA, n_1a_MAA_10, n_1a_opt, 'MAA_1a_z.pdf', 
+           title = '1a - MAA Zoomed', loc = 'lower center',
+           ylim = [None, 600], 
+            xlim = [800, 3000],
+           )
+
+make_hull2(n_1b_MAA, n_1b_MAA_10, n_1b_opt, 'MAA_1b_z.pdf',
+           title = '1b - MAA Zoomed', loc = 'lower center',
+           ylim = [None, 600],
+            xlim = [800, 3000],
+           )
 
 #%% Table
 
