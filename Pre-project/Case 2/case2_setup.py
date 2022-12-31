@@ -205,23 +205,28 @@ plt.tight_layout()
 
 
 #%%
-fig_PF1, ax_PF1 = plt.subplots(2, 1, figsize=(16,9), dpi=300)
+cprice.index = pd.date_range('2030-01-01 00:00', '2030-12-31 23:00', freq = 'H')
+mean_priceDK7 = cprice['DK'].resample('D').mean()
+mean_priceBE7 = cprice['BE'].resample('D').mean()
 
+fig_PF1, ax_PF1 = plt.subplots(2, 1, figsize=(16,9), dpi=300)
+ip.set_plot_options()
 
 plt.sca(ax_PF[0])
 plt.xticks(fontsize=15) 
 plt.yticks(fontsize=15)
-ax_PF1[0].plot(cprice['DK'].values,
-                color = ip.get_plot_colors()[list(ip.get_plot_colors())[1]])
+ax_PF1[0].plot(cprice['DK'],
+                color = ip.get_plot_colors()[list(ip.get_plot_colors())[1]], label = 'Hourly')
+ax_PF1[0].plot(mean_priceDK7, color = 'k', linewidth = 3, label = 'Daily')
 ax_PF1[0].set_xlabel('Time [hr]', fontsize = 15)
-ax_PF1[0].set_ylabel('Energy price [€/MWh]', fontsize = 15)
-ax_PF1[0].set_xlim(0,8760)
+ax_PF1[0].set_ylabel("Energy price [€/MWh]", fontsize = 15)
+ax_PF1[0].set_xlim('2030-01-01 00:00', '2030-12-31 23:00')
 ax_PF1[0].set_ylim(0,220)
 ax_PF1[0].set_title('Danish energy price for 2030',
                     fontsize = 25)
 ax_PF1[0].grid()
-ax_PF1[0].text(0.83, 0.96, 
-               str(cprice['DK'].describe()), 
+ax_PF1[0].text(1,1, 
+               str(round(cprice['DK'].describe(),1).reset_index().to_string(header=None, index=None)),  
                ha='left', va='top', 
                transform=ax_PF1[0].transAxes,
                fontsize = 14)
@@ -230,23 +235,25 @@ ax_PF1[0].legend(loc="upper right",
 
 
 plt.sca(ax_PF1[1])
-plt.xticks(fontsize=15)
-plt.yticks(fontsize=15)
-ax_PF1[1].plot(cprice['BE'].values,
-                color = ip.get_plot_colors()[list(ip.get_plot_colors())[5]])
+# plt.xticks(fontsize=15)
+# plt.yticks(fontsize=15)
+ax_PF1[1].plot(cprice['BE'],
+                color = ip.get_plot_colors()[list(ip.get_plot_colors())[5]], label = 'Hourly')
+ax_PF1[1].plot(mean_priceBE7, color = 'k', linewidth = 3, label = 'Daily')
 ax_PF1[1].set_xlabel('Time [hr]', fontsize = 15)
-ax_PF1[1].set_ylabel('Energy price [€/MWh]', fontsize = 15)
-ax_PF1[1].set_xlim(0,8760)
+ax_PF1[1].set_ylabel("Energy price [€/MWh]", fontsize = 15)
+ax_PF1[1].set_xlim('2030-01-01 00:00', '2030-12-31 23:00')
 ax_PF1[1].set_ylim(0,220)
 ax_PF1[1].set_title('Belgian energy price for 2030',
                     fontsize = 25)
 ax_PF1[1].grid()
-ax_PF1[1].text(0.83, 0.96, 
-               str(cprice['BE'].describe()), 
+ax_PF1[1].text(1,1, 
+               str(round(cprice['BE'].describe(),1).reset_index().to_string(header=None, index=None)), 
                ha='left', va='top', 
                transform=ax_PF1[1].transAxes,
                fontsize = 14)
-
+ax_PF1[1].legend(loc="upper right",
+                fontsize = 15)
 
 plt.tight_layout()
 
@@ -313,28 +320,28 @@ ax_PF2[1].legend(loc="lower right",
 plt.tight_layout()
 
 #%% --------------------------------------------------------------------------
+cf_wind_df['electricity'].index = pd.date_range('2030-01-01 00:00', '2030-12-31 23:00', freq = 'H')
+mean_wind7 = cf_wind_df['electricity'].resample('W').mean()
 
 plt.figure(figsize=(16,4.5), dpi=300)
 ip.set_plot_options()
 # plt.sca(ax_PF3)
 plt.xticks(fontsize=15) 
 plt.yticks(fontsize=15)
-plt.plot(cf_wind_df['electricity'].values, color='blue')
+plt.plot(cf_wind_df['electricity'], color='blue', label = 'Hourly')
+plt.plot(mean_wind7, color='k', linewidth = 3, label = 'Weekly')
 # plt.plot(mean_wind7, color='k')
 plt.xlabel('Time [hr]', fontsize = 15)
 plt.ylabel('Wind capacity factor [-]', fontsize = 15)
-plt.xlim(0,8760)
+plt.xlim('2030-01-01 00:00', '2030-12-31 23:00')
 # ax_PF3.set_ylim(1900,10500)
 plt.title('Wind capacity factor for 2030',
                     fontsize = 25)
 plt.grid()
-plt.text(8800,0.54, 
-               str(round(cf_wind_df['electricity'].describe(),3).reset_index().to_string(header=None, index=None)),
-               weight = 'heavy',
-               # ha='left', va='top', 
-               # transform=ax_PF1[0].transAxes,
-               fontsize = 14)
-plt.legend('Hourly','Weekly')
+plt.text('2030-12-31 23:00',0.5, 
+                str(round(cf_wind_df['electricity'].describe(),3).reset_index().to_string(header=None, index=None)),
+                fontsize = 14)
+plt.legend(loc = "lower right", fontsize = 15)
 
 
 #%%
