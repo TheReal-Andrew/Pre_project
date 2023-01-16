@@ -1,5 +1,6 @@
 #%% Import packages
 import pypsa
+from pypsa.linopt import get_var, linexpr, join_exprs, define_constraints
 import pandas as pd
 import matplotlib.pyplot as plt
 import system_add
@@ -76,22 +77,41 @@ system_add.storages(network)
 
 #%% Add CO2 constraint
     
-co2_limit = 765922900*0.44*0.15 #tonCO2 https://www.worldometers.info/co2-emissions/germany-co2-emissions/
-# co2_limit = 4000000*(1-round(i,1))   
+# co2_limit = 765922900*0.44*0.15 #tonCO2 https://www.worldometers.info/co2-emissions/germany-co2-emissions/
+# # co2_limit = 4000000*(1-round(i,1))   
          
-network.add("GlobalConstraint",
-            "co2_limit",
-            type                = "primary_energy",
-            carrier_attribute   = "co2_emissions",
-            sense               = "<=",
-            constant            = co2_limit)
+# network.add("GlobalConstraint",
+#             "co2_limit",
+#             type                = "primary_energy",
+#             carrier_attribute   = "co2_emissions",
+#             sense               = "<=",
+#             constant            = co2_limit)
+
+#%% 
+def CO2(network, snapshots):
+    var_gen  = get_var(network, 'Generator', 'p')
+    
+    CO2_e = 0.19 # [TonCO2/MWh]
+    
+    lhs_DNK = linexpr((CO2_e, var_gen['OCGT (DNK)'])).sum()
+    lhs_DEU = linexpr((CO2_e, var_gen['OCGT (DEU)'])).sum()
+    lhs_FRA = linexpr((CO2_e, var_gen['OCGT (FRA)'])).sum()
+    
+    define_constraints(network, lhs_DNK, '<', 1000,  'Generator', 'DNK_CO2')
+    define_constraints(network, lhs_DEU, '<', 20000, 'Generator', 'DEU_CO2')
+    define_constraints(network, lhs_FRA, '<', 15000, 'Generator', 'FRA_CO2')
+    
+def extra_functionality(network, snapshots):
+    CO2(network, snapshots)
 
 #%% Solve the system
-network.lopf(network.snapshots, 
-             pyomo              = False,
-             solver_name        = 'gurobi',
-             keep_shadowprices  = True,
-             keep_references    = True,
+network.lopf(
+    # network.snapshots, 
+             pyomo               = False,
+             solver_name         = 'gurobi',
+             extra_functionality = extra_functionality,
+             keep_shadowprices   = True,
+             keep_references     = True,
              )
 
 #%% Plot the technology mix
