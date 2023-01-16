@@ -154,15 +154,15 @@ make_hull2(n_1b_MAA, n_1b_MAA_10, n_1b_opt, 'MAA_1b_1_10.pdf',
            )
 
 make_hull2(n_1a_MAA, n_1a_MAA_10, n_1a_opt, 'MAA_1a_z.pdf', 
-           title = '1a - MAA Zoomed', loc = 'left center',
+           title = '1a - MAA Zoomed', loc = 'lower left',
            ylim = [None, 600], 
-            xlim = [800, 3000],
+            xlim = [800, 4000],
            )
 
 make_hull2(n_1b_MAA, n_1b_MAA_10, n_1b_opt, 'MAA_1b_z.pdf',
-           title = '1b - MAA Zoomed', loc = 'lower center',
+           title = '1b - MAA Zoomed', loc = 'lower left',
            ylim = [None, 600],
-            xlim = [800, 3000],
+            xlim = [800, 4000],
            )
 
 #%% Table
@@ -192,11 +192,11 @@ total_A_1b = P2X_A_1b + Data_A_1b + Store_A_1b
 n2_cost    = n2.objective
 
 
-total_c   = ((total_A_1b - total_A_1a)/total_A_1b) * 100
-P2X_A_c   = ((P2X_A_1b - P2X_A_1a)/P2X_A_1b) * 100
-Data_A_c  = ((Data_A_1b - Data_A_1a)/Data_A_1b) * 100
-Store_A_c = ((Store_A_1b - Store_A_1a)/Store_A_1b) * 100
-cost_c    = ((n2_cost - n1_cost)/n2_cost) * 100
+total_c   = ((total_A_1a - total_A_1b)/total_A_1b) * 100
+P2X_A_c   = ((P2X_A_1a - P2X_A_1b)/P2X_A_1b) * 100
+Data_A_c  = ((Data_A_1a - Data_A_1b)/Data_A_1b) * 100
+Store_A_c = ((Store_A_1a - Store_A_1b)/Store_A_1b) * 100
+cost_c    = ((n1_cost - n2_cost)/n2_cost) * 100
 
 # total_c   = ((total_A_1a - total_A_1b)/total_A_1a) * 100
 # P2X_A_c   = ((P2X_A_1a - P2X_A_1b)/P2X_A_1a) * 100
@@ -210,6 +210,7 @@ data = np.array([[total_A_1b, n2_cost, P2X_A_1b, Data_A_1b, Store_A_1b],
 
 
 pd.options.display.float_format = '{:.2f}'.format
+# pd.options.display.float_format = '{:.2E}'.format
 
 table = pd.DataFrame(
     data    = data,
@@ -217,7 +218,9 @@ table = pd.DataFrame(
     index   = ['Case 1b', 'Case 1a', 'Change [\%]'],
     )
 
-pd.reset_option('display.float_format')
+# table.loc['Change [\%]', 'Total Area [m2]'] = float('{:.2f}'.format(table.at['Change [\%]', 'Total Area [m2]']))
+
+# pd.reset_option('display.float_format')
 
 #%% Sound
 il.its_britney_bitch(r'C:\Users\lukas\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds')
