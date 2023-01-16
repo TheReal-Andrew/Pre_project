@@ -26,6 +26,8 @@ network       = pypsa.Network()
 hours_in_2015 = pd.date_range('2015-01-01T00:00Z','2015-12-31T23:00Z', freq='H')
 network.set_snapshots(hours_in_2015)
 
+network.bus_df = bus_df # Add bus_df as dataframe in the network
+
 for i in range(bus_df.shape[0]):    #i becomes integers
     network.add(                    #Add component
         "Bus",                      #Component type
@@ -92,14 +94,20 @@ def CO2(network, snapshots):
     var_gen  = get_var(network, 'Generator', 'p')
     
     CO2_e = 0.19 # [TonCO2/MWh]
+    red   = 0.01 # CO2 Allowance in percent of 2015 level
     
-    lhs_DNK = linexpr((CO2_e, var_gen['OCGT (DNK)'])).sum()
-    lhs_DEU = linexpr((CO2_e, var_gen['OCGT (DEU)'])).sum()
-    lhs_FRA = linexpr((CO2_e, var_gen['OCGT (FRA)'])).sum()
+    lhs_DNK = linexpr((CO2_e, var_gen['OCGT (' + network.bus_df.Abbreviation[0] + ')'])).sum()
+    rhs_DNK = float(network.bus_df.CO2_limit[0]) * red
     
-    define_constraints(network, lhs_DNK, '<', 1000,  'Generator', 'DNK_CO2')
-    define_constraints(network, lhs_DEU, '<', 20000, 'Generator', 'DEU_CO2')
-    define_constraints(network, lhs_FRA, '<', 15000, 'Generator', 'FRA_CO2')
+    lhs_DEU = linexpr((CO2_e, var_gen['OCGT (' + network.bus_df.Abbreviation[1] + ')'])).sum()
+    rhs_DEU = float(network.bus_df.CO2_limit[1]) * red
+    
+    lhs_FRA = linexpr((CO2_e, var_gen['OCGT (' + network.bus_df.Abbreviation[2] + ')'])).sum()
+    rhs_FRA = float(network.bus_df.CO2_limit[2]) * red
+    
+    define_constraints(network, lhs_DNK, '<=', rhs_DNK, 'Generator', 'DNK_CO2')
+    define_constraints(network, lhs_DEU, '<=', rhs_DEU, 'Generator', 'DEU_CO2')
+    define_constraints(network, lhs_FRA, '<=', rhs_FRA, 'Generator', 'FRA_CO2')
     
 def extra_functionality(network, snapshots):
     CO2(network, snapshots)
@@ -140,7 +148,11 @@ for j in list(bus_df['Abbreviation']):
             pass
     
     ax[q].pie(sizes, labels = labels, autopct='%.1f%%', colors = color)
-    ax[q].set_title(j + " - Energy demand: " + str(round(df_elec[j].sum()/10**6,2)) + " TWh")
+    
+    cols = [col for col in network.generators_t.p.columns if j in col]
+    gen = round(network.generators_t.p[cols].sum().sum()/10**6, 2)
+    
+    ax[q].set_title(j + " - Energy demand: " + str(round(df_elec[j].sum()/10**6,2)) + " TWh \n " + j + " - Energy produced: " + str(gen) + "TWh")
     q = q + 1
 
 #%%
