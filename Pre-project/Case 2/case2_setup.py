@@ -75,7 +75,7 @@ for i in link_destinations[1:]:         #i becomes each string in the array
         bus0             = "Island",    #Start Bus
         bus1             = i,           #End Bus
         carrier          = "DC" + str(j),        #Define carrier type
-        p_min_pu         = -1,          #Make links bi-directional
+        p_min_pu         = 0,          #Make links bi-directional
         p_nom            = 0,           #Power capacity of link
         p_nom_extendable = True,        #Extendable links
         capital_cost     = il.get_annuity(0.07, float(tech_life.value))    #Annuity factor
@@ -144,18 +144,35 @@ export_path = os.getcwd() + filename
 network.export_to_netcdf(export_path)
 
 #%%
+mean_DK7 = network.links_t.p0.iloc[:,0].resample('W').mean()
+mean_BE7 = network.links_t.p0.iloc[:,1].resample('W').mean()
+
 fig_PF, ax_PF = plt.subplots(2, 1, figsize=(16,9), dpi=300)
 
 plt.sca(ax_PF[0])
 plt.xticks(fontsize=15, rotation = 45) 
 plt.yticks(fontsize=15)
 ax_PF[0].plot(network.links_t.p0.iloc[:,0],
-                color = ip.get_plot_colors()[list(ip.get_plot_colors())[1]])
+              label='Hourly',
+              color = ip.get_plot_colors()[list(ip.get_plot_colors())[1]])
+ax_PF[0].plot(mean_DK7, color='k', 
+              linewidth = 3,
+              label = 'Weekly')
 ax_PF[0].set_xlabel('Time [hr]', fontsize = 15)
 ax_PF[0].set_ylabel('Powerflow [MW]', fontsize = 15)
 ax_PF[0].set_xlim([datetime.date(2030, 1, 1), datetime.date(2030,12,31)])
 ax_PF[0].set_title('Direct powerflow from Energy Island to Denmark',
                     fontsize = 25)
+ax_PF[0].set_ylim(-100,3000)
+ax_PF[0].legend(loc="upper right",
+                fontsize = 15)
+
+ax_PF[0].text(1.01, 1, 
+               str(round(network.links_t.p0.iloc[:,0].describe(),1).reset_index().to_string(header=None, index=None)),
+               ha='left', va='top', 
+               transform=ax_PF[0].transAxes,
+               fontsize = 14)
+
 ax_PF[0].grid()
 plt.tight_layout()
 
@@ -163,125 +180,168 @@ plt.sca(ax_PF[1])
 plt.xticks(fontsize=15, rotation = 45)
 plt.yticks(fontsize=15)
 ax_PF[1].plot(network.links_t.p0.iloc[:,1],
-                color = ip.get_plot_colors()[list(ip.get_plot_colors())[5]])
+              color = ip.get_plot_colors()[list(ip.get_plot_colors())[5]],
+              label = 'Hourly')
+ax_PF[1].plot(mean_BE7, color='k', 
+              linewidth = 3,
+              label = 'Weekly')
 ax_PF[1].set_xlabel('Time [hr]', fontsize = 15)
 ax_PF[1].set_ylabel('Powerflow [MW]', fontsize = 15)
 ax_PF[1].set_xlim([datetime.date(2030, 1, 1), datetime.date(2030,12,31)])
 ax_PF[1].set_title('Direct powerflow from Energy Island to Belgium',
                     fontsize = 25)
+ax_PF[1].set_ylim(-100,3000)
+ax_PF[1].legend(loc="lower right",
+                fontsize = 15)
+
+ax_PF[1].text(1.01, 1, 
+               str(round(network.links_t.p0.iloc[:,1].describe(),1).reset_index().to_string(header=None, index=None)), 
+               ha='left', va='top', 
+               transform=ax_PF[1].transAxes,
+               fontsize = 14)
+
 ax_PF[1].grid()
 plt.tight_layout()
 
 
-fig_PF1, ax_PF1 = plt.subplots(2, 1, figsize=(16,9), dpi=300)
+#%%
+cprice.index = pd.date_range('2030-01-01 00:00', '2030-12-31 23:00', freq = 'H')
+mean_priceDK7 = cprice['DK'].resample('D').mean()
+mean_priceBE7 = cprice['BE'].resample('D').mean()
 
+fig_PF1, ax_PF1 = plt.subplots(2, 1, figsize=(16,9), dpi=300)
+ip.set_plot_options()
 
 plt.sca(ax_PF[0])
 plt.xticks(fontsize=15) 
 plt.yticks(fontsize=15)
-ax_PF1[0].plot(cprice['DK'].values,
-                color = ip.get_plot_colors()[list(ip.get_plot_colors())[1]])
+ax_PF1[0].plot(cprice['DK'],
+                color = ip.get_plot_colors()[list(ip.get_plot_colors())[1]], label = 'Hourly')
+ax_PF1[0].plot(mean_priceDK7, color = 'k', linewidth = 3, label = 'Daily')
 ax_PF1[0].set_xlabel('Time [hr]', fontsize = 15)
-ax_PF1[0].set_ylabel('Energy price [€/MWh]', fontsize = 15)
-ax_PF1[0].set_xlim(0,8760)
+ax_PF1[0].set_ylabel("Energy price [€/MWh]", fontsize = 15)
+ax_PF1[0].set_xlim('2030-01-01 00:00', '2030-12-31 23:00')
 ax_PF1[0].set_ylim(0,220)
 ax_PF1[0].set_title('Danish energy price for 2030',
                     fontsize = 25)
 ax_PF1[0].grid()
-ax_PF1[0].text(0.83, 0.96, 
-               str(cprice['DK'].describe()), 
+ax_PF1[0].text(1,1, 
+               str(round(cprice['DK'].describe(),1).reset_index().to_string(header=None, index=None)),  
                ha='left', va='top', 
                transform=ax_PF1[0].transAxes,
                fontsize = 14)
+ax_PF1[0].legend(loc="upper right",
+                fontsize = 15)
 
 
 plt.sca(ax_PF1[1])
-plt.xticks(fontsize=15)
-plt.yticks(fontsize=15)
-ax_PF1[1].plot(cprice['BE'].values,
-                color = ip.get_plot_colors()[list(ip.get_plot_colors())[5]])
+# plt.xticks(fontsize=15)
+# plt.yticks(fontsize=15)
+ax_PF1[1].plot(cprice['BE'],
+                color = ip.get_plot_colors()[list(ip.get_plot_colors())[5]], label = 'Hourly')
+ax_PF1[1].plot(mean_priceBE7, color = 'k', linewidth = 3, label = 'Daily')
 ax_PF1[1].set_xlabel('Time [hr]', fontsize = 15)
-ax_PF1[1].set_ylabel('Energy price [€/MWh]', fontsize = 15)
-ax_PF1[1].set_xlim(0,8760)
+ax_PF1[1].set_ylabel("Energy price [€/MWh]", fontsize = 15)
+ax_PF1[1].set_xlim('2030-01-01 00:00', '2030-12-31 23:00')
 ax_PF1[1].set_ylim(0,220)
 ax_PF1[1].set_title('Belgian energy price for 2030',
                     fontsize = 25)
 ax_PF1[1].grid()
-ax_PF1[1].text(0.83, 0.96, 
-               str(cprice['BE'].describe()), 
+ax_PF1[1].text(1,1, 
+               str(round(cprice['BE'].describe(),1).reset_index().to_string(header=None, index=None)), 
                ha='left', va='top', 
                transform=ax_PF1[1].transAxes,
                fontsize = 14)
-
+ax_PF1[1].legend(loc="upper right",
+                fontsize = 15)
 
 plt.tight_layout()
 
 #%% --------------------------------------------------------------------------
+# cload.index = cload.index.astype("datetime64[ns]")
+
+mean_demandDK7 = cload['DK'].resample('W').mean()
+mean_demandBE7 = cload['BE'].resample('W').mean()
+
 fig_PF2, ax_PF2 = plt.subplots(2, 1, figsize=(16,9), dpi=300)
 ip.set_plot_options()
 
 plt.sca(ax_PF2[0])
 plt.xticks(fontsize=15) 
 plt.yticks(fontsize=15)
-ax_PF2[0].plot(cload['DK'].values,
-                color = ip.get_plot_colors()[list(ip.get_plot_colors())[1]])
-# ax_PF2[0].set_xlabel('Time [hr]', fontsize = 15)
+ax_PF2[0].plot(cload['DK'],
+                color = ip.get_plot_colors()[list(ip.get_plot_colors())[1]],
+                label = 'Hourly')
+ax_PF2[0].plot(mean_demandDK7,
+               color = 'k',
+               linewidth = 3,
+               label = 'Weekly')
 ax_PF2[0].set_ylabel('Energy demand [MWh]', fontsize = 15)
-ax_PF2[0].set_xlim(0,8760)
+ax_PF2[0].set_xlim([datetime.date(2015, 1, 1), datetime.date(2015, 12, 31)])
 ax_PF2[0].set_ylim(1900,10500)
 ax_PF2[0].set_title('Danish energy demand for 2030',
                     fontsize = 25)
 ax_PF2[0].grid()
-ax_PF2[0].text(0.805, 0.93, 
-               str(cload['DK'].describe()),
+ax_PF2[0].text(1.01, 1, 
+               str(round(cload['DK'].describe(),1).reset_index().to_string(header=None, index=None)), 
                weight = 'heavy',
-               ha='left', va='top', 
-               transform=ax_PF1[0].transAxes,
+                ha='left', va='top', 
+                transform=ax_PF2[0].transAxes,
                fontsize = 14)
-
+ax_PF2[0].legend(loc="upper right",
+                fontsize = 15)
 
 plt.sca(ax_PF2[1])
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
-ax_PF2[1].plot(cload['BE'].values,
-                color = ip.get_plot_colors()[list(ip.get_plot_colors())[5]])
+ax_PF2[1].plot(cload['BE'],
+                color = ip.get_plot_colors()[list(ip.get_plot_colors())[5]],
+                label = 'Hourly')
+ax_PF2[1].plot(mean_demandBE7,
+               color = 'k',
+               linewidth = 3,
+               label = 'Weekly')
 ax_PF2[1].set_xlabel('Time [hr]', fontsize = 15)
 ax_PF2[1].set_ylabel('Energy demand [MWh]', fontsize = 15)
-ax_PF2[1].set_xlim(0,8760)
+ax_PF2[1].set_xlim([datetime.date(2015, 1, 1), datetime.date(2015, 12, 31)])
 ax_PF2[1].set_ylim(1900,10500)
 ax_PF2[1].set_title('Belgian energy demand for 2030',
                     fontsize = 25)
 ax_PF2[1].grid()
-ax_PF2[1].text(0.805, 0.54, 
-               str(cload['BE'].describe()),
+ax_PF2[1].text(1.01, 1, 
+               str(round(cload['BE'].describe(),1).reset_index().to_string(header=None, index=None)), 
                weight = 'heavy',
-               ha='left', va='top', 
-               transform=ax_PF1[1].transAxes,
+                ha='left', va='top', 
+                transform=ax_PF2[1].transAxes,
                fontsize = 14,)
-
+ax_PF2[1].legend(loc="lower right",
+                fontsize = 15)
 
 plt.tight_layout()
 
 #%% --------------------------------------------------------------------------
+cf_wind_df['electricity'].index = pd.date_range('2030-01-01 00:00', '2030-12-31 23:00', freq = 'H')
+mean_wind7 = cf_wind_df['electricity'].resample('W').mean()
+
 plt.figure(figsize=(16,4.5), dpi=300)
 ip.set_plot_options()
 # plt.sca(ax_PF3)
 plt.xticks(fontsize=15) 
 plt.yticks(fontsize=15)
-plt.plot(cf_wind_df['electricity'].values, color='blue')
+plt.plot(cf_wind_df['electricity'], color='blue', label = 'Hourly')
+plt.plot(mean_wind7, color='k', linewidth = 3, label = 'Weekly')
+# plt.plot(mean_wind7, color='k')
 plt.xlabel('Time [hr]', fontsize = 15)
 plt.ylabel('Wind capacity factor [-]', fontsize = 15)
-plt.xlim(0,8760)
+plt.xlim('2030-01-01 00:00', '2030-12-31 23:00')
 # ax_PF3.set_ylim(1900,10500)
 plt.title('Wind capacity factor for 2030',
                     fontsize = 25)
 plt.grid()
-plt.text(0.635, -0.75, 
-               str(cf_wind_df['electricity'].describe()),
-               weight = 'heavy',
-               ha='left', va='top', 
-               transform=ax_PF1[0].transAxes,
-               fontsize = 14)
+plt.text('2030-12-31 23:00',0.5, 
+                str(round(cf_wind_df['electricity'].describe(),3).reset_index().to_string(header=None, index=None)),
+                fontsize = 14)
+plt.legend(loc = "lower right", fontsize = 15)
 
 
 #%%
