@@ -115,17 +115,29 @@ CF_solar_rooftop           = df_solar_rooftop[country][[hour.strftime("%Y-%m-%dT
 sort_solar_rooftop          = CF_solar_rooftop.sort_values(ascending = False)
 exceedence_solar_rooftop    = np.arange(1,len(sort_solar_rooftop)+1)
 
+# Load OCGT data
+CF_OCGT = network.generators_t.p['OCGT ('+country+')']/network.generators.p_nom_opt['OCGT ('+country+')']
+
+sort_OCGT           = CF_OCGT.sort_values(ascending = False)
+exceedence_OCGT  = np.arange(1,len(sort_OCGT)+1)
+
+#%%Actual plot
+
 # Creating new figure
 fig3     = plt.figure('Figure 3')
 fig3, ax = plt.subplots(1, figsize=(15, 7.5))
 
-# 
 ax.plot(exceedence_offwind,sort_wind_offshore)
 ax.plot(exceedence_onwind,sort_wind_onshore)
 ax.plot(exceedence_solar_utility,sort_solar_utility)
 ax.plot(exceedence_solar_rooftop,sort_solar_rooftop)
+ax.plot(exceedence_OCGT,sort_OCGT)
 
-ax.legend(['Offshore wind','Onshore wind','Solar utility','Solar rooftop'])
+plt.axvline(x = 8760*0.75, linestyle = '--', color = 'grey')
+plt.axvline(x = 8760*0.50, linestyle = '--', color = 'grey')
+plt.axvline(x = 8760*0.25, linestyle = '--', color = 'grey')
+
+ax.legend(['Offshore wind','Onshore wind','Solar utility','Solar rooftop','OCGT'])
 
 ax.set_xlabel("Cumulative Time [Hours]")
 ax.set_ylabel("Capacity Factor [-]")
