@@ -11,7 +11,7 @@ import matplotlib.colors as mcolors
 #%% Choose country
 
 # Dataframe with country data. All emission data from https://www.worldometers.info/co2-emissions/
-# Emission allowance set as percent of 1990 levels.
+# CO2 Limit is the CO2 emission in 1990.
 bus_df = pd.DataFrame(
     np.array([                          #Create numpy array with bus info
     ["Germany","DEU", 1_003_148_970*0.438],   
