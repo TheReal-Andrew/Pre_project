@@ -69,9 +69,8 @@ df_red = pd.DataFrame(columns = ['Percent reduction', 'CO2 price'])
 df_gen = pd.DataFrame(columns = network.generators.index)
     
 #%% Start loop
-reductions = [1, 0.5, 0.25, 0.2, 0.15, 0.1, 0.05, 0.02, 0]
 
-for p in reductions:
+for p in [1, 0.5, 0.25, 0.2, 0.15, 0.1, 0.05, 0.02, 0]:
     
     # Reset CO2 Constraint if it exists
     try:
