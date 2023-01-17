@@ -15,6 +15,9 @@ import matplotlib.dates as mdates
 import datetime
 import system_add
 import island_lib as il
+import island_plt as ip
+
+ip.set_plot_options()
 
 # F.  -------------------------------------------------------------------------
 # Select one target for decarbonization (i.e., one CO2 allowance limit). What 
@@ -37,42 +40,47 @@ bus_df = pd.DataFrame(
     ],
     ),  
     columns = ["Country","Abbreviation","CO2_limit"])
+    
+#%% Load electricity demand data
+df_elec       = pd.read_csv('data/electricity_demand.csv', sep=';', index_col=0) # in MWh
+df_elec.index = pd.to_datetime(df_elec.index) #change index to datatime
 
+#%% Set-up of network
+network       = pypsa.Network()
+hours_in_2015 = pd.date_range('2015-01-01T00:00Z','2015-12-31T23:00Z', freq='H')
+network.set_snapshots(hours_in_2015)
+network.add("Bus","electricity bus")
+
+#%% Add load to the bus
+network.add("Load",
+            "load", 
+            bus   = "electricity bus", 
+            p_set = df_elec[country])
+    
+#%% Add the different carriers and generators
+system_add.carriers(network)
+system_add.generators(network,country, network.buses.index[0])
+
+#%% Add storage
+system_add.storages(network)
+
+#%% Initialize dataframes for saving
 df_red = pd.DataFrame(columns = ['Percent reduction', 'CO2 price'])
-df_gen = pd.DataFrame(columns = ['Onshorewind (DNK)', 'Offshorewind (DNK)', 'Solar_utility (DNK)',
-       'Solar_rooftop (DNK)', 'OCGT (DNK)'])
+df_gen = pd.DataFrame(columns = network.generators.index)
+    
+#%% Start loop
+reductions = [1, 0.5, 0.25, 0.2, 0.15, 0.1, 0.05, 0.02, 0]
 
-#%%
-for p in [1, 0.5, 0.25, 0.1, 0.5, 0]:
-
-    #%% Load electricity demand data
-    df_elec       = pd.read_csv('data/electricity_demand.csv', sep=';', index_col=0) # in MWh
-    df_elec.index = pd.to_datetime(df_elec.index) #change index to datatime
+for p in reductions:
     
-    #%% Set-up of network
-    network       = pypsa.Network()
-    hours_in_2015 = pd.date_range('2015-01-01T00:00Z','2015-12-31T23:00Z', freq='H')
-    network.set_snapshots(hours_in_2015)
-    network.add("Bus","electricity bus")
-    
-    #%% Add load to the bus
-    network.add("Load",
-                "load", 
-                bus   = "electricity bus", 
-                p_set = df_elec[country])
-        
-    #%% Add the different carriers and generators
-    system_add.carriers(network)
-    system_add.generators(network,country, network.buses.index[0])
-    
-    #%% Add storage
-    system_add.storages(network)
-    
-    #%% Add CO2 constraint
+    # Reset CO2 Constraint if it exists
+    try:
+        network.remove('GlobalConstraint', 'co2_limit')
+    except:
+        pass
 
     # Get CO2 limit from the bus_df, by searching for the country name and getting
     # corresponding CO2_limit
-    
     co2_limit = float(bus_df[bus_df['Abbreviation'].str.contains(country)]['CO2_limit']) #tonCO2 https://www.worldometers.info/co2-emissions/germany-co2-emissions/    
           
     network.add("GlobalConstraint",
@@ -105,30 +113,73 @@ for p in [1, 0.5, 0.25, 0.1, 0.5, 0]:
     CO2_price = get_dual(network, 'GlobalConstraint', 'mu') # [EUR/tonCO2]
     
     #%% Save
+    
     #Save resulting capacities
-    sums   = network.generators_t.p.sum()/10**3
+    sums   = network.generators_t.p.sum()
     df_gen = df_gen.append(sums, ignore_index = True)
     
     # Save reduction and CO2 price
-    df_red = df_red.append({'Percent reduction: ':str((1-p) * 100),
-                            'CO2 price: ': str(CO2 Price) + " EUR"})
+    df_red = df_red.append({'Percent reduction': ((1-p) * 100),
+                            'CO2 price': abs(CO2_price.co2_limit)},
+                           ignore_index = True)
 
-    #%% Plot the technology mix
-    plt.figure('Figure 2', dpi = 300, figsize=(7.5, 7.5))
+
+#%% Plot the technology mix
+
+colors = dict(zip(list(network.generators.index), 
+             ['lightskyblue', 'tab:blue',
+              'yellow', 'gold',
+              'tab:purple'])
+              )
+
+for j in range(0, len(df_gen)):
+    
+    plt.figure(dpi = 300, figsize=(7.5, 7.5))
     sizes   = []
     labels  = []
+    l       = []
     
-    for i in list(network.generators.index):
-        if network.generators_t.p[i].sum() > 0:
-            sizes = sizes + [network.generators_t.p[i].sum()]
-            labels = labels + [i[:-6] + "\n" + str(round(network.generators_t.p[i].sum()/10**3,2)) + " GWh"]
+    gen = df_gen.iloc[j]
+    
+    for i in list(gen.index):
+        
+        if gen[i] > 0:
+            sizes = sizes + [gen[i]]
+            l     = l + [i]
+            labels = labels + [i[:-6] + "\n" + str(round(gen[i]/10**6,2)) + " TWh"]
         else:
             pass
+
+    plt.pie(sizes, labels = labels, autopct='%.1f%%',
+            colors = [colors[v] for v in l])
+    plt.title('Technology mix for Denmark with CO2 constraint \n With ' + 
+              str(df_red['Percent reduction'].iloc[j]) + "% CO2 reduction")  
     
+#%% Stacked barchart
+
+reductions = ['0%', '50%', '75%', '80%', '85%', '90%', '95%', '98%', '100%']
+
+bar_fig = plt.figure()
+plt.bar(reductions, df_gen.iloc[:,1], color='r')
+plt.bar(reductions, df_gen.iloc[:,2], bottom = df_gen.iloc[:,1], color='blue',)
     
-    plt.pie(sizes, labels = labels, autopct='%.1f%%')
-    plt.title('Technology mix for Denmark with CO2 constraint \n With ' + str((1-p) * 100) + "% CO2 reduction")  
-    
+#%% Plot reduction
+
+fig, ax1 = plt.subplots(figsize = [10,5])
+
+ax1.plot(df_red['Percent reduction'].values, abs(df_red['CO2 price']).values)
+ax1.set_xlabel('CO2 reduction [%]')
+ax1.set_ylabel('CO2 price [Eur/TonCO2]')
+ax1.set_yscale('symlog')
+ax1.set_title('CO2 price vs percent reduction \n (symlog scale)')
+
+# Print Latex tables
+print(df_red.to_latex())
+print(df_gen.to_latex())
 
 #%% Play Sound
+pd.options.display.float_format = '{:.2f}'.format
+# pd.options.display.float_format = '{:.2E}'.format
+# pd.reset_option('display.float_format')
+
 il.its_britney_bitch(r'C:\Users\lukas\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds')
