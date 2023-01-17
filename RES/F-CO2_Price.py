@@ -159,10 +159,10 @@ colors = dict(zip(list(network.generators.index),
 
 reductions = ['0%', '50%', '75%', '80%', '85%', '90%', '95%', '98%', '100%']
 y1 = df_gen.iloc[:,0]/10**6
-y2 = df_gen.iloc[:,0]/10**6
-y3 = df_gen.iloc[:,0]/10**6
-y4 = df_gen.iloc[:,0]/10**6
-y5 = df_gen.iloc[:,0]/10**6
+y2 = df_gen.iloc[:,1]/10**6
+y3 = df_gen.iloc[:,2]/10**6
+y4 = df_gen.iloc[:,3]/10**6
+y5 = df_gen.iloc[:,4]/10**6
 
 bar_fig = plt.figure( figsize = (10,5))
 plt.bar(reductions, y1, color = 'lightskyblue', label = 'Onshorewind')
