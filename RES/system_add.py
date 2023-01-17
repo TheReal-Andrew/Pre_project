@@ -14,10 +14,15 @@ def import_data(sheetname,inv_name,fom_name,lifetime_name):
               ).iloc[:,1:10]
 
     data.iloc[0,0] = 'Parameter'
+    data.iloc[0,1] = '2015'
+    data.iloc[0,2] = '2020'
+    data.iloc[0,3] = '2030'
+    data.iloc[0,4] = '2040'
+    data.iloc[0,5] = '2050'
     data.columns   = data.iloc[0].astype(str)
     data.set_index('Parameter', inplace = True)
     data = data[1:]
-    data.dropna(inplace = True)
+    # data.dropna(inplace = True)
 
     # Pull parameters
     year     = '2015'
