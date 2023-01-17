@@ -8,7 +8,7 @@ def annuity(n,r):
 def import_data(sheetname,inv_name,fom_name,lifetime_name):
     import pandas as pd
 
-    #%% Import and format data
+    # Import and format data
     data = pd.read_excel('data/technology_data_for_el_and_dh.xlsx', 
               sheet_name = sheetname,
               ).iloc[:,1:10]
@@ -19,7 +19,7 @@ def import_data(sheetname,inv_name,fom_name,lifetime_name):
     data = data[1:]
     data.dropna(inplace = True)
 
-    #%% Pull parameters
+    # Pull parameters
     year     = '2015'
     INV      = data.loc[inv_name, year]
     FOM      = data.loc[fom_name, year]
@@ -80,9 +80,9 @@ def generators(network,country,bus):
     CF_wind_onshore          = df_onshorewind[country][[hour.strftime("%Y-%m-%dT%H:%M:%SZ") for hour in network.snapshots]]
     
     INV, FOM, lifetime = import_data('20 Onshore turbines',
-                                     'Nominal investment (*total) [2015-MEUR/MW_e]',
-                                     'Fixed O&M (*total) [2015-EUR/MW_e/y]',
-                                     'Technical lifetime [years]',
+                                     'Nominal investment (M€/MW) ',
+                                     'Fixed O&M (€/MW/year)',
+                                     'Technical lifetime (years)',
                                      )
     cc_onshorewind = annuity(lifetime,0.07)*INV*10**6 + FOM # in €/MW
     
