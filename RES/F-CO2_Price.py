@@ -1,0 +1,134 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Jan 17 11:46:49 2023
+
+@author: lukas
+"""
+
+#%% Import packages
+import pypsa
+from pypsa.linopt import get_dual, get_var
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import datetime
+import system_add
+import island_lib as il
+
+# F.  -------------------------------------------------------------------------
+# Select one target for decarbonization (i.e., one CO2 allowance limit). What 
+# is the CO2 price required to achieve that decarbonization level? Search for 
+# information on the existing CO2 tax in your country (if any) and discuss 
+# your result.
+
+#%% Choose country
+country = 'DNK'
+
+# Dataframe with country data. All emission data from https://www.worldometers.info/co2-emissions/
+# CO2 Limit is the CO2 emission in 1990.
+bus_df = pd.DataFrame(
+    np.array([                          #Create numpy array with bus info
+    ["Germany","DEU", 1_003_148_970*0.438],   
+    ["Denmark","DNK",    53_045_230*0.424],   
+    ["France", "FRA",   376_699_660*0.132],
+    # ["Sweden", "SWE",    56_677_744*0.177],
+    # ["Norway", "NOR",    35_902_816*0.069],
+    ],
+    ),  
+    columns = ["Country","Abbreviation","CO2_limit"])
+
+df_red = pd.DataFrame(columns = ['Percent reduction', 'CO2 price'])
+df_gen = pd.DataFrame(columns = ['Onshorewind (DNK)', 'Offshorewind (DNK)', 'Solar_utility (DNK)',
+       'Solar_rooftop (DNK)', 'OCGT (DNK)'])
+
+#%%
+for p in [1, 0.5, 0.25, 0.1, 0.5, 0]:
+
+    #%% Load electricity demand data
+    df_elec       = pd.read_csv('data/electricity_demand.csv', sep=';', index_col=0) # in MWh
+    df_elec.index = pd.to_datetime(df_elec.index) #change index to datatime
+    
+    #%% Set-up of network
+    network       = pypsa.Network()
+    hours_in_2015 = pd.date_range('2015-01-01T00:00Z','2015-12-31T23:00Z', freq='H')
+    network.set_snapshots(hours_in_2015)
+    network.add("Bus","electricity bus")
+    
+    #%% Add load to the bus
+    network.add("Load",
+                "load", 
+                bus   = "electricity bus", 
+                p_set = df_elec[country])
+        
+    #%% Add the different carriers and generators
+    system_add.carriers(network)
+    system_add.generators(network,country, network.buses.index[0])
+    
+    #%% Add storage
+    system_add.storages(network)
+    
+    #%% Add CO2 constraint
+
+    # Get CO2 limit from the bus_df, by searching for the country name and getting
+    # corresponding CO2_limit
+    
+    co2_limit = float(bus_df[bus_df['Abbreviation'].str.contains(country)]['CO2_limit']) #tonCO2 https://www.worldometers.info/co2-emissions/germany-co2-emissions/    
+          
+    network.add("GlobalConstraint",
+                "co2_limit",
+                type                = "primary_energy",
+                carrier_attribute   = "co2_emissions",
+                sense               = "<=",
+                constant            = co2_limit*p)
+
+    #%% Solve the system
+    network.lopf(network.snapshots, 
+                 pyomo=False,
+                 solver_name='gurobi',
+                 keep_shadowprices = True, #Keep lagrange multipliers (For CO2 price)
+                 keep_references   = True,
+                 )
+
+    #%% Find CO2 Price and limit
+    
+    # Constraint info:
+    network.global_constraints
+    
+    # CO2 Price: ----------------------------------------------------
+    network.global_constraints.mu
+    
+    # Alternative way to get CO2 Price: -----------------------------
+    network.constraints #See constraints
+    
+    #Get value of specific constraint lagrange multiplier
+    CO2_price = get_dual(network, 'GlobalConstraint', 'mu') # [EUR/tonCO2]
+    
+    #%% Save
+    #Save resulting capacities
+    sums   = network.generators_t.p.sum()/10**3
+    df_gen = df_gen.append(sums, ignore_index = True)
+    
+    # Save reduction and CO2 price
+    df_red = df_red.append({'Percent reduction: ':str((1-p) * 100),
+                            'CO2 price: ': str(CO2 Price) + " EUR"})
+
+    #%% Plot the technology mix
+    plt.figure('Figure 2', dpi = 300, figsize=(7.5, 7.5))
+    sizes   = []
+    labels  = []
+    
+    for i in list(network.generators.index):
+        if network.generators_t.p[i].sum() > 0:
+            sizes = sizes + [network.generators_t.p[i].sum()]
+            labels = labels + [i[:-6] + "\n" + str(round(network.generators_t.p[i].sum()/10**3,2)) + " GWh"]
+        else:
+            pass
+    
+    
+    plt.pie(sizes, labels = labels, autopct='%.1f%%')
+    plt.title('Technology mix for Denmark with CO2 constraint \n With ' + str((1-p) * 100) + "% CO2 reduction")  
+    
+
+#%% Play Sound
+il.its_britney_bitch(r'C:\Users\lukas\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds')

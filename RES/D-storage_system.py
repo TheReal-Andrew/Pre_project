@@ -5,9 +5,14 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import datetime
 import system_add
+import island_lib as ip
+
+# D.  -------------------------------------------------------------------------
+# Add some storage technology/ies and investigate how they behave and what are
+# their impact on the optimal system configuration.
 
 #%% Choose country
-country = 'DEU'
+country = 'DNK'
 
 #%% Load electricity demand data
 df_elec       = pd.read_csv('data/electricity_demand.csv', sep=';', index_col=0) # in MWh
@@ -75,4 +80,4 @@ for i in list(network.generators.index):
 
 plt.pie(sizes, labels = labels)
 plt.title('Technology mix for Denmark without CO2 constraint')    
-       
+
