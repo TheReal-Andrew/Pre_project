@@ -7,6 +7,8 @@ import datetime
 import system_add
 import numpy as np
 import matplotlib.ticker as ticker
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 #%% Choose country
 country = 'DEU'
@@ -76,7 +78,7 @@ labels = []
 for i in list(network.generators.index):
     if network.generators_t.p[i].sum() > 0:
         sizes = sizes + [network.generators_t.p[i].sum()]
-        labels = labels + [i[:-6] + "\n" + str(round(network.generators_t.p[i].sum()/10**3,2)) + " GW"]
+        labels = labels + [i[:-6] + "\n" + str(round(network.generators_t.p[i].sum()/10**6,2)) + " TWh"]
     else:
         pass
 ax.pie(sizes, labels = labels, autopct='%.1f%%')
@@ -149,3 +151,22 @@ ax.yaxis.set_major_locator(ticker.MultipleLocator(0.05))
 ax.xaxis.set_major_locator(ticker.MultipleLocator(500))
 ax.set_xlim([0,len(sort_wind_offshore)])
 ax.grid(visible = True, which = 'both')
+
+#%% Print CF at different durations
+DC = pd.DataFrame(columns = ["Technology","25%","50%","75%","100%"])
+sort_list = [sort_wind_offshore,
+             sort_wind_onshore,
+             sort_solar_utility,
+             sort_solar_rooftop,
+             sort_OCGT]
+
+for i in range(len(sort_list)):
+    gen_name = network.generators.index[i]
+    DC = DC.append({'Technology': gen_name[:-6],
+                    '25%': round(sort_list[i][int(8760*0.25-1)],2),
+                    '50%': round(sort_list[i][int(8760*0.50-1)],2),
+                    '75%': round(sort_list[i][int(8760*0.75-1)],2),
+                    '100%': round(sort_list[i][int(8760*1.00-1)],2)
+                    }, ignore_index=True)
+
+print(DC.style.hide_index().to_latex())
