@@ -42,7 +42,7 @@ def storages(network):
           e_nom_extendable      = True,
           e_cyclic              = True,
           capital_cost          = cc_lithium, #[EUR/MWh] Capital cost for Storage
-          # capital_cost          = 0,
+           # capital_cost          = 0,
           marginal_cost         = 2.1,
           efficiency_store      = 0.98,
           efficiency_dispatch   = 0.97,

@@ -47,7 +47,7 @@ for i in range(1979,2017,1):
             d[str(j)] = []
             d[str(j)].append(network.generators_t.p[j].sum())
             
-            if j == "OCGT" + "(" + country + ")":
+            if j == "OCGT " + "(" + country + ")":
                 pass
             else:
                 cf[str(j)] = []
@@ -56,7 +56,7 @@ for i in range(1979,2017,1):
         else:
             d[str(j)].append(network.generators_t.p[j].sum())
             
-            if j == "OCGT" + "(" + country + ")":
+            if j == "OCGT " + "(" + country + ")":
                 pass
             else:
                 cf[str(j)].append(network.generators_t.p_max_pu.mean()[j])
@@ -74,7 +74,7 @@ ax2 = ax1.twinx()
 for i in list(network.generators.index):
     ax1.plot(range(1979,2017,1), d[i], label = i)
     
-    if i == "OCGT":
+    if i == "OCGT " + "(" + country + ")":
         pass
     else:
         ax2.plot(range(1979,2017,1), cf[i], '--', label = "CF " + i)
