@@ -4,9 +4,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import system_add
+import island_lib as il
+import island_plt as ip
 
 #%% Choose country
-country = 'DEU'
+country = 'DNK'
 
 #%% Initialize and start loop
 cf = {}     # Dictionary for storing CF data
@@ -47,7 +49,7 @@ for i in range(1979,2017,1):
             d[str(j)] = []
             d[str(j)].append(network.generators_t.p[j].sum())
             
-            if j == "OCGT" + "(" + country + ")":
+            if j == "OCGT " + "(" + country + ")":
                 pass
             else:
                 cf[str(j)] = []
@@ -56,7 +58,7 @@ for i in range(1979,2017,1):
         else:
             d[str(j)].append(network.generators_t.p[j].sum())
             
-            if j == "OCGT" + "(" + country + ")":
+            if j == "OCGT " + "(" + country + ")":
                 pass
             else:
                 cf[str(j)].append(network.generators_t.p_max_pu.mean()[j])
@@ -68,13 +70,14 @@ def my_ceil(a, precision=0):
     return np.true_divide(np.ceil(a * 10**precision), 10**precision)
 
 #%% Plot
+
 fig, ax1 = plt.subplots(dpi = 300)
 ax2 = ax1.twinx()
 
 for i in list(network.generators.index):
     ax1.plot(range(1979,2017,1), d[i], label = i)
     
-    if i == "OCGT":
+    if i == "OCGT " +"(" + country + ")":
         pass
     else:
         ax2.plot(range(1979,2017,1), cf[i], '--', label = "CF " + i)
@@ -84,7 +87,7 @@ cap_max = round(max(d[max(d, key=d.get)]))
 ax1.set_ylim([0,cap_max])
 ax2.set_ylim([0,1])
 
-ax1.set_yticks(np.linspace(0,int(my_ceil(2.41,1)*10**(len(str(cap_max))-1)),11))
+ax1.set_yticks(np.linspace(0,my_ceil(cap_max/10**(len(str(cap_max))-1),1)*10**(len(str(cap_max))-1),11))
 ax2.set_yticks(np.linspace(ax2.get_yticks()[0], ax2.get_yticks()[-1], len(ax1.get_yticks())))
 
 # ax1.ticklabel_format(useOffset=False, style='plain')
@@ -94,8 +97,38 @@ lines2, labels2 = ax2.get_legend_handles_labels()
 ax2.legend(lines1 + lines2, labels1 + labels2, loc='center left', bbox_to_anchor=(1.17, 0.5))
 
 # plt.legend(loc = 'best')        
-plt.title('Interannual variability of weather')     
-plt.xlabel('Time [yr]')
-ax1.set_ylabel('Installed capacity [MW]')
+plt.title('Interannual variability due to weather')     
+ax1.set_xlabel('Time [yr]')
+ax1.set_ylabel('Total produced power [MW]')
 ax2.set_ylabel('Mean capacity factor [-]')
 ax1.grid(True)
+
+#%% Variance
+
+pd.options.display.float_format = '{:.2E}'.format
+
+d_data  = pd.DataFrame.from_dict(d)
+cf_data = pd.DataFrame.from_dict(cf) 
+
+d_var  = d_data.var()
+cf_var = cf_data.var()
+
+d_std  = d_data.std()
+cf_std = cf_data.std()
+
+d_tab  = pd.DataFrame( data = {'Standard Deviation':d_std, 
+                               'Variance':d_var})
+cf_tab = pd.DataFrame( data = {'Standard Deviation':cf_std, 
+                              'Variance':cf_var})
+
+# Print latex code for each table
+print('Latex code for d table: \n')
+print(d_tab.to_latex())
+print(' \n Latex code for cf table: \n')
+print(cf_tab.to_latex())
+
+# -- To Reset Pandas formatting: --
+# pd.reset_option('display.float_format')
+
+#%% Play Sound
+il.its_britney_bitch(r'C:\Users\lukas\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds')

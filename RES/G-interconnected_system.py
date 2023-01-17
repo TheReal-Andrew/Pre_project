@@ -9,12 +9,18 @@ import datetime
 import matplotlib.colors as mcolors
 
 #%% Choose country
+
+# Dataframe with country data. All emission data from https://www.worldometers.info/co2-emissions/
+# Emission allowance set as percent of 1990 levels.
 bus_df = pd.DataFrame(
     np.array([                          #Create numpy array with bus info
-    ["Germany","DEU", 765922900*0.44],   
-    ["Denmark","DNK", 765922900*0.44],   
-    ["France","FRA", 765922900*0.44*0.2]],
-             ),  
+    ["Germany","DEU", 1_003_148_970*0.438],   
+    ["Denmark","DNK",    53_045_230*0.424],   
+    ["France", "FRA",   376_699_660*0.132],
+    # ["Sweden", "SWE",    56_677_744*0.177],
+    # ["Norway", "NOR",    35_902_816*0.069],
+    ],
+    ),  
     columns = ["Country","Abbreviation","CO2_limit"])
 
 #%% Load electricity demand data
