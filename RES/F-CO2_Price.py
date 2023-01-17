@@ -26,7 +26,7 @@ ip.set_plot_options()
 # your result.
 
 #%% Choose country
-country = 'DNK'
+country = 'DEU'
 
 # Dataframe with country data. All emission data from https://www.worldometers.info/co2-emissions/
 # CO2 Limit is the CO2 emission in 1990.
@@ -132,37 +132,50 @@ colors = dict(zip(list(network.generators.index),
               'tab:purple'])
               )
 
-for j in range(0, len(df_gen)):
+# for j in range(0, len(df_gen)):
     
-    plt.figure(dpi = 300, figsize=(7.5, 7.5))
-    sizes   = []
-    labels  = []
-    l       = []
+#     plt.figure(dpi = 300, figsize=(7.5, 7.5))
+#     sizes   = []
+#     labels  = []
+#     l       = []
     
-    gen = df_gen.iloc[j]
+#     gen = df_gen.iloc[j]
     
-    for i in list(gen.index):
+#     for i in list(gen.index):
         
-        if gen[i] > 0:
-            sizes = sizes + [gen[i]]
-            l     = l + [i]
-            labels = labels + [i[:-6] + "\n" + str(round(gen[i]/10**6,2)) + " TWh"]
-        else:
-            pass
+#         if gen[i] > 0:
+#             sizes = sizes + [gen[i]]
+#             l     = l + [i]
+#             labels = labels + [i[:-6] + "\n" + str(round(gen[i]/10**6,2)) + " TWh"]
+#         else:
+#             pass
 
-    plt.pie(sizes, labels = labels, autopct='%.1f%%',
-            colors = [colors[v] for v in l])
-    plt.title('Technology mix for Denmark with CO2 constraint \n With ' + 
-              str(df_red['Percent reduction'].iloc[j]) + "% CO2 reduction")  
+#     plt.pie(sizes, labels = labels, autopct='%.1f%%',
+#             colors = [colors[v] for v in l])
+#     plt.title('Technology mix for Denmark with CO2 constraint \n With ' + 
+#               str(df_red['Percent reduction'].iloc[j]) + "% CO2 reduction")  
     
 #%% Stacked barchart
 
 reductions = ['0%', '50%', '75%', '80%', '85%', '90%', '95%', '98%', '100%']
+y1 = df_gen.iloc[:,0]/10**6
+y2 = df_gen.iloc[:,0]/10**6
+y3 = df_gen.iloc[:,0]/10**6
+y4 = df_gen.iloc[:,0]/10**6
+y5 = df_gen.iloc[:,0]/10**6
 
-bar_fig = plt.figure()
-plt.bar(reductions, df_gen.iloc[:,1], color='r')
-plt.bar(reductions, df_gen.iloc[:,2], bottom = df_gen.iloc[:,1], color='blue',)
-    
+bar_fig = plt.figure( figsize = (10,5))
+plt.bar(reductions, y1, color = 'lightskyblue', label = 'Onshorewind')
+plt.bar(reductions, y2, bottom = y1 , color='tab:blue', label = 'Offshorewind')
+plt.bar(reductions, y3, bottom = y1+y2 , color='yellow', label = 'Solar Utility')
+plt.bar(reductions, y4, bottom = y1+y2+y3 , color='gold', label = 'Solar rooftop')
+plt.bar(reductions, y5, bottom = y1+y2+y3+y4 , color='tab:purple', label = 'OCGT')
+
+plt.xlabel('CO2 Reduction [%]')
+plt.ylabel('Produced energy [TWh]')
+plt.title('Effect of CO2 reduction on technology mix')    
+plt.legend(loc = 'center left', bbox_to_anchor=(1, 0.5))
+
 #%% Plot reduction
 
 fig, ax1 = plt.subplots(figsize = [10,5])
