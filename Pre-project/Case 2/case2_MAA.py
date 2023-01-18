@@ -160,7 +160,7 @@ def get_var_values(n,mga_variables):
 
 #%% Load and solve network
 
-n = pypsa.Network('case2_bidirect.nc') #Load network from netcdf file
+n = pypsa.Network('case2_direct.nc') #Load network from netcdf file
 n_objective = n.objective
 
 # Reduce snapshots used for faster computing
@@ -255,9 +255,14 @@ if Should_MAA:
         directions_searched = np.concatenate([directions_searched,directions],axis=0)
     
         # Run computations in series
+        i = 0
+        
         for direction_i in directions:
+            i += 1
             res = search_direction(direction_i,mga_variables)
             solutions = np.append(solutions,np.array([res]),axis=0)
+            
+            n.export_to_netcdf('case_2di_res_' + str(i) + '.nc')
     
     
         hull = ConvexHull(solutions)
@@ -320,4 +325,4 @@ else:
 np.save('case_2bi_MAA_solutions_10pct', solutions)
 
 #%%
-il.its_britney_bitch(r"C:\Users\aalin\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds")
+# il.its_britney_bitch(r"C:\Users\aalin\Documents\GitHub\NorthSeaEnergyIsland\Data\Sounds")
