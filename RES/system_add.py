@@ -89,7 +89,7 @@ def generators(network,country,bus):
                                      'Fixed O&M (€/MW/year)',
                                      'Technical lifetime (years)',
                                      )
-    cc_onshorewind = annuity(lifetime,0.07)*INV*10**6 + FOM # in €/MW
+    cc_onshorewind = annuity(lifetime,0.07)*(INV*10**6 + FOM) # in €/MW
     
     network.add("Generator", 
                 "Onshorewind (" + country +")",
@@ -114,7 +114,7 @@ def generators(network,country,bus):
                                      'Fixed O&M (€/MW/year)',
                                      'Technical lifetime (years)',
                                      )
-    cc_offshorewind = annuity(lifetime,0.07)*INV*10**6 + FOM # in €/MW
+    cc_offshorewind = annuity(lifetime,0.07)*(INV*10**6 + FOM) # in €/MW
 
     
     network.add("Generator",
@@ -133,11 +133,11 @@ def generators(network,country,bus):
     CF_solar_utility           = df_solar_utility[country][[hour.strftime("%Y-%m-%dT%H:%M:%SZ") for hour in network.snapshots]]
     
     INV, FOM, lifetime = import_data('22 Photovoltaics Large',
-                                     'Nominal investment (M€/MW)',
-                                     'Fixed O&M (2015€/MW/year)',
+                                     'Nominal investment (M€/MWp)',
+                                     'Fixed O&M (2015€/MWp/year)',
                                      'Technical lifetime (years)',
                                      )
-    cc_solar_utility = annuity(lifetime,0.07)*INV*10**6 + FOM # in €/MW
+    cc_solar_utility = annuity(lifetime,0.07)*(INV*10**6 + FOM) # in €/MW
     
     network.add("Generator",
                 "Solar_utility (" + country +")",
@@ -161,7 +161,7 @@ def generators(network,country,bus):
                                      'Fixed O&M (2015€/MW/y)',
                                      'Technical lifetime of total system (years)',
                                      )
-    cc_solar_rooftop = annuity(lifetime,0.07)*INV*10**6 + FOM # in €/MW
+    cc_solar_rooftop = annuity(lifetime,0.07)*(INV*10**6 + FOM) # in €/MW
     
     network.add("Generator",
                 "Solar_rooftop (" + country +")",
@@ -181,7 +181,7 @@ def generators(network,country,bus):
                                      'Fixed O&M (€/MW/year)',
                                      'Technical lifetime (years)',
                                      )
-    cc_OCGT = annuity(lifetime,0.07)*INV*10**6 + FOM # in €/MW
+    cc_OCGT = annuity(lifetime,0.07)*(INV*10**6 + FOM) # in €/MW
     
     fuel_cost          = 34.6 # in €/MWh_th https://ec.europa.eu/eurostat/databrowser/view/NRG_PC_203__custom_4567839/default/table?lang=en
     efficiency         = 0.39
@@ -211,3 +211,77 @@ def generators(network,country,bus):
     #             carrier          = "gas",
     #             capital_cost     = cc_gas_boiler,
     #             marginal_cost    = mg_gas_boiler)
+    
+def price_gen(network):
+    import pandas as pd
+    
+    INV_onshore, FOM_onshore, lifetime_onshore = import_data('20 Onshore turbines',
+                                                             'Nominal investment (M€/MW) ',
+                                                             'Fixed O&M (€/MW/year)',
+                                                             'Technical lifetime (years)',
+                                                             )
+    
+
+    INV_offshore, FOM_offshore, lifetime_offshore = import_data('21 Offshore turbines',
+                                                                'Nominal investment (M€/MW)',
+                                                                'Fixed O&M (€/MW/year)',
+                                                                'Technical lifetime (years)',
+                                                                )    
+    
+    INV_solar_utility, FOM_solar_utility, lifetime_solar_utility = import_data('22 Photovoltaics Large',
+                                                                               'Nominal investment (M€/MWp)',
+                                                                               'Fixed O&M (2015€/MWp/year)',
+                                                                               'Technical lifetime (years)',
+                                                                               )
+    
+    INV_solar_rooftop, FOM_solar_rooftop, lifetime_solar_rooftop = import_data('22 Photovoltaics Small',
+                                                                               'Specific investment, total system (2015-M€/MW)',
+                                                                               'Fixed O&M (2015€/MW/y)',
+                                                                               'Technical lifetime of total system (years)',
+                                                                               )
+    
+    INV_OCGT, FOM_OCGT, lifetime_OCGT = import_data('52 OCGT - Natural gas',
+                                                    'Specific investment (M€/MW)',
+                                                    'Fixed O&M (€/MW/year)',
+                                                    'Technical lifetime (years)',
+                                                    )
+
+    DC = pd.DataFrame(columns = ["Technology",
+                                 "Nominal investment [M€/MW]",
+                                 "Fixed operation & maintenance cost [€/MW]",
+                                 "Technical lifetime [yr]"])
+    
+    INV_list = [INV_onshore,
+                INV_offshore,
+                INV_solar_utility,
+                INV_solar_rooftop,
+                INV_OCGT]
+    FOM_list = [FOM_onshore,
+                FOM_offshore,
+                FOM_solar_utility,
+                FOM_solar_rooftop,
+                FOM_OCGT]
+    lifetime_list = [lifetime_onshore,
+                     lifetime_offshore,
+                     lifetime_solar_utility,
+                     lifetime_solar_rooftop,
+                     lifetime_OCGT]
+    
+    for i in range(len(INV_list)):
+        gen_name = network.generators.index[i]
+        DC = DC.append({'Technology': gen_name[:-6],
+                'Nominal investment [M€/MW]': INV_list[i],
+                'Fixed operation & maintenance cost [€/MW]': FOM_list[i],
+                'Technical lifetime [yr]': lifetime_list[i],
+                }, ignore_index=True)
+
+    return print(DC.style.hide_index().to_latex())
+        
+        
+        
+        
+        
+        
+        
+        
+        

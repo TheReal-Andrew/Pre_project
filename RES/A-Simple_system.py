@@ -170,3 +170,6 @@ for i in range(len(sort_list)):
                     }, ignore_index=True)
 
 print(DC.style.hide_index().to_latex())
+
+#%% Print data assumptions
+system_add.price_gen(network)
