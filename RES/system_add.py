@@ -30,6 +30,15 @@ def get_colors(country):
         
     return colors
 
+def get_co2(country):
+    
+    if country == 'DNK':
+        co2 = 53_045_230*0.424
+    else:
+        co2 = 1_003_148_970*0.438
+        
+    return co2
+
 
 def import_data(sheetname,inv_name,fom_name,lifetime_name):
     import pandas as pd

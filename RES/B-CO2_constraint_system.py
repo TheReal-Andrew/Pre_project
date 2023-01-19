@@ -10,7 +10,7 @@ ip.set_plot_options()
 
 #%% Choose country
 country = 'DNK'
-co2     = 53_045_230*0.424
+co2     = system_add.get_co2(country)
 
 #%% Initialize and start CO2 loop from 0-100% reduction with 5% steps
 d = {}  # Dictionary for storing data

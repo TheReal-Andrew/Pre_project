@@ -27,7 +27,7 @@ ip.set_plot_options()
 # your result.
 
 #%% Choose country
-country = 'DEU'
+country = 'DNK'
 
 # Dataframe with country data. All emission data from https://www.worldometers.info/co2-emissions/
 # CO2 Limit is the CO2 emission in 1990.

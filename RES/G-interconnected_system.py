@@ -8,7 +8,7 @@ import numpy as np
 import datetime
 import matplotlib.colors as mcolors
 
-country = 'DEU'
+country = 'DNK'
 
 #%% Choose country
 
