@@ -16,9 +16,11 @@ import datetime
 import system_add
 import island_lib as il
 import island_plt as ip
-import systemn_add as sa
+import system_add as sa
 
 ip.set_plot_options()
+
+allowance = 0.05 # CO2 allowance as percent of 1990 CO2 levels
 
 # F.  -------------------------------------------------------------------------
 # Select one target for decarbonization (i.e., one CO2 allowance limit). What 
@@ -97,21 +99,12 @@ network.add("Link",
             bus1 = "heat bus",
             efficiency = 3,
             capital_cost = cc_hp,        # Need data
+            marginal_cost = 0, # Assumed due to PyPSA example https://pypsa.readthedocs.io/en/latest/examples/lopf-with-heating.html
             p_nom_extendable = True
             )
 
 #% Add storage ---------------------------------------------------------------
 system_add.storages(network)
-
-# Add heat storage (Hot water tank)
-network.add("Store",
-            "heat store",
-            bus = "heat bus",
-            e_cyclic = True,
-            e_nom_extendable = True,
-            standing_loss = 0.01,
-            # capital_cost = 0 #Need data
-            )
 
 #%% CO2 limit
 # Get CO2 limit from the bus_df, by searching for the country name and getting
@@ -124,7 +117,7 @@ network.add("GlobalConstraint",
             type                = "primary_energy",
             carrier_attribute   = "co2_emissions",
             sense               = "<=",
-            constant            = co2_limit*0.05)
+            constant            = co2_limit*allowance)
 
 #%% Solve the system
 network.lopf(network.snapshots, 
