@@ -17,8 +17,7 @@ def import_data(sheetname,inv_name,fom_name,lifetime_name):
     data.iloc[0,1] = '2015'
     data.iloc[0,2] = '2020'
     data.iloc[0,3] = '2030'
-    data.iloc[0,4] = '2040'
-    data.iloc[0,5] = '2050'
+    data.iloc[0,4] = '2050'
     data.columns   = data.iloc[0].astype(str)
     data.set_index('Parameter', inplace = True)
     data = data[1:]
@@ -183,7 +182,7 @@ def generators(network,country,bus):
                                      )
     cc_OCGT = annuity(lifetime,0.07)*(INV*10**6 + FOM) # in €/MW
     
-    fuel_cost          = 34.6 # in €/MWh_th https://ec.europa.eu/eurostat/databrowser/view/NRG_PC_203__custom_4567839/default/table?lang=en
+    fuel_cost          = 32 # in €/MWh_th https://ec.europa.eu/eurostat/databrowser/view/NRG_PC_203__custom_4567839/default/table?lang=en
     efficiency         = 0.39
     mc_OCGT = fuel_cost/efficiency # in €/MWh_el
     
@@ -249,7 +248,8 @@ def price_gen(network):
     DC = pd.DataFrame(columns = ["Technology",
                                  "Nominal investment [M€/MW]",
                                  "Fixed operation & maintenance cost [€/MW]",
-                                 "Technical lifetime [yr]"])
+                                 "Technical lifetime [yr]",
+                                 "Efficiency"])
     
     INV_list = [INV_onshore,
                 INV_offshore,
@@ -274,6 +274,7 @@ def price_gen(network):
                 'Fixed operation & maintenance cost [€/MW]': FOM_list[i],
                 'Technical lifetime [yr]': lifetime_list[i],
                 }, ignore_index=True)
+        
 
     return print(DC.style.hide_index().to_latex())
         
