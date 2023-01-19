@@ -11,7 +11,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 #%% Choose country
-country = 'DEU'
+country = 'DNK'
 
 #%% Load electricity demand data
 df_elec       = pd.read_csv('data/electricity_demand.csv', sep=';', index_col=0)    # [MWh]
@@ -132,15 +132,24 @@ exceedence_OCGT  = np.arange(1,len(sort_OCGT)+1)
 
 #%%Actual plot
 
+colors = system_add.get_colors(country)
+
 # Creating new figure
 fig3     = plt.figure('Figure 3')
 fig3, ax = plt.subplots(1, figsize=(15, 7.5))
 
-ax.plot(exceedence_offwind,sort_wind_offshore)
-ax.plot(exceedence_onwind,sort_wind_onshore)
-ax.plot(exceedence_solar_utility,sort_solar_utility)
-ax.plot(exceedence_solar_rooftop,sort_solar_rooftop)
-ax.plot(exceedence_OCGT,sort_OCGT)
+lw = 3
+
+ax.plot(exceedence_offwind, sort_wind_offshore,
+        linewidth = lw, color = colors['Offshorewind (' + country + ')'])
+ax.plot(exceedence_onwind, sort_wind_onshore,
+        linewidth = lw, color = colors['Onshorewind (' + country + ')'])
+ax.plot(exceedence_solar_utility, sort_solar_utility,
+        linewidth = lw, color = colors['Solar_utility (' + country + ')'])
+ax.plot(exceedence_solar_rooftop, sort_solar_rooftop,
+        linewidth = lw, color = colors['Solar_rooftop (' + country + ')'])
+ax.plot(exceedence_OCGT, sort_OCGT,
+        linewidth = lw, color = colors['OCGT (' + country + ')'])
 
 plt.axvline(x = 8760*0.75, linestyle = '--', color = 'grey')
 plt.axvline(x = 8760*0.50, linestyle = '--', color = 'grey')
