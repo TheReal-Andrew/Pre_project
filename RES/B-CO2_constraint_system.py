@@ -21,29 +21,37 @@ q = 1   # Initialize dictionary-store counter
 reduction_range = np.linspace(0.75,1,26)   # 05% incrementse
 # reduction_range = np.linspace(0,1,11)   # 10% increments
 
-for i in list(reduction_range):
+# for i in list(reduction_range):
 #%% Load electricity demand data
-    df_elec       = pd.read_csv('data/electricity_demand.csv', sep=';', index_col=0) # in MWh
-    df_elec.index = pd.to_datetime(df_elec.index) #change index to datatime
-    
+df_elec       = pd.read_csv('data/electricity_demand.csv', sep=';', index_col=0) # in MWh
+df_elec.index = pd.to_datetime(df_elec.index) #change index to datatime
+
 #%% Set-up of network
-    network       = pypsa.Network()
-    hours_in_2015 = pd.date_range('2015-01-01T00:00Z','2015-12-31T23:00Z', freq='H')
-    network.set_snapshots(hours_in_2015)
-    network.add("Bus","electricity bus")
-    
+network       = pypsa.Network()
+hours_in_2015 = pd.date_range('2015-01-01T00:00Z','2015-12-31T23:00Z', freq='H')
+network.set_snapshots(hours_in_2015)
+network.add("Bus","electricity bus")
+
 #%% Add load to the bus
-    network.add("Load",
-                "load", 
-                bus   = "electricity bus", 
-                p_set = df_elec[country])
+network.add("Load",
+            "load", 
+            bus   = "electricity bus", 
+            p_set = df_elec[country])
 
 #%% Add the different carriers, only gas emits CO2
-    system_add.carriers(network)
-    system_add.generators(network,country,network.buses.index[0])
+system_add.carriers(network)
+system_add.generators(network,country,network.buses.index[0])
 
+for i in list(reduction_range):
 #%% Add CO2 constraint
-    co2_limit = co2*(1-round(i,1)) #tonCO2 https://www.worldometers.info/co2-emissions/germany-co2-emissions/
+
+    # Reset CO2 Constraint if it exists
+    try:
+        network.remove('GlobalConstraint', 'co2_limit')
+    except:
+        pass
+
+    co2_limit = co2*round(1-i,1) #tonCO2 https://www.worldometers.info/co2-emissions/germany-co2-emissions/
     # co2_limit = 4000000*(1-round(i,1))            
     network.add("GlobalConstraint",
                 "co2_limit",

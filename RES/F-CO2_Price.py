@@ -63,10 +63,10 @@ system_add.carriers(network)
 system_add.generators(network,country, network.buses.index[0])
 
 #%% Add storage
-system_add.storages(network)
+# system_add.storages(network)
 
 #%% Initialize dataframes for saving
-df_red = pd.DataFrame(columns = ['Percent reduction', 'CO2 price'])
+df_red = pd.DataFrame(columns = ['Reduction [%]', 'CO2 price [EUR/TonCO2]'])
 df_gen = pd.DataFrame(columns = network.generators.index)
     
 #%% Start loop
@@ -119,8 +119,8 @@ for p in [1, 0.5, 0.25, 0.2, 0.15, 0.1, 0.05, 0.02, 0]:
     df_gen = df_gen.append(sums, ignore_index = True)
     
     # Save reduction and CO2 price
-    df_red = df_red.append({'Percent reduction': ((1-p) * 100),
-                            'CO2 price': abs(CO2_price.co2_limit)},
+    df_red = df_red.append({df_red.keys()[0]: ((1-p) * 100),
+                            df_red.keys()[1]: abs(CO2_price.co2_limit)},
                            ignore_index = True)
 
 
@@ -158,7 +158,7 @@ plt.savefig('graphics/' + str(country) + '_F_bar.pdf', format = 'pdf', bbox_inch
 
 fig, ax1 = plt.subplots(figsize = [10,5])
 
-ax1.plot(df_red['Percent reduction'].values, abs(df_red['CO2 price']).values)
+ax1.plot(df_red.iloc[:,0].values, abs(df_red.iloc[:,1]).values)
 ax1.set_xlabel('CO2 reduction [%]')
 ax1.set_ylabel('CO2 price [Eur/TonCO2]')
 ax1.set_yscale('symlog')
@@ -167,6 +167,7 @@ ax1.set_title('CO2 price vs percent reduction \n (symlog scale)')
 plt.savefig('graphics/' + str(country) + '_F_CO2Price.pdf', format = 'pdf', bbox_inches='tight') 
 
 # Print Latex tables
+print('\n')
 print(df_red.to_latex(index = False))
 # print(df_gen.to_latex(index = False))
 
