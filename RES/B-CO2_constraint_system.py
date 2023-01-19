@@ -10,11 +10,12 @@ country = 'DEU'
 
 #%% Initialize and start CO2 loop from 0-100% reduction with 5% steps
 d = {}  # Dictionary for storing data
+reduction = {}  # Dictionary for storing data
 q = 1   # Initialize dictionary-store counter
 
 # reduction_range = np.linspace(0,1,101)  # 01% increments
-# reduction_range = np.linspace(0,1,21)   # 05% increments
-reduction_range = np.linspace(0,1,11)   # 10% increments
+reduction_range = np.linspace(0,1,21)   # 05% increments
+# reduction_range = np.linspace(0,1,11)   # 10% increments
 
 for i in list(reduction_range):
 #%% Load electricity demand data
@@ -61,6 +62,8 @@ for i in list(reduction_range):
             d[str(j)].append(network.generators_t.p[j].sum())
         
         q = q + 1
+    
+    reduction = reduction
           
 #%% Plot the installed capacity wrt. CO2 reduction
 # fig = plt.figure(dpi = 300)
@@ -81,17 +84,20 @@ plt.ylabel('Installed capacity [MW]', fontsize = 15)
 plt.grid()
 
 #%% Bar plots
-reductions = ['0%', '50%', '75%', '80%', '85%', '90%', '95%', '98%', '100%']
-y1 = df_gen.iloc[:,0]/10**6
-y2 = df_gen.iloc[:,1]/10**6
-y3 = df_gen.iloc[:,2]/10**6
-y4 = df_gen.iloc[:,3]/10**6
-y5 = df_gen.iloc[:,4]/10**6
+
+reductions = ['0%','5%','10%','15%','20%','25%','30%','35%','40%','45%','50%',
+              '55%','60%','65%','70%','75%','80%','85%','90%','95%','100%']
+
+y1 = d[network.generators.index[0]]
+y2 = d[network.generators.index[1]]
+y3 = d[network.generators.index[2]]
+y4 = d[network.generators.index[3]]
+y5 = d[network.generators.index[4]]
 
 bar_fig = plt.figure( figsize = (10,5))
 plt.bar(reductions, y1, color = 'lightskyblue', label = 'Onshorewind')
 plt.bar(reductions, y2, bottom = y1 , color='tab:blue', label = 'Offshorewind')
-plt.bar(reductions, y3, bottom = y1+y2 , color='yellow', label = 'Solar Utility')
+plt.bar(reductions, y3, bottom = y1+y2 , color='yellow', label = 'Solar utility')
 plt.bar(reductions, y4, bottom = y1+y2+y3 , color='gold', label = 'Solar rooftop')
 plt.bar(reductions, y5, bottom = y1+y2+y3+y4 , color='tab:purple', label = 'OCGT')
 
