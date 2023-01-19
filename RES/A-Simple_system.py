@@ -76,7 +76,7 @@ fig1.supxlabel('Time [Hour]')
 fig1.supylabel('Power [GW]')
     
 plt.tight_layout()
-plt.savefig(str(country) + '_A_dispatch.eps')
+plt.savefig('graphics/' + str(country) + '_A_dispatch.pdf', format = 'pdf', bbox_inches='tight') 
 
 #%% Plot the technology mix in pie-chart
 fig2 = plt.figure('Figure 2')
@@ -96,8 +96,8 @@ ax.pie(sizes, labels = labels, autopct='%.1f%%',
        colors = [colors[v] for v in l])
 # ax.set_title('Energy produced in ' + country + '\n without CO2 constraint or storage', size = 20)     
 
-plt.tight_layout()
-plt.savefig(str(country) + '_A_pie.eps')      
+plt.tight_layout()    
+plt.savefig('graphics/' + str(country) + '_A_pie.pdf', format = 'pdf', bbox_inches='tight') 
 
 #%% Plot duration curve
 # Load offshore wind data
@@ -174,8 +174,8 @@ ax.xaxis.set_major_locator(ticker.MultipleLocator(500))
 ax.set_xlim([0,len(sort_wind_offshore)])
 ax.grid(visible = True, which = 'both')
 
-plt.tight_layout()
-plt.savefig(str(country) + '_A_duration.eps')   
+plt.tight_layout() 
+plt.savefig('graphics/' + str(country) + '_A_duration.pdf', format = 'pdf', bbox_inches='tight')
 
 #%% Print CF at different durations
 DC = pd.DataFrame(columns = ["Technology","25%","50%","75%","100%"])

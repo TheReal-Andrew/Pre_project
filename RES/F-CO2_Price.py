@@ -152,6 +152,8 @@ plt.ylabel('Produced energy [TWh]')
 plt.title('Effect of CO2 reduction on technology mix')    
 plt.legend(loc = 'center left', bbox_to_anchor=(1, 0.5))
 
+plt.savefig('graphics/' + str(country) + '_F_bar.pdf', format = 'pdf', bbox_inches='tight') 
+
 #%% Plot reduction
 
 fig, ax1 = plt.subplots(figsize = [10,5])
@@ -161,6 +163,8 @@ ax1.set_xlabel('CO2 reduction [%]')
 ax1.set_ylabel('CO2 price [Eur/TonCO2]')
 ax1.set_yscale('symlog')
 ax1.set_title('CO2 price vs percent reduction \n (symlog scale)')
+
+plt.savefig('graphics/' + str(country) + '_F_CO2Price.pdf', format = 'pdf', bbox_inches='tight') 
 
 # Print Latex tables
 print(df_red.to_latex())

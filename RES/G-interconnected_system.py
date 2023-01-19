@@ -181,6 +181,8 @@ for j in list(bus_df['Abbreviation']):
     
     ax[q].set_title(j + " - Energy demand: " + str(round(df_elec[j].sum()/10**6,2)) + " TWh \n " + j + " - Energy produced: " + str(gen_val) + "TWh")
     q = q + 1
+    
+plt.savefig('graphics/' + str(country) + '_G_mix.pdf', format = 'pdf', bbox_inches='tight') 
 
 #%%
 mean_DK7 = network.links_t.p0.iloc[:,0].resample('D').mean()
@@ -244,3 +246,5 @@ ax_PF[0].get_shared_x_axes().join(ax_PF[0], ax_PF[1])
 ax_PF[1].axhline(y=0, color='k', linestyle='--')
 ax_PF[1].grid()
 plt.tight_layout()
+
+plt.savefig('graphics/' + str(country) + '_G_data.pdf', format = 'pdf', bbox_inches='tight') 

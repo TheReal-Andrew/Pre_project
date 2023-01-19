@@ -68,6 +68,8 @@ ax[1].set_xlim([datetime.date(2015, 7, 1), datetime.date(2015, 7, 8)])
 ax[0].set_title('Denmark in January and July without C02 constraint')
 fig1.text(0.5,0.05,'Time [Hour]', ha='center')
 fig1.text(0.08,0.5,'Power [MW]', va='center', rotation='vertical')
+
+plt.savefig('graphics/' + str(country) + '_D_dispatch.pdf', format = 'pdf', bbox_inches='tight') 
     
 #%% Plot the technology mix
 
@@ -89,5 +91,5 @@ for i in list(network.generators.index):
 plt.pie(sizes, labels = labels, autopct='%.1f%%',
         colors = [colors[v] for v in l])
 
-# plt.title('Technology mix for Denmark without CO2 constraint')    
+plt.savefig('graphics/' + str(country) + '_D_mix.pdf', format = 'pdf', bbox_inches='tight') 
 

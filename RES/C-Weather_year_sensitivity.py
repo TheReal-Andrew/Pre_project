@@ -105,6 +105,8 @@ ax1.set_ylabel('Total produced power [MW]')
 ax2.set_ylabel('Mean capacity factor [-]')
 ax1.grid(True)
 
+plt.savefig('graphics/' + str(country) + '_C_weather.pdf', format = 'pdf', bbox_inches='tight') 
+
 #%% Variance
 
 # Set formatting for pandas

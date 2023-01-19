@@ -168,4 +168,6 @@ ax[1].pie(sizes, labels = labels, autopct='%.1f%%',
           colors = [colors[v] for v in l])
 ax[1].set_title('Heat sector')
 
+plt.savefig('graphics/' + str(country) + '_H_heat.pdf', format = 'pdf', bbox_inches='tight') 
+
 #%% 

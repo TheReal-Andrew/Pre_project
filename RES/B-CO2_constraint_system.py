@@ -3,10 +3,14 @@ import pypsa
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import island_plt as ip
 import system_add
 
+ip.set_plot_options()
+
 #%% Choose country
-country = 'DEU'
+country = 'DNK'
+co2     = 53_045_230*0.424
 
 #%% Initialize and start CO2 loop from 0-100% reduction with 5% steps
 d = {}  # Dictionary for storing data
@@ -14,7 +18,7 @@ reduction = {}  # Dictionary for storing data
 q = 1   # Initialize dictionary-store counter
 
 # reduction_range = np.linspace(0,1,101)  # 01% increments
-reduction_range = np.linspace(0.75,1,26)   # 05% increments
+reduction_range = np.linspace(0.75,1,26)   # 05% incrementse
 # reduction_range = np.linspace(0,1,11)   # 10% increments
 
 for i in list(reduction_range):
@@ -39,7 +43,7 @@ for i in list(reduction_range):
     system_add.generators(network,country,network.buses.index[0])
 
 #%% Add CO2 constraint
-    co2_limit = 1_003_148_970*0.438*(1-round(i,1)) #tonCO2 https://www.worldometers.info/co2-emissions/germany-co2-emissions/
+    co2_limit = co2*(1-round(i,1)) #tonCO2 https://www.worldometers.info/co2-emissions/germany-co2-emissions/
     # co2_limit = 4000000*(1-round(i,1))            
     network.add("GlobalConstraint",
                 "co2_limit",
@@ -76,12 +80,14 @@ for i in list(network.generators.index):
     plt.plot(reduction_range*100, d[i], label = i[:-6])
     plt.legend(loc = 'best')
     
-plt.xticks(np.arange(0,110,10))
-plt.xlim([0,100])   
+# plt.xticks(np.arange(0,110,10))
+# plt.xlim([0,100])   
 plt.title('Energy production sensitivity wrt. CO2 reduction from 1990', fontsize = 20)     
 plt.xlabel('Reduction in CO2 emissions [%]', fontsize = 15)
 plt.ylabel('Installed capacity [MW]', fontsize = 15)
-plt.grid()
+# plt.grid()
+
+plt.savefig('graphics/' + str(country) + '_B_capacity.pdf', format = 'pdf', bbox_inches='tight') 
 
 #%% Bar plots
 
@@ -108,3 +114,5 @@ plt.xlabel('CO2 Reduction [%]')
 plt.ylabel('Produced energy [TWh]')
 plt.title('Effect of CO2 reduction on technology mix')    
 plt.legend(loc = 'center left', bbox_to_anchor=(1, 0.5))
+
+plt.savefig('graphics/' + str(country) + '_B_bar.pdf', format = 'pdf', bbox_inches='tight') 
