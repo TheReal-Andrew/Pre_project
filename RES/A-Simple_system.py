@@ -27,7 +27,7 @@ network.add("Bus","electricity bus")
 network.add("Load",
             "load", 
             bus   = "electricity bus", 
-            p_set = df_elec[country])
+            p_set = df_elec[country]*(1+0.018)**(35))
 
 #%% Define max capacity for any given technology
 max_cap = df_elec[country].max()
