@@ -8,20 +8,35 @@ import numpy as np
 import datetime
 import matplotlib.colors as mcolors
 
+country = 'DEU'
+
 #%% Choose country
 
 # Dataframe with country data. All emission data from https://www.worldometers.info/co2-emissions/
 # CO2 Limit is the CO2 emission in 1990.
-bus_df = pd.DataFrame(
-    np.array([                          #Create numpy array with bus info
-    ["Germany","DEU", 1_003_148_970*0.438],   
-    ["Denmark","DNK",    53_045_230*0.424],   
-    ["France", "FRA",   376_699_660*0.132],
-    # ["Sweden", "SWE",    56_677_744*0.177],
-    # ["Norway", "NOR",    35_902_816*0.069],
-    ],
-    ),  
-    columns = ["Country","Abbreviation","CO2_limit"])
+
+if country == 'DNK':
+    bus_df = pd.DataFrame(
+        np.array([                          #Create numpy array with bus info
+        # ["Germany","DEU", 1_003_148_970*0.438],   
+        ["Denmark","DNK",    53_045_230*0.424],   
+        # ["France", "FRA",   376_699_660*0.132],
+        ["Sweden", "SWE",    56_677_744*0.177],
+        ["Norway", "NOR",    35_902_816*0.069],
+        ],
+        ),  
+        columns = ["Country","Abbreviation","CO2_limit"])
+else:
+    bus_df = pd.DataFrame(
+        np.array([                          #Create numpy array with bus info
+        ["Germany","DEU", 1_003_148_970*0.438],   
+        ["Denmark","DNK",    53_045_230*0.424],   
+        ["France", "FRA",   376_699_660*0.132],
+        # ["Sweden", "SWE",    56_677_744*0.177],
+        # ["Norway", "NOR",    35_902_816*0.069],
+        ],
+        ),  
+        columns = ["Country","Abbreviation","CO2_limit"])
 
 #%% Load electricity demand data
 df_elec       = pd.read_csv('data/electricity_demand.csv', sep=';', index_col=0) # in MWh
@@ -100,7 +115,7 @@ def CO2(network, snapshots):
     var_gen  = get_var(network, 'Generator', 'p')
     
     CO2_e = 0.19 # [TonCO2/MWh]
-    red   = 0.01 # CO2 Allowance in percent of 2015 level
+    red   = 0.01 # CO2 Allowance in percent of 1990 levels
     
     lhs_DNK = linexpr((CO2_e, var_gen['OCGT (' + network.bus_df.Abbreviation[0] + ')'])).sum()
     rhs_DNK = float(network.bus_df.CO2_limit[0]) * red
@@ -129,36 +144,42 @@ network.lopf(
              )
 
 #%% Plot the technology mix
+
+
 fig1 = plt.figure('Figure 1')
 fig1, ax = plt.subplots(nrows=1, ncols=3, figsize=(20, 7.5), dpi = 300)
 
-colors = list(mcolors.TABLEAU_COLORS.keys())
+# colors = list(mcolors.TABLEAU_COLORS.keys())
 
-q = 0
+q = 0 # Country counter
 for j in list(bus_df['Abbreviation']):
-    sizes = []
+    sizes  = []
     labels = []
-    color  = []
+    l      = []
+    
     for i in range(5):
         gen = (network.generators.loc[network.generators['bus'].str.endswith('('+j+')')] & network.generators.loc[network.generators.index.str.endswith('('+j+')')]).index[i]
         cap = network.generators.loc[network.generators.index.str.endswith('('+j+')')].index[i]
         
+        colors = system_add.get_colors(j)
+        
         if network.generators_t.p[gen].sum() > 0:
             sizes = sizes + [network.generators_t.p[gen].sum()]
+            l       = l + [gen]
             labels1 = gen[:-6]
             labels2 = "Produced: "+str(round(network.generators_t.p[gen].sum()/10**6)) + " TWh"
             labels3 = "Capacity: " + str(round(network.generators.p_nom_opt[cap]/10**3)) + " GW"
             labels  = labels + [labels1  + "\n" + labels2 + "\n" + labels3]
-            color   = color + [colors[i]]
         else:
             pass
     
-    ax[q].pie(sizes, labels = labels, autopct='%.1f%%', colors = color)
+    ax[q].pie(sizes, labels = labels, autopct='%.1f%%',
+              colors = [colors[v] for v in l])
     
     cols = [col for col in network.generators_t.p.columns if j in col]
-    gen = round(network.generators_t.p[cols].sum().sum()/10**6, 2)
+    gen_val = round(network.generators_t.p[cols].sum().sum()/10**6, 2)
     
-    ax[q].set_title(j + " - Energy demand: " + str(round(df_elec[j].sum()/10**6,2)) + " TWh \n " + j + " - Energy produced: " + str(gen) + "TWh")
+    ax[q].set_title(j + " - Energy demand: " + str(round(df_elec[j].sum()/10**6,2)) + " TWh \n " + j + " - Energy produced: " + str(gen_val) + "TWh")
     q = q + 1
 
 #%%

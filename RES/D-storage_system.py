@@ -70,14 +70,24 @@ fig1.text(0.5,0.05,'Time [Hour]', ha='center')
 fig1.text(0.08,0.5,'Power [MW]', va='center', rotation='vertical')
     
 #%% Plot the technology mix
+
+colors = system_add.get_colors(country)
+
 fig2    = plt.figure('Figure 2', dpi = 300, figsize=(7.5, 7.5))
 sizes   = []
 labels  = []
+l       = []
 
 for i in list(network.generators.index):
-    sizes   = sizes + [network.generators_t.p[i].sum()]
-    labels  = labels + [i + " " + str(round(100*network.generators_t.p[i].sum()/df_elec[country].sum(),2)) + "%"]
+    if network.generators_t.p[i].sum() > 0:
+        sizes = sizes + [network.generators_t.p[i].sum()]
+        l = l + [i]
+        labels = labels + [i[:-6] + "\n" + str(round(network.generators_t.p[i].sum()/10**6,2)) + " TWh"]
+    else:
+        pass
 
-plt.pie(sizes, labels = labels)
-plt.title('Technology mix for Denmark without CO2 constraint')    
+plt.pie(sizes, labels = labels, autopct='%.1f%%',
+        colors = [colors[v] for v in l])
+
+# plt.title('Technology mix for Denmark without CO2 constraint')    
 

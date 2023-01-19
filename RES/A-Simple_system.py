@@ -49,12 +49,17 @@ for i in list(network.generators.index):
     d[str(i) + "_jul"] = network.generators_t.p[i].loc['2015-07-01 00:00:00':'2015-07-8 00:00:00']
     
 #%% Plot the dispatch for the two weeks
+
+colors = system_add.get_colors(country)
+
 fig1 = plt.figure('Figure 1')
 fig1, ax = plt.subplots(nrows=2, ncols=1, sharex=False, sharey=True, figsize=(15, 7.5), dpi = 300)
 
 for i in list(network.generators.index):
-    ax[0].plot(d[str(i) + "_jan"]/10**3, label = str(i)[:-6])
-    ax[1].plot(d[str(i) + "_jul"]/10**3, label = str(i)[:-6])
+    ax[0].plot(d[str(i) + "_jan"]/10**3, label = str(i)[:-6],
+               color = colors[i])
+    ax[1].plot(d[str(i) + "_jul"]/10**3, label = str(i)[:-6],
+               color = colors[i])
 
 for i in range(2):
     ax[i].xaxis.set_major_formatter(mdates.DateFormatter('%b-%d'))
@@ -77,15 +82,18 @@ plt.savefig(str(country) + '_A_dispatch.eps')
 fig2 = plt.figure('Figure 2')
 fig2, ax = plt.subplots(nrows=1, ncols=1, figsize=(7.5, 7.5), dpi = 300)
 
-sizes = []
+sizes  = []
 labels = []
+l      = [] 
 for i in list(network.generators.index):
     if network.generators_t.p[i].sum() > 0:
         sizes = sizes + [network.generators_t.p[i].sum()]
+        l = l + [i]
         labels = labels + [i[:-6] + "\n" + str(round(network.generators_t.p[i].sum()/10**6,2)) + " TWh"]
     else:
         pass
-ax.pie(sizes, labels = labels, autopct='%.1f%%')
+ax.pie(sizes, labels = labels, autopct='%.1f%%',
+       colors = [colors[v] for v in l])
 # ax.set_title('Energy produced in ' + country + '\n without CO2 constraint or storage', size = 20)     
 
 plt.tight_layout()
@@ -131,8 +139,6 @@ sort_OCGT        = CF_OCGT.sort_values(ascending = False)
 exceedence_OCGT  = np.arange(1,len(sort_OCGT)+1)
 
 #%%Actual plot
-
-colors = system_add.get_colors(country)
 
 # Creating new figure
 fig3     = plt.figure('Figure 3')
