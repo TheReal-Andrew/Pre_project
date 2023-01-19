@@ -131,6 +131,8 @@ colors = sa.get_colors(country)
     
 #%% Stacked barchart
 
+colors = sa.get_colors(country)
+
 reductions = ['0%', '50%', '75%', '80%', '85%', '90%', '95%', '98%', '100%']
 y1 = df_gen.iloc[:,0]/10**6
 y2 = df_gen.iloc[:,1]/10**6

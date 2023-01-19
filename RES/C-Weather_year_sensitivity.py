@@ -71,16 +71,18 @@ def my_ceil(a, precision=0):
 
 #%% Plot
 
+colors = system_add.get_colors(country)
+
 fig, ax1 = plt.subplots(dpi = 300)
 ax2 = ax1.twinx()
 
 for i in list(network.generators.index):
-    ax1.plot(range(1979,2017,1), d[i], label = i)
+    ax1.plot(range(1979,2017,1), d[i], label = i[:-6], color = colors[i])
     
     if i == "OCGT " +"(" + country + ")":
         pass
     else:
-        ax2.plot(range(1979,2017,1), cf[i], '--', label = "CF " + i)
+        ax2.plot(range(1979,2017,1), cf[i], '--', label = "CF " + i[:-6], color = colors[i])
                 
 cap_max = round(max(d[max(d, key=d.get)]))
 
@@ -105,21 +107,30 @@ ax1.grid(True)
 
 #%% Variance
 
-pd.options.display.float_format = '{:.2E}'.format
+# Set formatting for pandas
+pd.options.display.float_format = '{:.2e}'.format
 
+# Convert dict data to dataframe
 d_data  = pd.DataFrame.from_dict(d)
 cf_data = pd.DataFrame.from_dict(cf) 
 
+# Variance
 d_var  = d_data.var()
 cf_var = cf_data.var()
 
+# Standard Variation
 d_std  = d_data.std()
 cf_std = cf_data.std()
 
+# Create dataframe with variance and STD
 d_tab  = pd.DataFrame( data = {'Standard Deviation':d_std, 
                                'Variance':d_var})
 cf_tab = pd.DataFrame( data = {'Standard Deviation':cf_std, 
                               'Variance':cf_var})
+
+# Remove country from technology titles
+d_tab.index = [x[:-6] for x in d_tab.index]
+cf_tab.index = [x[:-6] for x in cf_tab.index]
 
 # Print latex code for each table
 print('Latex code for d table: \n')

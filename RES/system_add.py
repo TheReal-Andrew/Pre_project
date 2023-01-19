@@ -8,11 +8,13 @@ def annuity(n,r):
 def get_colors(country):
     
     # List of colors to be used in dictionary
-    c = ['lightskyblue', 'tab:blue', # Colors for Wind
-          'yellow', 'gold',          # Colors for solar
-          'tab:purple',              # Color for OCGT
-          'tab:red',                 # Color for Boiler
-          'darkorange',              # Color for heat pump
+    c = ['lightskyblue',    # Onshorewind
+         'tab:blue',        # Offshorewind
+          'orange',         # Solar utility 
+          'gold',           # Solar rooftop
+          'tab:purple',     # OCGT
+          'tab:red',        # Boiler
+          'darkorange',     # Heat pump
           ]             
     
     # Create keys list and add country name to each
