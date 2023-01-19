@@ -106,5 +106,3 @@ plt.xlabel('CO2 Reduction [%]')
 plt.ylabel('Produced energy [TWh]')
 plt.title('Effect of CO2 reduction on technology mix')    
 plt.legend(loc = 'center left', bbox_to_anchor=(1, 0.5))
-
-plt.ylim([-10, max(y1,y2,y3,y4,y5)])
