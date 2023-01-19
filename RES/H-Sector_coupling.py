@@ -16,6 +16,7 @@ import datetime
 import system_add
 import island_lib as il
 import island_plt as ip
+import systemn_add as sa
 
 ip.set_plot_options()
 
@@ -77,13 +78,26 @@ system_add.generators(network,country, network.buses.index[0])
 network.add("Carrier", "heat")
 
 # Add gas boiler to provide heat
+cc_boiler = sa.annuity(20,0.07)*63000*(1+0.01) # in €/MW
 network.add("Generator",
             "boiler",
             bus = "heat bus",
             p_nom_extendable = True,
             efficiency = 0.9,
-            marginal_cost = 20,
+            capital_cost = cc_boiler,
+            marginal_cost = 32, # [EUR/MWh], European average gas price for 2015
             carrier = "gas"
+            )
+
+#% Add heat pump that converts electricity into heat (Added as link)
+cc_hp = sa.annuity(20,0.07)*933000*(1+0.035) # in €/MW
+network.add("Link",
+            "heat pump",
+            bus0 = "electricity bus",
+            bus1 = "heat bus",
+            efficiency = 3,
+            capital_cost = cc_hp,        # Need data
+            p_nom_extendable = True
             )
 
 #% Add storage ---------------------------------------------------------------
@@ -97,17 +111,6 @@ network.add("Store",
             e_nom_extendable = True,
             standing_loss = 0.01,
             # capital_cost = 0 #Need data
-            )
-
-
-#% Add heat pump that converts electricity into heat (Added as link)
-network.add("Link",
-            "heat pump",
-            bus0 = "electricity bus",
-            bus1 = "heat bus",
-            efficiency = 3,
-            # capital_cost = 0,        # Need data
-            p_nom_extendable = True
             )
 
 #%% CO2 limit
