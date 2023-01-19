@@ -24,7 +24,7 @@ def import_data(sheetname,inv_name,fom_name,lifetime_name):
     # data.dropna(inplace = True)
 
     # Pull parameters
-    year     = '2015'
+    year     = '2050'
     INV      = data.loc[inv_name, year]
     FOM      = data.loc[fom_name, year]
     Lifetime = data.loc[lifetime_name, year]
