@@ -199,3 +199,10 @@ print(DC2.to_latex(index = False))
 
 #%% Print data assumptions
 system_add.price_gen(network)
+
+#%%
+
+emission  = network.generators_t.p['OCGT (DNK)'].sum()*0.19
+allowance = system_add.get_co2(country)
+
+part = emission/allowance
