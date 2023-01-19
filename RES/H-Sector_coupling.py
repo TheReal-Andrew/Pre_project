@@ -20,7 +20,7 @@ import system_add as sa
 
 ip.set_plot_options()
 
-allowance = 0.05 # CO2 allowance as percent of 1990 CO2 levels
+allowance = 0.85 # CO2 allowance as percent of 1990 CO2 levels
 
 # F.  -------------------------------------------------------------------------
 # Select one target for decarbonization (i.e., one CO2 allowance limit). What 
@@ -82,19 +82,19 @@ network.add("Carrier", "heat")
 # Add gas boiler to provide heat
 cc_boiler = sa.annuity(20,0.07)*63000*(1+0.01) # in €/MW
 network.add("Generator",
-            "boiler",
+            "Boiler " + '(' + country + ')',
             bus = "heat bus",
             p_nom_extendable = True,
             efficiency = 0.9,
             capital_cost = cc_boiler,
             marginal_cost = 32, # [EUR/MWh], European average gas price for 2015
-            carrier = "gas"
+            carrier = "gas",
             )
 
 #% Add heat pump that converts electricity into heat (Added as link)
 cc_hp = sa.annuity(20,0.07)*933000*(1+0.035) # in €/MW
 network.add("Link",
-            "heat pump",
+            "Heat pump " '(' + country + ')',
             bus0 = "electricity bus",
             bus1 = "heat bus",
             efficiency = 3,
@@ -126,4 +126,46 @@ network.lopf(network.snapshots,
               keep_shadowprices = True, #Keep lagrange multipliers (For CO2 price)
               keep_references   = True,
               )
-    
+
+#%% Plot
+
+#Pandas float formatting
+# pd.options.display.float_format = '{:.2f}'.format
+# pd.options.display.float_format = '{:.2E}'.format
+# pd.reset_option('display.float_format')
+
+colors = sa.get_colors(country)
+
+# Plots
+fig, ax = plt.subplots(1, 2, figsize = (10,5))
+
+# Electricity
+sizes, labels, l = [], [], []
+for i in list(network.generators[:5].index):
+    if network.generators_t.p.iloc[:,:5][i].sum() > 0:
+        sizes = sizes + [network.generators_t.p.iloc[:,:5][i].sum()]
+        l = l + [i]
+        labels = labels + [i[:-6] + "\n" + str(round(network.generators_t.p.iloc[:,:5][i].sum()/10**6,2)) + " TWh"]
+    else:
+        pass
+ax[0].pie(sizes, labels = labels, autopct='%.1f%%',
+          colors = [colors[v] for v in l])
+ax[0].set_title('Electricity sector')
+# Heating
+
+df_heat = pd.DataFrame( {network.generators.index[5] : [network.generators_t.p.iloc[:,5].sum()] ,
+                         network.links.index[0] : [network.links_t.p0.iloc[:,0].sum()] } )
+
+sizes, labels, l = [], [], []
+for i in list(df_heat.columns):
+    if df_heat[i][0] > 0:
+        sizes = sizes + [df_heat[i][0]]
+        l = l + [i]
+        labels = labels + [i[:-6] + "\n" + str(round(df_heat[i][0]/10**6,2)) + " TWh"]
+    else:
+        pass
+ax[1].pie(sizes, labels = labels, autopct='%.1f%%',
+          colors = [colors[v] for v in l])
+ax[1].set_title('Heat sector')
+
+#%% 
