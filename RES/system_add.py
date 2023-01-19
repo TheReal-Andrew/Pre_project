@@ -4,6 +4,30 @@ def annuity(n,r):
             return r/(1. - 1./(1.+r)**n)
         else:
             return 1/n
+        
+def get_colors(country):
+    
+    # List of colors to be used in dictionary
+    c = ['lightskyblue', 'tab:blue', # Colors for Wind
+          'yellow', 'gold',          # Colors for solar
+          'tab:purple',              # Color for OCGT
+          'tab:red',                 # Color for Boiler
+          'darkorange',              # Color for heat pump
+          ]             
+    
+    # Create keys list and add country name to each
+    keys = ['Onshorewind', 'Offshorewind', 'Solar_utility',
+           'Solar_rooftop', 'OCGT', 'Boiler', 'Heat pump']
+    keys = [x + ' (' + country + ')' for x in keys] 
+    
+    # initiate color dict
+    colors = {}
+    
+    for i in range(0,len(keys)):
+        colors[keys[i]] = c[i]
+        
+    return colors
+
 
 def import_data(sheetname,inv_name,fom_name,lifetime_name):
     import pandas as pd

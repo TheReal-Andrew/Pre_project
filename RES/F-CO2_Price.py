@@ -16,6 +16,7 @@ import datetime
 import system_add
 import island_lib as il
 import island_plt as ip
+import system_add as sa
 
 ip.set_plot_options()
 
@@ -125,34 +126,8 @@ for p in [1, 0.5, 0.25, 0.2, 0.15, 0.1, 0.05, 0.02, 0]:
 
 #%% Plot the technology mix
 
-colors = dict(zip(list(network.generators.index), 
-             ['lightskyblue', 'tab:blue',
-              'yellow', 'gold',
-              'tab:purple'])
-              )
+colors = sa.get_colors(country)
 
-# for j in range(0, len(df_gen)):
-    
-#     plt.figure(dpi = 300, figsize=(7.5, 7.5))
-#     sizes   = []
-#     labels  = []
-#     l       = []
-    
-#     gen = df_gen.iloc[j]
-    
-#     for i in list(gen.index):
-        
-#         if gen[i] > 0:
-#             sizes = sizes + [gen[i]]
-#             l     = l + [i]
-#             labels = labels + [i[:-6] + "\n" + str(round(gen[i]/10**6,2)) + " TWh"]
-#         else:
-#             pass
-
-#     plt.pie(sizes, labels = labels, autopct='%.1f%%',
-#             colors = [colors[v] for v in l])
-#     plt.title('Technology mix for Denmark with CO2 constraint \n With ' + 
-#               str(df_red['Percent reduction'].iloc[j]) + "% CO2 reduction")  
     
 #%% Stacked barchart
 
@@ -164,11 +139,11 @@ y4 = df_gen.iloc[:,3]/10**6
 y5 = df_gen.iloc[:,4]/10**6
 
 bar_fig = plt.figure( figsize = (10,5))
-plt.bar(reductions, y1, color = 'lightskyblue', label = 'Onshorewind')
-plt.bar(reductions, y2, bottom = y1 , color='tab:blue', label = 'Offshorewind')
-plt.bar(reductions, y3, bottom = y1+y2 , color='yellow', label = 'Solar Utility')
-plt.bar(reductions, y4, bottom = y1+y2+y3 , color='gold', label = 'Solar rooftop')
-plt.bar(reductions, y5, bottom = y1+y2+y3+y4 , color='tab:purple', label = 'OCGT')
+plt.bar(reductions, y1, color = colors['Onshorewind (' + country + ')'], label = 'Onshorewind')
+plt.bar(reductions, y2, bottom = y1 , color = colors['Offshorewind (' + country + ')'], label = 'Offshorewind')
+plt.bar(reductions, y3, bottom = y1+y2 , color = colors['Solar_utility (' + country + ')'], label = 'Solar Utility')
+plt.bar(reductions, y4, bottom = y1+y2+y3 , color = colors['Solar_rooftop (' + country + ')'], label = 'Solar rooftop')
+plt.bar(reductions, y5, bottom = y1+y2+y3+y4 , color = colors['OCGT (' + country + ')'], label = 'OCGT')
 
 plt.xlabel('CO2 Reduction [%]')
 plt.ylabel('Produced energy [TWh]')
