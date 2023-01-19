@@ -44,7 +44,7 @@ def carriers(network):
         
 def storages(network):
     
-    capital_cost_hydro = annuity(80,0.07)*2000000*(1+0.1) # in €/MW
+    capital_cost_hydro = annuity(80,0.07)*2000000*(1+0.01) # in €/MW
 
     # network.add("Store",
     #       "Hydro_storage",
@@ -60,7 +60,7 @@ def storages(network):
     #       # e_nom_max         = 11022, #https://www.hydropower.org/country-profiles/germany
     #       )
     
-    cc_lithium = annuity(15,0.07)*1.288*10**6*(1+0.1)
+    cc_lithium = annuity(15,0.07)*1.288*10**6*(1+0.01)
     
     network.add("Store",
           "Lithium_storage",
@@ -183,7 +183,7 @@ def generators(network,country,bus):
                                      )
     cc_OCGT = annuity(lifetime,0.07)*(INV*10**6 + FOM) # in €/MW
     
-    fuel_cost          = 34.6 # in €/MWh_th https://ec.europa.eu/eurostat/databrowser/view/NRG_PC_203__custom_4567839/default/table?lang=en
+    fuel_cost          = 32 # in €/MWh_th https://ec.europa.eu/eurostat/databrowser/view/NRG_PC_203__custom_4567839/default/table?lang=en
     efficiency         = 0.39
     mc_OCGT = fuel_cost/efficiency # in €/MWh_el
     
