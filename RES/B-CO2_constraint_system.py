@@ -14,7 +14,7 @@ reduction = {}  # Dictionary for storing data
 q = 1   # Initialize dictionary-store counter
 
 # reduction_range = np.linspace(0,1,101)  # 01% increments
-reduction_range = np.linspace(0,1,21)   # 05% increments
+reduction_range = np.linspace(0.75,1,26)   # 05% increments
 # reduction_range = np.linspace(0,1,11)   # 10% increments
 
 for i in list(reduction_range):
@@ -39,7 +39,7 @@ for i in list(reduction_range):
     system_add.generators(network,country,network.buses.index[0])
 
 #%% Add CO2 constraint
-    co2_limit = 765922900*0.44*(1-round(i,1)) #tonCO2 https://www.worldometers.info/co2-emissions/germany-co2-emissions/
+    co2_limit = 1_003_148_970*0.438*(1-round(i,1)) #tonCO2 https://www.worldometers.info/co2-emissions/germany-co2-emissions/
     # co2_limit = 4000000*(1-round(i,1))            
     network.add("GlobalConstraint",
                 "co2_limit",
@@ -85,14 +85,15 @@ plt.grid()
 
 #%% Bar plots
 
-reductions = ['0%','5%','10%','15%','20%','25%','30%','35%','40%','45%','50%',
-              '55%','60%','65%','70%','75%','80%','85%','90%','95%','100%']
+reductions = ['75','76','77','78','79',
+              '80','81','82','83','84','85','86','87','88','89',
+              '90','91','92','93','94','95','96','97','98','99','100']
 
-y1 = d[network.generators.index[0]]
-y2 = d[network.generators.index[1]]
-y3 = d[network.generators.index[2]]
-y4 = d[network.generators.index[3]]
-y5 = d[network.generators.index[4]]
+y1 = pd.Series(d[network.generators.index[0]])/10**6
+y2 = pd.Series(d[network.generators.index[1]])/10**6
+y3 = pd.Series(d[network.generators.index[2]])/10**6
+y4 = pd.Series(d[network.generators.index[3]])/10**6
+y5 = pd.Series(d[network.generators.index[4]])/10**6
 
 bar_fig = plt.figure( figsize = (10,5))
 plt.bar(reductions, y1, color = 'lightskyblue', label = 'Onshorewind')
@@ -105,3 +106,5 @@ plt.xlabel('CO2 Reduction [%]')
 plt.ylabel('Produced energy [TWh]')
 plt.title('Effect of CO2 reduction on technology mix')    
 plt.legend(loc = 'center left', bbox_to_anchor=(1, 0.5))
+
+plt.ylim([-10, max(y1,y2,y3,y4,y5)])
