@@ -66,24 +66,8 @@ def carriers(network):
     network.add("Carrier", "lithium_storage")
         
 def storages(network):
-    
-    capital_cost_hydro = annuity(80,0.07)*2000000*(1+0.01) # in €/MW
-
-    # network.add("Store",
-    #       "Hydro_storage",
-    #       bus               = "electricity bus",
-    #       carrier           = "hydro_storage",
-    #       e_nom_extendable  = True,
-    #       e_cyclic          = True,
-    #       # capital_cost      = capital_cost_hydro, #[EUR/MWh] Capital cost for Storage
-    #       capital_cost = 0,
-    #       # capital_cost      = 0, #[EUR/MWh] Capital cost for Storage
-    #       # marginal_cost     = 40/0.75,
-    #       marginal_cost     = 0,
-    #       # e_nom_max         = 11022, #https://www.hydropower.org/country-profiles/germany
-    #       )
-    
-    cc_lithium = annuity(15,0.07)*1.288*10**6*(1+0.01)
+        
+    cc_lithium = annuity(30,0.07)*0.255*10**6 + 0.54*10**3
     
     network.add("Store",
           "Lithium_storage",
@@ -92,8 +76,6 @@ def storages(network):
           e_nom_extendable      = True,
           e_cyclic              = True,
           capital_cost          = cc_lithium, #[EUR/MWh] Capital cost for Storage
-           # capital_cost          = 0,
-          marginal_cost         = 2.1,
           efficiency_store      = 0.98,
           efficiency_dispatch   = 0.97,
           )
