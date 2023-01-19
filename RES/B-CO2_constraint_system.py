@@ -63,16 +63,39 @@ for i in list(reduction_range):
         q = q + 1
           
 #%% Plot the installed capacity wrt. CO2 reduction
-fig = plt.figure(dpi = 300)
-ax1 = fig.add_subplot(1,1,1)
+# fig = plt.figure(dpi = 300)
+# ax1 = fig.add_subplot(1,1,1)
+
+fig     = plt.figure('Figure 3')
+fig, ax1 = plt.subplots(1, figsize=(15, 7.5))
 
 for i in list(network.generators.index):
-    plt.plot(reduction_range*100, d[i], label = i)
+    plt.plot(reduction_range*100, d[i], label = i[:-6])
     plt.legend(loc = 'best')
     
 plt.xticks(np.arange(0,110,10))
 plt.xlim([0,100])   
-plt.title('Tech. sensitivity wrt. CO2 reduction from 2015')     
-plt.xlabel('Reduction in CO2 emissions [%]')
-plt.ylabel('Installed capacity [MW]')
+plt.title('Energy production sensitivity wrt. CO2 reduction from 1990', fontsize = 20)     
+plt.xlabel('Reduction in CO2 emissions [%]', fontsize = 15)
+plt.ylabel('Installed capacity [MW]', fontsize = 15)
 plt.grid()
+
+#%% Bar plots
+reductions = ['0%', '50%', '75%', '80%', '85%', '90%', '95%', '98%', '100%']
+y1 = df_gen.iloc[:,0]/10**6
+y2 = df_gen.iloc[:,1]/10**6
+y3 = df_gen.iloc[:,2]/10**6
+y4 = df_gen.iloc[:,3]/10**6
+y5 = df_gen.iloc[:,4]/10**6
+
+bar_fig = plt.figure( figsize = (10,5))
+plt.bar(reductions, y1, color = 'lightskyblue', label = 'Onshorewind')
+plt.bar(reductions, y2, bottom = y1 , color='tab:blue', label = 'Offshorewind')
+plt.bar(reductions, y3, bottom = y1+y2 , color='yellow', label = 'Solar Utility')
+plt.bar(reductions, y4, bottom = y1+y2+y3 , color='gold', label = 'Solar rooftop')
+plt.bar(reductions, y5, bottom = y1+y2+y3+y4 , color='tab:purple', label = 'OCGT')
+
+plt.xlabel('CO2 Reduction [%]')
+plt.ylabel('Produced energy [TWh]')
+plt.title('Effect of CO2 reduction on technology mix')    
+plt.legend(loc = 'center left', bbox_to_anchor=(1, 0.5))
