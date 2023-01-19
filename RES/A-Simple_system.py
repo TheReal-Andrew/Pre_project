@@ -53,22 +53,26 @@ fig1 = plt.figure('Figure 1')
 fig1, ax = plt.subplots(nrows=2, ncols=1, sharex=False, sharey=True, figsize=(15, 7.5), dpi = 300)
 
 for i in list(network.generators.index):
-    ax[0].plot(d[str(i) + "_jan"]/10**3, label = str(i))
-    ax[1].plot(d[str(i) + "_jul"]/10**3, label = str(i))
+    ax[0].plot(d[str(i) + "_jan"]/10**3, label = str(i)[:-6])
+    ax[1].plot(d[str(i) + "_jul"]/10**3, label = str(i)[:-6])
 
 for i in range(2):
     ax[i].xaxis.set_major_formatter(mdates.DateFormatter('%b-%d'))
     ax[i].grid(visible = True, which = 'both')
-    ax[i].plot(df_elec[country]/10**3, label = 'Demand', linestyle = '--')
+    ax[i].plot(df_elec[country]*(1+0.018)**(35)/10**3, label = 'EL demand', linestyle = '--')
     
 ax[0].legend(loc = 'best')
 ax[0].set_xlim([datetime.date(2015, 1, 1), datetime.date(2015, 1, 8)])
 ax[1].set_xlim([datetime.date(2015, 7, 1), datetime.date(2015, 7, 8)])
 
-ax[0].set_title(country +' in January and July without C02 constraint', size = 20)
-fig1.text(0.5,0.05,'Time [Hour]', ha='center')
-fig1.text(0.08,0.5,'Power [GW]', va='center', rotation='vertical')
+ax[0].set_title(country +' in January and July without C02 constraint or storage', size = 20)
+
+fig1.supxlabel('Time [Hour]')
+fig1.supylabel('Power [GW]')
     
+plt.tight_layout()
+plt.savefig(str(country) + '_A_dispatch.eps')
+
 #%% Plot the technology mix in pie-chart
 fig2 = plt.figure('Figure 2')
 fig2, ax = plt.subplots(nrows=1, ncols=1, figsize=(7.5, 7.5), dpi = 300)
@@ -82,7 +86,10 @@ for i in list(network.generators.index):
     else:
         pass
 ax.pie(sizes, labels = labels, autopct='%.1f%%')
-ax.set_title('Energy produced in ' + country + '\n without CO2 constraint', size = 20)           
+# ax.set_title('Energy produced in ' + country + '\n without CO2 constraint or storage', size = 20)     
+
+plt.tight_layout()
+plt.savefig(str(country) + '_A_pie.eps')      
 
 #%% Plot duration curve
 # Load offshore wind data
@@ -120,7 +127,7 @@ exceedence_solar_rooftop    = np.arange(1,len(sort_solar_rooftop)+1)
 # Load OCGT data
 CF_OCGT = network.generators_t.p['OCGT ('+country+')']/network.generators.p_nom_opt['OCGT ('+country+')']
 
-sort_OCGT           = CF_OCGT.sort_values(ascending = False)
+sort_OCGT        = CF_OCGT.sort_values(ascending = False)
 exceedence_OCGT  = np.arange(1,len(sort_OCGT)+1)
 
 #%%Actual plot
@@ -141,16 +148,19 @@ plt.axvline(x = 8760*0.25, linestyle = '--', color = 'grey')
 
 ax.legend(['Offshore wind','Onshore wind','Solar utility','Solar rooftop','OCGT'])
 
-ax.set_xlabel("Cumulative Time [Hours]")
-ax.set_ylabel("Capacity Factor [-]")
+ax.set_xlabel("Cumulative Time [Hours]", fontsize = 15)
+ax.set_ylabel("Capacity Factor [-]", fontsize = 15)
 
 ax.set_ylim([0,1])
 
-ax.set_title('Duration curve for the different technologies')
+ax.set_title('Duration curve for the different technologies', fontsize = 20)
 ax.yaxis.set_major_locator(ticker.MultipleLocator(0.05))
 ax.xaxis.set_major_locator(ticker.MultipleLocator(500))
 ax.set_xlim([0,len(sort_wind_offshore)])
 ax.grid(visible = True, which = 'both')
+
+plt.tight_layout()
+plt.savefig(str(country) + '_A_duration.eps')   
 
 #%% Print CF at different durations
 DC = pd.DataFrame(columns = ["Technology","25%","50%","75%","100%"])
@@ -168,8 +178,9 @@ for i in range(len(sort_list)):
                     '75%': round(sort_list[i][int(8760*0.75-1)],2),
                     '100%': round(sort_list[i][int(8760*1.00-1)],2)
                     }, ignore_index=True)
-
-print(DC.style.hide_index().to_latex())
+pd.options.display.float_format = '{:.2f}'.format
+DC2 = DC.copy().reset_index(drop=True)
+print(DC2.to_latex())
 
 #%% Print data assumptions
 system_add.price_gen(network)
