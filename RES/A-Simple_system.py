@@ -195,7 +195,7 @@ for i in range(len(sort_list)):
                     }, ignore_index=True)
 pd.options.display.float_format = '{:.2f}'.format
 DC2 = DC.copy().reset_index(drop=True)
-print(DC2.to_latex())
+print(DC2.to_latex(index = False))
 
 #%% Print data assumptions
 system_add.price_gen(network)

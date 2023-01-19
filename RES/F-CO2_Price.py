@@ -167,8 +167,8 @@ ax1.set_title('CO2 price vs percent reduction \n (symlog scale)')
 plt.savefig('graphics/' + str(country) + '_F_CO2Price.pdf', format = 'pdf', bbox_inches='tight') 
 
 # Print Latex tables
-print(df_red.to_latex())
-print(df_gen.to_latex())
+print(df_red.to_latex(index = False))
+# print(df_gen.to_latex(index = False))
 
 #%% Play Sound
 pd.options.display.float_format = '{:.2f}'.format
