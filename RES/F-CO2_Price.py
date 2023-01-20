@@ -17,6 +17,7 @@ import system_add
 import island_lib as il
 import island_plt as ip
 import system_add as sa
+from matplotlib.ticker import (MultipleLocator, AutoMinorLocator)
 
 ip.set_plot_options()
 
@@ -27,7 +28,7 @@ ip.set_plot_options()
 # your result.
 
 #%% Choose country
-country = 'DNK'
+country = 'DEU'
 
 # Dataframe with country data. All emission data from https://www.worldometers.info/co2-emissions/
 # CO2 Limit is the CO2 emission in 1990.
@@ -56,7 +57,7 @@ network.add("Bus","electricity bus")
 network.add("Load",
             "load", 
             bus   = "electricity bus", 
-            p_set = df_elec[country])
+            p_set = df_elec[country]*(1+0.018)**(35))
     
 #%% Add the different carriers and generators
 system_add.carriers(network)
@@ -70,8 +71,9 @@ df_red = pd.DataFrame(columns = ['Reduction [%]', 'CO2 price [EUR/TonCO2]'])
 df_gen = pd.DataFrame(columns = network.generators.index)
     
 #%% Start loop
+reduction_range = np.append([0],np.linspace(0.5,1,26))
 
-for p in [1, 0.5, 0.25, 0.2, 0.15, 0.1, 0.05, 0.02, 0]:
+for p in reduction_range:
     
     # Reset CO2 Constraint if it exists
     try:
@@ -88,7 +90,7 @@ for p in [1, 0.5, 0.25, 0.2, 0.15, 0.1, 0.05, 0.02, 0]:
                 type                = "primary_energy",
                 carrier_attribute   = "co2_emissions",
                 sense               = "<=",
-                constant            = co2_limit*p)
+                constant            = co2_limit*(1-p))
 
     #%% Solve the system
     network.lopf(network.snapshots, 
@@ -119,7 +121,7 @@ for p in [1, 0.5, 0.25, 0.2, 0.15, 0.1, 0.05, 0.02, 0]:
     df_gen = df_gen.append(sums, ignore_index = True)
     
     # Save reduction and CO2 price
-    df_red = df_red.append({df_red.keys()[0]: ((1-p) * 100),
+    df_red = df_red.append({df_red.keys()[0]: (p * 100),
                             df_red.keys()[1]: abs(CO2_price.co2_limit)},
                            ignore_index = True)
 
@@ -133,7 +135,8 @@ colors = sa.get_colors(country)
 
 colors = sa.get_colors(country)
 
-reductions = ['0%', '50%', '75%', '80%', '85%', '90%', '95%', '98%', '100%']
+reductions = (np.around(100*reduction_range).astype(int)).astype(str)
+
 y1 = df_gen.iloc[:,0]/10**6
 y2 = df_gen.iloc[:,1]/10**6
 y3 = df_gen.iloc[:,2]/10**6
@@ -156,16 +159,17 @@ plt.savefig('graphics/' + str(country) + '_F_bar.pdf', format = 'pdf', bbox_inch
 
 #%% Plot reduction
 
-fig, ax1 = plt.subplots(figsize = [10,5])
-
+fig, ax1 = plt.subplots(figsize = [10,5], dpi = 300)
 ax1.plot(df_red.iloc[:,0].values, abs(df_red.iloc[:,1]).values)
-ax1.set_xlabel('CO2 reduction [%]')
-ax1.set_ylabel('CO2 price [Eur/TonCO2]')
+ax1.set_xlabel('CO2 reduction [%]', fontsize = 15)
+ax1.set_ylabel('CO2 price [€/TonCO2]', fontsize = 15)
 ax1.set_yscale('symlog')
-ax1.set_title('CO2 price vs percent reduction \n (symlog scale)')
-
+ax1.set_title('CO2 price vs CO2 reduction', fontsize = 20)
 plt.savefig('graphics/' + str(country) + '_F_CO2Price.pdf', format = 'pdf', bbox_inches='tight') 
-
+ax1.xaxis.set_major_locator(MultipleLocator(10))
+ax1.xaxis.set_minor_locator(MultipleLocator(2))
+ax1.set_xlim([0,100])
+ax1.set_ylim([-0.05,None])
 # Print Latex tables
 print('\n')
 print(df_red.to_latex(index = False))

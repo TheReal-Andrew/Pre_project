@@ -87,7 +87,7 @@ for i in range(bus_df.shape[0]): #i becomes integers
         "Load",
         "Load " + bus_df.Abbreviation[i],
         bus     = bus_df.Abbreviation[i] + ' EL',
-        p_set   = df_elec[bus_df.Abbreviation[i]])       
+        p_set   = df_elec[bus_df.Abbreviation[i]]*(1+0.018)**(35))       
     
 #%% Add the different carriers and generators
 system_add.carriers(network)

@@ -8,12 +8,15 @@ import island_lib as il
 import island_plt as ip
 
 #%% Choose country
-country = 'DNK'
+country = 'DEU'
 
 #%% Initialize and start loop
 cf = {}     # Dictionary for storing CF data
 d  = {}     # Dictionary for storing data
 q  = 1      # Initialize dictionary-store counter
+
+#%% Load electricity demand data
+df_elec       = pd.read_csv('data/electricity_demand.csv', sep=';', index_col=0) # in MWh
 
 for i in range(1979,2017,1):
 #%% Set-up of network
@@ -22,16 +25,13 @@ for i in range(1979,2017,1):
     hours_in_year = hours_in_year[~((hours_in_year.month == 2) & (hours_in_year.day == 29))]
     network.set_snapshots(hours_in_year)
     network.add("Bus","electricity bus")
-    
-#%% Load electricity demand data
-    df_elec       = pd.read_csv('data/electricity_demand.csv', sep=';', index_col=0) # in MWh
     df_elec.index = pd.to_datetime(hours_in_year) #change index to datatime
     
 #%% Add load to the bus
     network.add("Load",
                 "load", 
                 bus   = "electricity bus", 
-                p_set = df_elec[country])
+                p_set = df_elec[country]*(1+0.018)**(35))
         
 #%% Add the different carriers and generators
     system_add.carriers(network)
@@ -73,18 +73,18 @@ def my_ceil(a, precision=0):
 
 colors = system_add.get_colors(country)
 
-fig, ax1 = plt.subplots(dpi = 300)
+fig, ax1 = plt.subplots(figsize=(15, 7.5), dpi = 300)
 ax2 = ax1.twinx()
 
 for i in list(network.generators.index):
-    ax1.plot(range(1979,2017,1), d[i], label = i[:-6], color = colors[i])
+    ax1.plot(range(1979,2017,1), pd.Series(d[i])/10**6, label = i[:-6], color = colors[i], linewidth = 3)
     
     if i == "OCGT " +"(" + country + ")":
         pass
     else:
         ax2.plot(range(1979,2017,1), cf[i], '--', label = "CF " + i[:-6], color = colors[i])
                 
-cap_max = round(max(d[max(d, key=d.get)]))
+cap_max = round(max(d[max(d, key=d.get)])/10**6)
 
 ax1.set_ylim([0,cap_max])
 ax2.set_ylim([0,1])
@@ -96,13 +96,13 @@ ax2.set_yticks(np.linspace(ax2.get_yticks()[0], ax2.get_yticks()[-1], len(ax1.ge
 
 lines1, labels1 = ax1.get_legend_handles_labels()
 lines2, labels2 = ax2.get_legend_handles_labels()
-ax2.legend(lines1 + lines2, labels1 + labels2, loc='center left', bbox_to_anchor=(1.17, 0.5))
+ax2.legend(lines1 + lines2, labels1 + labels2, loc='center left', bbox_to_anchor=(1.05, 0.5))
 
 # plt.legend(loc = 'best')        
-plt.title('Interannual variability due to weather')     
-ax1.set_xlabel('Time [yr]')
-ax1.set_ylabel('Total produced power [MW]')
-ax2.set_ylabel('Mean capacity factor [-]')
+plt.title('Technology mix sensitivity due to interannual weather variability', fontsize = 20)     
+ax1.set_xlabel('Time [yr]', fontsize = 15)
+ax1.set_ylabel('Total produced energy [TWh]', fontsize = 15)
+ax2.set_ylabel('Mean capacity factor [-]', fontsize = 15)
 ax1.grid(True)
 
 plt.savefig('graphics/' + str(country) + '_C_weather.pdf', format = 'pdf', bbox_inches='tight') 

@@ -12,7 +12,7 @@ import island_lib as ip
 # their impact on the optimal system configuration.
 
 #%% Choose country
-country = 'DNK'
+country = 'DEU'
 
 #%% Load electricity demand data
 df_elec       = pd.read_csv('data/electricity_demand.csv', sep=';', index_col=0) # in MWh
@@ -28,7 +28,7 @@ network.add("Bus","electricity bus")
 network.add("Load",
             "load", 
             bus   = "electricity bus", 
-            p_set = df_elec[country])
+            p_set = df_elec[country]*(1+0.018)**(35))
     
 #%% Add the different carriers and generators
 system_add.carriers(network)
@@ -48,27 +48,36 @@ for i in list(network.generators.index):
     
     d[str(i) + "_jan"] = network.generators_t.p[i].loc['2015-01-01 00:00:00':'2015-01-8 00:00:00']
     d[str(i) + "_jul"] = network.generators_t.p[i].loc['2015-07-01 00:00:00':'2015-07-8 00:00:00']
+    d["store_jul"] = network.stores_t.p.loc['2015-07-01 00:00:00':'2015-07-8 00:00:00']
+    d["store_jan"] = network.stores_t.p.loc['2015-01-01 00:00:00':'2015-01-8 00:00:00']
     
 #%% Plot the dispatch for the two weeks
 fig1 = plt.figure('Figure 1')
 fig1, ax = plt.subplots(nrows=2, ncols=1, sharex=False, sharey=True, figsize=(15, 7.5), dpi = 300)
 
+colors = system_add.get_colors(country)
+
 for i in list(network.generators.index):
-    ax[0].plot(d[str(i) + "_jan"], label = str(i))
-    ax[1].plot(d[str(i) + "_jul"], label = str(i))
+    ax[0].plot(d[str(i) + "_jan"]/10**3, label = str(i)[:-6], color = colors[i])
+    ax[1].plot(d[str(i) + "_jul"]/10**3, label = str(i)[:-6], color = colors[i])
+    network.stores_t.e
 
 for i in range(2):
     ax[i].xaxis.set_major_formatter(mdates.DateFormatter('%b-%d'))
     ax[i].grid(visible = True, which = 'both')
-    ax[i].legend(loc = 'best')
+    
+ax[0].plot(d["store_jan"]/10**3, label = str("Lithium ion battery"), color = 'tab:green')
+ax[1].plot(d["store_jul"]/10**3, label = str("Lithium ion battery"), color = 'tab:green')
+ax[0].legend(loc='center left', bbox_to_anchor=(1.0, 0.79))
 
 ax[0].set_xlim([datetime.date(2015, 1, 1), datetime.date(2015, 1, 8)])
 ax[1].set_xlim([datetime.date(2015, 7, 1), datetime.date(2015, 7, 8)])
 
-ax[0].set_title('Denmark in January and July without C02 constraint')
-fig1.text(0.5,0.05,'Time [Hour]', ha='center')
-fig1.text(0.08,0.5,'Power [MW]', va='center', rotation='vertical')
+ax[0].set_title(country + '2050 in January and July without C02 constraint')
+fig1.supxlabel('Time [Hour]', fontsize = 15)
+fig1.supylabel('Power [GW]', fontsize = 15)
 
+plt.tight_layout()
 plt.savefig('graphics/' + str(country) + '_D_dispatch.pdf', format = 'pdf', bbox_inches='tight') 
     
 #%% Plot the technology mix
