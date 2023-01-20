@@ -208,7 +208,7 @@ def generators(network,country,bus):
     cc_OCGT = annuity(lifetime,0.07)*(INV*10**6 + FOM) # in €/MW
     
     fuel_cost          = 32 # in €/MWh_th https://ec.europa.eu/eurostat/databrowser/view/NRG_PC_203__custom_4567839/default/table?lang=en
-    efficiency         = 0.39
+    efficiency         = 0.43
     mc_OCGT = fuel_cost/efficiency # in €/MWh_el
     
     network.add("Generator",

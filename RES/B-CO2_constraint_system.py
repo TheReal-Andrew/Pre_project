@@ -77,7 +77,7 @@ for i in list(reduction_range):
 #%% Plot the installed capacity wrt. CO2 reduction
 # fig = plt.figure(dpi = 300)
 # ax1 = fig.add_subplot(1,1,1)
-
+          
 fig     = plt.figure('Figure 3')
 fig, ax1 = plt.subplots(1, figsize=(15, 7.5))
 
