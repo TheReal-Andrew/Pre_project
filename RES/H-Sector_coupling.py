@@ -20,30 +20,16 @@ import system_add as sa
 
 ip.set_plot_options()
 
-allowance = 0.85 # CO2 allowance as percent of 1990 CO2 levels
+country = 'DNK'
 
-# F.  -------------------------------------------------------------------------
-# Select one target for decarbonization (i.e., one CO2 allowance limit). What 
-# is the CO2 price required to achieve that decarbonization level? Search for 
-# information on the existing CO2 tax in your country (if any) and discuss 
-# your result.
+allowance = 0.05 # [%] CO2 allowance as percent of 1990 CO2 levels
+co2_limit = system_add.get_co2(country)
 
 #%% Choose country
-country = 'DNK'
 
 # Dataframe with country data. All emission data from https://www.worldometers.info/co2-emissions/
 # CO2 Limit is the CO2 emission in 1990.
-bus_df = pd.DataFrame(
-    np.array([                          #Create numpy array with bus info
-    ["Germany","DEU", 1_003_148_970*0.438],   
-    ["Denmark","DNK",    53_045_230*0.424],   
-    ["France", "FRA",   376_699_660*0.132],
-    # ["Sweden", "SWE",    56_677_744*0.177],
-    # ["Norway", "NOR",    35_902_816*0.069],
-    ],
-    ),  
-    columns = ["Country","Abbreviation","CO2_limit"])
-    
+
 #%% Load electricity demand data
 df_elec       = pd.read_csv('data/electricity_demand.csv', sep=';', index_col=0) # in MWh
 df_elec.index = pd.to_datetime(df_elec.index) #change index to datatime
@@ -110,8 +96,6 @@ system_add.storages(network)
 # Get CO2 limit from the bus_df, by searching for the country name and getting
 # corresponding CO2_limit
 
-co2_limit = float(bus_df[bus_df['Abbreviation'].str.contains(country)]['CO2_limit']) #tonCO2 https://www.worldometers.info/co2-emissions/germany-co2-emissions/    
-      
 network.add("GlobalConstraint",
             "co2_limit",
             type                = "primary_energy",

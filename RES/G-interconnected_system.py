@@ -9,29 +9,33 @@ import datetime
 import matplotlib.colors as mcolors
 
 country = 'DNK'
+allowance = 0.05 # [%] of 1990 CO2 levels
+co2_e     = 0.19 # [TonCO2/MWh]
 
 #%% Choose country
 
 # Dataframe with country data. All emission data from https://www.worldometers.info/co2-emissions/
 # CO2 Limit is the CO2 emission in 1990.
 
+co2_dict = system_add.get_co2(full = True)
+
 if country == 'DNK':
     bus_df = pd.DataFrame(
         np.array([                          #Create numpy array with bus info
         # ["Germany","DEU", 1_003_148_970*0.438],   
-        ["Denmark","DNK",    53_045_230*0.424],   
+        ["Denmark","DNK",    co2_dict['DNK']],
         # ["France", "FRA",   376_699_660*0.132],
-        ["Sweden", "SWE",    56_677_744*0.177],
-        ["Norway", "NOR",    35_902_816*0.069],
+        ["Sweden", "SWE",    co2_dict['SWE']],
+        ["Norway", "NOR",    co2_dict['NOR']],
         ],
         ),  
         columns = ["Country","Abbreviation","CO2_limit"])
 else:
     bus_df = pd.DataFrame(
         np.array([                          #Create numpy array with bus info
-        ["Germany","DEU", 1_003_148_970*0.438],   
-        ["Denmark","DNK",    53_045_230*0.424],   
-        ["France", "FRA",   376_699_660*0.132],
+        ["Germany","DEU", co2_dict['DEU']],   
+        ["Denmark","DNK", co2_dict['DNK']],   
+        ["France", "FRA", co2_dict['FRA']],
         # ["Sweden", "SWE",    56_677_744*0.177],
         # ["Norway", "NOR",    35_902_816*0.069],
         ],
@@ -44,6 +48,8 @@ df_elec.index = pd.to_datetime(df_elec.index) #change index to datatime
 
 #%% Set-up of network
 network       = pypsa.Network()
+network.allow = allowance
+network.co2_e = co2_e
 hours_in_2015 = pd.date_range('2015-01-01T00:00Z','2015-12-31T23:00Z', freq='H')
 network.set_snapshots(hours_in_2015)
 
@@ -99,23 +105,13 @@ for i in range(bus_df.shape[0]):
 system_add.storages(network)
 
 #%% Add CO2 constraint
-    
-# co2_limit = 765922900*0.44*0.15 #tonCO2 https://www.worldometers.info/co2-emissions/germany-co2-emissions/
-# # co2_limit = 4000000*(1-round(i,1))   
-         
-# network.add("GlobalConstraint",
-#             "co2_limit",
-#             type                = "primary_energy",
-#             carrier_attribute   = "co2_emissions",
-#             sense               = "<=",
-#             constant            = co2_limit)
 
 #%% 
 def CO2(network, snapshots):
     var_gen  = get_var(network, 'Generator', 'p')
     
-    CO2_e = 0.19 # [TonCO2/MWh]
-    red   = 0.01 # CO2 Allowance in percent of 1990 levels
+    CO2_e = network.co2_e # [TonCO2/MWh]
+    red   = network.allow # CO2 Allowance in percent of 1990 levels
     
     lhs_DNK = linexpr((CO2_e, var_gen['OCGT (' + network.bus_df.Abbreviation[0] + ')'])).sum()
     rhs_DNK = float(network.bus_df.CO2_limit[0]) * red
@@ -184,6 +180,9 @@ for j in list(bus_df['Abbreviation']):
     
 plt.savefig('graphics/' + str(country) + '_G_mix.pdf', format = 'pdf', bbox_inches='tight') 
 
+print('\n')
+print(network.links.p_nom_opt.to_latex())
+
 #%%
 mean_DK7 = network.links_t.p0.iloc[:,0].resample('D').mean()
 mean_BE7 = network.links_t.p0.iloc[:,1].resample('D').mean()
@@ -203,7 +202,7 @@ ax_PF[0].plot(mean_DK7, color='k',
 ax_PF[0].set_ylabel('Powerflow [MW]', fontsize = 15)
 ax_PF[0].get_xaxis().set_visible(False)
 ax_PF[0].set_xlim([datetime.date(2015, 1, 1), datetime.date(2015,12,31)])
-ax_PF[0].set_title('Powerflow from Germany to Denmark',
+ax_PF[0].set_title('Powerflow from '+ bus_df['Country'][0] + ' to ' + bus_df['Country'][1],
                     fontsize = 25)
 # ax_PF[0].set_ylim(-100,3000)
 ax_PF[0].legend(loc="upper right",
@@ -230,7 +229,7 @@ ax_PF[1].plot(mean_BE7, color='k',
 ax_PF[1].set_xlabel('Time [hr]', fontsize = 15)
 ax_PF[1].set_ylabel('Powerflow [MW]', fontsize = 15)
 ax_PF[1].set_xlim([datetime.date(2015, 1, 1), datetime.date(2015,12,31)])
-ax_PF[1].set_title('Powerflow from Germany to France',
+ax_PF[1].set_title('Powerflow from '+ bus_df['Country'][0] + ' to ' + bus_df['Country'][2],
                     fontsize = 25)
 # ax_PF[1].set_ylim(-100,3000)
 ax_PF[1].legend(loc="lower right",
