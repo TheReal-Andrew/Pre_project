@@ -28,14 +28,17 @@ ip.set_plot_options()
 # your result.
 
 #%% Choose country
-country = 'DEU'
+country = 'DNK'
+
+co2_e = sa.get_co2(country, full = True)
+half  = 0.5
 
 # Dataframe with country data. All emission data from https://www.worldometers.info/co2-emissions/
 # CO2 Limit is the CO2 emission in 1990.
 bus_df = pd.DataFrame(
     np.array([                          #Create numpy array with bus info
-    ["Germany","DEU", 1_003_148_970*0.438],   
-    ["Denmark","DNK",    53_045_230*0.424],   
+    ["Germany","DEU", co2_e['DEU'] * half],   
+    ["Denmark","DNK", co2_e['DNK'] * half],   
     ["France", "FRA",   376_699_660*0.132],
     # ["Sweden", "SWE",    56_677_744*0.177],
     # ["Norway", "NOR",    35_902_816*0.069],
