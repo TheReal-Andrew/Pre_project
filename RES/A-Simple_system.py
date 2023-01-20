@@ -11,7 +11,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 #%% Choose country
-country = 'DNK'
+country = 'DEU'
 
 #%% Load electricity demand data
 df_elec       = pd.read_csv('data/electricity_demand.csv', sep=';', index_col=0)    # [MWh]
@@ -66,14 +66,14 @@ for i in range(2):
     ax[i].grid(visible = True, which = 'both')
     ax[i].plot(df_elec[country]*(1+0.018)**(35)/10**3, label = 'EL demand', linestyle = '--')
     
-ax[0].legend(loc = 'best')
+ax[0].legend(loc = 'upper left')
 ax[0].set_xlim([datetime.date(2015, 1, 1), datetime.date(2015, 1, 8)])
 ax[1].set_xlim([datetime.date(2015, 7, 1), datetime.date(2015, 7, 8)])
 
-ax[0].set_title(country +' in January and July without C02 constraint or storage', size = 20)
+ax[0].set_title(country +'2050 in January and July without C02 constraint, sector coupling, or storage', size = 20)
 
-fig1.supxlabel('Time [Hour]')
-fig1.supylabel('Power [GW]')
+fig1.supxlabel('Time [Hour]', fontsize = 15)
+fig1.supylabel('Power [GW]', fontsize = 15)
     
 plt.tight_layout()
 plt.savefig('graphics/' + str(country) + '_A_dispatch.pdf', format = 'pdf', bbox_inches='tight') 
@@ -93,8 +93,8 @@ for i in list(network.generators.index):
     else:
         pass
 ax.pie(sizes, labels = labels, autopct='%.1f%%',
-       colors = [colors[v] for v in l])
-# ax.set_title('Energy produced in ' + country + '\n without CO2 constraint or storage', size = 20)     
+       colors = [colors[v] for v in l], textprops={'fontsize': 15})
+ax.set_title('Energy produced in ' + country + '\n without CO2 constraint, sector coupling, or storage', size = 20)     
 
 plt.tight_layout()    
 plt.savefig('graphics/' + str(country) + '_A_pie.pdf', format = 'pdf', bbox_inches='tight') 
@@ -142,7 +142,7 @@ exceedence_OCGT  = np.arange(1,len(sort_OCGT)+1)
 
 # Creating new figure
 fig3     = plt.figure('Figure 3')
-fig3, ax = plt.subplots(1, figsize=(15, 7.5))
+fig3, ax = plt.subplots(1, figsize=(15, 7.5), dpi = 300)
 
 lw = 3
 
@@ -168,7 +168,7 @@ ax.set_ylabel("Capacity Factor [-]", fontsize = 15)
 
 ax.set_ylim([0,1])
 
-ax.set_title('Duration curve for the different technologies', fontsize = 20)
+ax.set_title('Duration curve for the technologies possible in ' + country + '2050', fontsize = 20)
 ax.yaxis.set_major_locator(ticker.MultipleLocator(0.05))
 ax.xaxis.set_major_locator(ticker.MultipleLocator(500))
 ax.set_xlim([0,len(sort_wind_offshore)])
@@ -202,7 +202,7 @@ system_add.price_gen(network)
 
 #%%
 
-emission  = network.generators_t.p['OCGT (DNK)'].sum()*0.19
+emission  = network.generators_t.p['OCGT (DEU)'].sum()*0.19
 allowance = system_add.get_co2(country)
 
 part = emission/allowance
