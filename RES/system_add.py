@@ -30,14 +30,22 @@ def get_colors(country):
         
     return colors
 
-def get_co2(country):
+def get_co2(country = 'DNK', full = False):
+    # Return the CO2 levels of the power + heating sector in 1990 for a country.
+    # If full = True, return the entire dictionary with data for all countries
     
-    if country == 'DNK':
-        co2 = 53_045_230*0.424
-    else:
-        co2 = 1_003_148_970*0.438
-        
-    return co2
+    co2_dict = {
+        'DEU':1_003_148_970*0.438,
+        'FRA':376_699_660*0.132,
+        'DNK':53_045_230*0.424,
+        'SWE':56_677_744*0.177,
+        'NOR':35_902_816*0.069,
+        }
+    
+    if full == True:
+        return co2_dict
+    else:  
+        return co2_dict[country]
 
 
 def import_data(sheetname,inv_name,fom_name,lifetime_name):
