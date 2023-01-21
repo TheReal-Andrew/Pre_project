@@ -68,7 +68,7 @@ for i in range(2):
     
 ax[0].plot(d["store_jan"]/10**3, label = str("Lithium ion battery"), color = 'tab:green')
 ax[1].plot(d["store_jul"]/10**3, label = str("Lithium ion battery"), color = 'tab:green')
-ax[0].legend(loc='center left', bbox_to_anchor=(1.0, 0.79))
+ax[0].legend(loc='upper left', ncol = 3)
 
 ax[0].set_xlim([datetime.date(2015, 1, 1), datetime.date(2015, 1, 8)])
 ax[1].set_xlim([datetime.date(2015, 7, 1), datetime.date(2015, 7, 8)])

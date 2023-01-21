@@ -6,6 +6,7 @@ import numpy as np
 import system_add
 import island_lib as il
 import island_plt as ip
+import matplotlib.ticker as ticker
 
 #%% Choose country
 country = 'DEU'
@@ -18,7 +19,7 @@ q  = 1      # Initialize dictionary-store counter
 #%% Load electricity demand data
 df_elec       = pd.read_csv('data/electricity_demand.csv', sep=';', index_col=0) # in MWh
 
-for i in range(1979,2017,1):
+for i in range(1979,2018,1):
 #%% Set-up of network
     network       = pypsa.Network()
     hours_in_year = pd.date_range('{}-01-01T00:00Z'.format(i),'{}-12-31T23:00Z'.format(i), freq='H')
@@ -73,35 +74,49 @@ def my_ceil(a, precision=0):
 
 colors = system_add.get_colors(country)
 
-fig, ax1 = plt.subplots(figsize=(15, 7.5), dpi = 300)
+fig, ax1 = plt.subplots(figsize=(15, 7), dpi = 300)
 ax2 = ax1.twinx()
 
 for i in list(network.generators.index):
-    ax1.plot(range(1979,2017,1), pd.Series(d[i])/10**6, label = i[:-6], color = colors[i], linewidth = 3)
+    ax1.plot(range(1979,2018,1), pd.Series(d[i])/10**6, label = '     '+ i[:-6], color = colors[i], linewidth = 3)
     
     if i == "OCGT " +"(" + country + ")":
         pass
     else:
-        ax2.plot(range(1979,2017,1), cf[i], '--', label = "CF " + i[:-6], color = colors[i])
+        ax2.plot(range(1979,2018,1), cf[i], '--', label = "CF " + i[:-6], color = colors[i])
                 
 cap_max = round(max(d[max(d, key=d.get)])/10**6)
 
-ax1.set_ylim([0,cap_max])
-ax2.set_ylim([0,1])
+ax1.set_ylim([0,550])
+ax2.set_ylim([0,0.55])
+plt.xlim([1979,2017])
 
-ax1.set_yticks(np.linspace(0,my_ceil(cap_max/10**(len(str(cap_max))-1),1)*10**(len(str(cap_max))-1),11))
-ax2.set_yticks(np.linspace(ax2.get_yticks()[0], ax2.get_yticks()[-1], len(ax1.get_yticks())))
+# ax1.set_yticks(np.linspace(0,my_ceil(cap_max/10**(len(str(cap_max))-1),1)*10**(len(str(cap_max))-1),11))
+ax1.set_yticks(np.linspace(0,550,12))
+# ax2.set_yticks(np.linspace(ax2.get_yticks()[0], ax2.get_yticks()[-1], 11))
+# ax2.set_yticks(np.linspace(ax2.get_yticks()[0], ax2.get_yticks()[-1], len(ax1.get_yticks())))
+ax2.set_yticks(np.linspace(0, 0.55, 12))
 
 # ax1.ticklabel_format(useOffset=False, style='plain')
-
 lines1, labels1 = ax1.get_legend_handles_labels()
 lines2, labels2 = ax2.get_legend_handles_labels()
-ax2.legend(lines1 + lines2, labels1 + labels2, loc='center left', bbox_to_anchor=(1.05, 0.5))
+
+ax1.yaxis.set_major_locator(ticker.MultipleLocator(50))
+ax1.xaxis.set_major_locator(ticker.MultipleLocator(5))
+ax1.yaxis.set_minor_locator(ticker.MultipleLocator(10))
+ax1.xaxis.set_minor_locator(ticker.MultipleLocator(1))
+
+ax2.yaxis.set_major_locator(ticker.MultipleLocator(0.05))
+ax2.yaxis.set_minor_locator(ticker.MultipleLocator(0.01))
+
+# ax2.legend(lines1 + lines2, labels1 + labels2, loc='upper left', ncol=5)
+ax1.legend(loc='upper left', ncol=5)
+ax2.legend(loc='upper left', ncol=5,bbox_to_anchor=(0, 0.95))
 
 # plt.legend(loc = 'best')        
 plt.title('Technology mix sensitivity due to interannual weather variability', fontsize = 20)     
 ax1.set_xlabel('Time [yr]', fontsize = 15)
-ax1.set_ylabel('Total produced energy [TWh]', fontsize = 15)
+ax1.set_ylabel('Produced energy [TWh]', fontsize = 15)
 ax2.set_ylabel('Mean capacity factor [-]', fontsize = 15)
 ax1.grid(True)
 

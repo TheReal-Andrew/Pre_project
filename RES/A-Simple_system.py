@@ -63,17 +63,23 @@ for i in list(network.generators.index):
 
 for i in range(2):
     ax[i].xaxis.set_major_formatter(mdates.DateFormatter('%b-%d'))
-    ax[i].grid(visible = True, which = 'both')
-    ax[i].plot(df_elec[country]*(1+0.018)**(35)/10**3, label = 'EL demand', linestyle = '--')
+    ax[i].grid(visible = True, which = 'major')
+    ax[i].plot(df_elec[country]*(1+0.018)**(35)/10**3, label = 'EL demand', linestyle = '--', color = 'k')
+    ax[i].yaxis.set_major_locator(ticker.MultipleLocator(20))
+    ax[i].xaxis.set_major_locator(ticker.MultipleLocator(1))
+    ax[i].yaxis.set_minor_locator(ticker.MultipleLocator(5))
+    ax[i].xaxis.set_minor_locator(ticker.MultipleLocator(1/12))
     
-ax[0].legend(loc = 'upper left')
+ax[0].set_ylim([0,160])
+ax[1].set_ylim([0,160])
+fig1.supxlabel('Time [Hour]', fontsize = 15)
+fig1.supylabel('Power [GW]', fontsize = 15)
+ax[0].legend(loc = 'upper left', ncol = 3) #bbox_to_anchor=(1, 0)
+# ax[0].legend(loc='upper center', bbox_to_anchor=(0.5, 1.05), ncol=3)
 ax[0].set_xlim([datetime.date(2015, 1, 1), datetime.date(2015, 1, 8)])
 ax[1].set_xlim([datetime.date(2015, 7, 1), datetime.date(2015, 7, 8)])
 
 ax[0].set_title(country +'2050 in January and July without C02 constraint, sector coupling, or storage', size = 20)
-
-fig1.supxlabel('Time [Hour]', fontsize = 15)
-fig1.supylabel('Power [GW]', fontsize = 15)
     
 plt.tight_layout()
 plt.savefig('graphics/' + str(country) + '_A_dispatch.pdf', format = 'pdf', bbox_inches='tight') 
@@ -84,17 +90,18 @@ fig2, ax = plt.subplots(nrows=1, ncols=1, figsize=(7.5, 7.5), dpi = 300)
 
 sizes  = []
 labels = []
-l      = [] 
+l      = []
+demand_sum = str(round((df_elec[country]*(1+0.018)**(35)).sum()/10**6))
 for i in list(network.generators.index):
     if network.generators_t.p[i].sum() > 0:
         sizes = sizes + [network.generators_t.p[i].sum()]
         l = l + [i]
-        labels = labels + [i[:-6] + "\n" + str(round(network.generators_t.p[i].sum()/10**6,2)) + " TWh"]
+        labels = labels + [i[:-6] + "\nCap: " + str(round(network.generators.p_nom_opt[i]/10**3))+ ' GW\nProd: ' +str(round(network.generators_t.p[i].sum()/10**6)) + " TWh"]
     else:
         pass
 ax.pie(sizes, labels = labels, autopct='%.1f%%',
        colors = [colors[v] for v in l], textprops={'fontsize': 15})
-ax.set_title('Energy produced in ' + country + '\n without CO2 constraint, sector coupling, or storage', size = 20)     
+ax.set_title('Energy produced in ' + country + ' 2050 = '+demand_sum+' TWh\n without CO2 constraint, sector coupling, or storage', size = 20)     
 
 plt.tight_layout()    
 plt.savefig('graphics/' + str(country) + '_A_pie.pdf', format = 'pdf', bbox_inches='tight') 
@@ -142,7 +149,7 @@ exceedence_OCGT  = np.arange(1,len(sort_OCGT)+1)
 
 # Creating new figure
 fig3     = plt.figure('Figure 3')
-fig3, ax = plt.subplots(1, figsize=(15, 7.5), dpi = 300)
+fig3, ax = plt.subplots(1, figsize=(15, 7), dpi = 300)
 
 lw = 3
 
@@ -169,10 +176,16 @@ ax.set_ylabel("Capacity Factor [-]", fontsize = 15)
 ax.set_ylim([0,1])
 
 ax.set_title('Duration curve for the technologies possible in ' + country + '2050', fontsize = 20)
-ax.yaxis.set_major_locator(ticker.MultipleLocator(0.05))
+ax.yaxis.set_major_locator(ticker.MultipleLocator(0.1))
 ax.xaxis.set_major_locator(ticker.MultipleLocator(500))
+ax.yaxis.set_minor_locator(ticker.MultipleLocator(0.02))
+ax.xaxis.set_minor_locator(ticker.MultipleLocator(100))
 ax.set_xlim([0,len(sort_wind_offshore)])
-ax.grid(visible = True, which = 'both')
+ax.grid(visible = True, which = 'major')
+
+plt.text(8760*0.26,0.95,'25% minimum')
+plt.text(8760*0.51,0.95,'50% minimum')
+plt.text(8760*0.76,0.95,'75% minimum')
 
 plt.tight_layout() 
 plt.savefig('graphics/' + str(country) + '_A_duration.pdf', format = 'pdf', bbox_inches='tight')

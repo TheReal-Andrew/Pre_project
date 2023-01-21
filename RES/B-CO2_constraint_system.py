@@ -17,7 +17,7 @@ d = {}  # Dictionary for storing data
 q = 1   # Initialize dictionary-store counter
 
 # reduction_range = np.linspace(0,1,101)  # 01% increments
-reduction_range = np.linspace(0.5,1,26)   # 05% incrementse
+reduction_range = np.linspace(0.65,1,36)   # 05% incrementse
 # reduction_range = np.linspace(0,1,11)   # 10% increments
 
 # for i in list(reduction_range):
@@ -79,7 +79,7 @@ for i in list(reduction_range):
 # ax1 = fig.add_subplot(1,1,1)
           
 fig     = plt.figure('Figure 3')
-fig, ax1 = plt.subplots(1, figsize=(15, 7.5))
+fig, ax1 = plt.subplots(1, figsize=(15, 7))
 
 for i in list(network.generators.index):
     plt.plot(reduction_range*100, pd.Series(d[i])/10**6, label = i[:-6])
@@ -103,21 +103,21 @@ reductions = (np.around(100*reduction_range).astype(int)).astype(str)
 y1 = pd.Series(d[network.generators.index[0]])/10**6
 y2 = pd.Series(d[network.generators.index[1]])/10**6
 y3 = pd.Series(d[network.generators.index[2]])/10**6
-y4 = pd.Series(d[network.generators.index[3]])/10**6
-y5 = pd.Series(d[network.generators.index[4]])/10**6
+# y4 = pd.Series(d[network.generators.index[3]])/10**6
+y4 = pd.Series(d[network.generators.index[4]])/10**6
 
 # params = {'mathtext.default': 'regular' }
 
-bar_fig = plt.figure( figsize = (10,5), dpi = 300)
+bar_fig = plt.figure( figsize = (15, 7), dpi = 300)
 plt.bar(reductions, y1, color = colors['Onshorewind (' + country + ')'], label = 'Onshorewind')
 plt.bar(reductions, y2, bottom = y1 , color = colors['Offshorewind (' + country + ')'], label = 'Offshorewind')
 plt.bar(reductions, y3, bottom = y1+y2 , color = colors['Solar_utility (' + country + ')'], label = 'Solar Utility')
-plt.bar(reductions, y4, bottom = y1+y2+y3 , color = colors['Solar_rooftop (' + country + ')'], label = 'Solar rooftop')
-plt.bar(reductions, y5, bottom = y1+y2+y3+y4 , color = colors['OCGT (' + country + ')'], label = 'OCGT')
-
+plt.bar(reductions, y4, bottom = y1+y2+y3 , color = colors['OCGT (' + country + ')'], label = 'OCGT')
+# plt.bar(reductions, y5, bottom = y1+y2+y3+y4 , color = colors['OCGT (' + country + ')'], label = 'OCGT')
+plt.xlim([-0.5,35.5])
 plt.xlabel('CO2 Reduction [%]', fontsize = 15)
 plt.ylabel('Produced energy [TWh]', fontsize = 15)
 plt.title('Effect of CO2 reduction on technology mix', fontsize = 20)    
-plt.legend(loc = 'center left', bbox_to_anchor=(1, 0.5))
+plt.legend(loc = 'upper left', ncol = 2)
 plt.xticks(rotation = -90)
 plt.savefig('graphics/' + str(country) + '_B_bar.pdf', format = 'pdf', bbox_inches='tight') 
