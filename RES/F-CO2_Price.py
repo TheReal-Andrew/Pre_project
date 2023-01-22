@@ -18,7 +18,7 @@ import island_lib as il
 import island_plt as ip
 import system_add as sa
 from matplotlib.ticker import (MultipleLocator, AutoMinorLocator)
-
+import matplotlib.ticker as ticker
 ip.set_plot_options()
 
 # F.  -------------------------------------------------------------------------
@@ -28,7 +28,7 @@ ip.set_plot_options()
 # your result.
 
 #%% Choose country
-country = 'DNK'
+country = 'DEU'
 
 co2_e = sa.get_co2(country, full = True)
 half  = 0.5
@@ -67,14 +67,14 @@ system_add.carriers(network)
 system_add.generators(network,country, network.buses.index[0])
 
 #%% Add storage
-# system_add.storages(network)
+system_add.storages(network,network.buses.index[0])
 
 #%% Initialize dataframes for saving
 df_red = pd.DataFrame(columns = ['Reduction [%]', 'CO2 price [EUR/TonCO2]'])
 df_gen = pd.DataFrame(columns = network.generators.index)
     
 #%% Start loop
-reduction_range = np.append([0],np.linspace(0.5,1,26))
+reduction_range = np.linspace(0.65,1,36)
 
 for p in reduction_range:
     
@@ -135,6 +135,8 @@ colors = sa.get_colors(country)
 
     
 #%% Stacked barchart
+fig1 = plt.figure('Figure 1')
+fig1, ax = plt.subplots(nrows=1, ncols=1, sharex=False, sharey=True, figsize=(15, 7), dpi = 300)
 
 colors = sa.get_colors(country)
 
@@ -146,33 +148,42 @@ y3 = df_gen.iloc[:,2]/10**6
 y4 = df_gen.iloc[:,3]/10**6
 y5 = df_gen.iloc[:,4]/10**6
 
-bar_fig = plt.figure( figsize = (10,5))
+# bar_fig = plt.figure( figsize = (15,7), dpi = 300)
 plt.bar(reductions, y1, color = colors['Onshorewind (' + country + ')'], label = 'Onshorewind')
 plt.bar(reductions, y2, bottom = y1 , color = colors['Offshorewind (' + country + ')'], label = 'Offshorewind')
 plt.bar(reductions, y3, bottom = y1+y2 , color = colors['Solar_utility (' + country + ')'], label = 'Solar Utility')
 plt.bar(reductions, y4, bottom = y1+y2+y3 , color = colors['Solar_rooftop (' + country + ')'], label = 'Solar rooftop')
 plt.bar(reductions, y5, bottom = y1+y2+y3+y4 , color = colors['OCGT (' + country + ')'], label = 'OCGT')
 
-plt.xlabel('CO2 Reduction [%]')
-plt.ylabel('Produced energy [TWh]')
-plt.title('Effect of CO2 reduction on technology mix')    
-plt.legend(loc = 'center left', bbox_to_anchor=(1, 0.5))
+plt.xlim([-0.5,35.5])
+plt.ylim([0,950])
+
+ax.yaxis.set_major_locator(ticker.MultipleLocator(50))
+ax.yaxis.set_minor_locator(ticker.MultipleLocator(10))
+
+plt.xlabel('CO2 Reduction [%]', fontsize = 15)
+plt.ylabel('Produced energy [TWh]', fontsize = 15)
+plt.title('Effect of CO2 reduction on technology mix', fontsize = 20)    
+plt.legend(loc = 'upper left', ncol = 3)
 
 plt.savefig('graphics/' + str(country) + '_F_bar.pdf', format = 'pdf', bbox_inches='tight') 
 
 #%% Plot reduction
 
-fig, ax1 = plt.subplots(figsize = [10,5], dpi = 300)
+fig, ax1 = plt.subplots(figsize = [15,7], dpi = 300)
 ax1.plot(df_red.iloc[:,0].values, abs(df_red.iloc[:,1]).values)
 ax1.set_xlabel('CO2 reduction [%]', fontsize = 15)
 ax1.set_ylabel('CO2 price [€/TonCO2]', fontsize = 15)
 ax1.set_yscale('symlog')
-ax1.set_title('CO2 price vs CO2 reduction', fontsize = 20)
+ax1.set_title('Needed CO2 price for given CO2 reduction', fontsize = 20)
 plt.savefig('graphics/' + str(country) + '_F_CO2Price.pdf', format = 'pdf', bbox_inches='tight') 
-ax1.xaxis.set_major_locator(MultipleLocator(10))
-ax1.xaxis.set_minor_locator(MultipleLocator(2))
-ax1.set_xlim([0,100])
-ax1.set_ylim([-0.05,None])
+ax1.xaxis.set_major_locator(MultipleLocator(1))
+ax1.xaxis.set_minor_locator(MultipleLocator(0.5))
+# ax1.yaxis.set_major_locator(MultipleLocator(1))
+# ax1.yaxis.set_minor_locator(MultipleLocator([0.1,1,10,10**2,10**3,10**4,10**5,10**6,10**7½]))
+# plt.tick_params(axis='y', which='minor')
+ax1.set_xlim([65,100])
+ax1.set_ylim([0.0,10**8])
 # Print Latex tables
 print('\n')
 print(df_red.to_latex(index = False))

@@ -84,17 +84,18 @@ def carriers(network):
     network.add("Carrier", "hydro_storage")
     network.add("Carrier", "lithium_storage")
         
-def storages(network):
+def storages(network,bus):
         
     cc_lithium = annuity(30,0.07)*0.255*10**6 + 0.54*10**3
     
     network.add("Store",
           "Lithium_storage",
-          bus                   = "electricity bus",
+          bus                   = bus,
           carrier               = "lithium_storage",
           e_nom_extendable      = True,
           e_cyclic              = True,
           capital_cost          = cc_lithium, #[EUR/MWh] Capital cost for Storage
+          # marginal_cost         = 0.1,
           efficiency_store      = 0.98,
           efficiency_dispatch   = 0.97,
           )

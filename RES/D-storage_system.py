@@ -6,7 +6,7 @@ import matplotlib.dates as mdates
 import datetime
 import system_add
 import island_lib as ip
-
+import matplotlib.ticker as ticker
 # D.  -------------------------------------------------------------------------
 # Add some storage technology/ies and investigate how they behave and what are
 # their impact on the optimal system configuration.
@@ -35,7 +35,7 @@ system_add.carriers(network)
 system_add.generators(network,country, network.buses.index[0])
 
 #%% Add storage
-system_add.storages(network)
+system_add.storages(network,network.buses.index[0])
 
 #%% Solve the system
 network.lopf(network.snapshots, 
@@ -48,8 +48,10 @@ for i in list(network.generators.index):
     
     d[str(i) + "_jan"] = network.generators_t.p[i].loc['2015-01-01 00:00:00':'2015-01-8 00:00:00']
     d[str(i) + "_jul"] = network.generators_t.p[i].loc['2015-07-01 00:00:00':'2015-07-8 00:00:00']
-    d["store_jul"] = network.stores_t.p.loc['2015-07-01 00:00:00':'2015-07-8 00:00:00']
-    d["store_jan"] = network.stores_t.p.loc['2015-01-01 00:00:00':'2015-01-8 00:00:00']
+    d["store_p_jul"] = network.stores_t.p.loc['2015-07-01 00:00:00':'2015-07-8 00:00:00']
+    d["store_p_jan"] = network.stores_t.p.loc['2015-01-01 00:00:00':'2015-01-8 00:00:00']
+    d["store_e_jul"] = network.stores_t.e.loc['2015-07-01 00:00:00':'2015-07-8 00:00:00']
+    d["store_e_jan"] = network.stores_t.e.loc['2015-01-01 00:00:00':'2015-01-8 00:00:00']
     
 #%% Plot the dispatch for the two weeks
 fig1 = plt.figure('Figure 1')
@@ -64,16 +66,32 @@ for i in list(network.generators.index):
 
 for i in range(2):
     ax[i].xaxis.set_major_formatter(mdates.DateFormatter('%b-%d'))
-    ax[i].grid(visible = True, which = 'both')
+    ax[i].grid(visible = True, which = 'major')
+    # ax[i].plot(df_elec[country]*(1+0.018)**(35)/10**3, label = 'EL demand', linestyle = '--', color = 'k')
     
-ax[0].plot(d["store_jan"]/10**3, label = str("Lithium ion battery"), color = 'tab:green')
-ax[1].plot(d["store_jul"]/10**3, label = str("Lithium ion battery"), color = 'tab:green')
-ax[0].legend(loc='upper left', ncol = 3)
+ax[0].plot(d["store_p_jan"]/10**3, label = str("Lithium ion battery"), color = 'tab:green')
+# ax[0].plot(d["store_e_jan"]/10**3, label = str("Lithium ion battery"), color = 'k')
+ax[1].plot(d["store_p_jul"]/10**3, label = str("Lithium ion battery"), color = 'tab:green')
+# ax[1].plot(d["store_e_jul"]/10**3, label = str("Lithium ion battery"), color = 'k')
+ax[0].plot(df_elec[country]*(1+0.018)**(35)/10**3, label = 'EL demand', linestyle = '--', color = 'k')
+ax[1].plot(df_elec[country]*(1+0.018)**(35)/10**3, label = 'EL demand', linestyle = '--', color = 'k')
+  
+
+ax[0].legend(loc='upper left', ncol = 4)
+
+ax[0].yaxis.set_major_locator(ticker.MultipleLocator(50))
+ax[0].yaxis.set_minor_locator(ticker.MultipleLocator(10))
+ax[0].xaxis.set_major_locator(ticker.MultipleLocator(1))
+ax[0].xaxis.set_minor_locator(ticker.MultipleLocator(1/12))
+ax[1].xaxis.set_major_locator(ticker.MultipleLocator(1))
+ax[1].xaxis.set_minor_locator(ticker.MultipleLocator(1/12))
 
 ax[0].set_xlim([datetime.date(2015, 1, 1), datetime.date(2015, 1, 8)])
 ax[1].set_xlim([datetime.date(2015, 7, 1), datetime.date(2015, 7, 8)])
+ax[0].set_ylim([-100,250])
+ax[1].set_ylim([-100,250])
 
-ax[0].set_title(country + '2050 in January and July without C02 constraint')
+ax[0].set_title(country + '2050 in January and July with storage, but no C02 constraint or sector coupling', fontsize = 20)
 fig1.supxlabel('Time [Hour]', fontsize = 15)
 fig1.supylabel('Power [GW]', fontsize = 15)
 
@@ -88,17 +106,19 @@ fig2    = plt.figure('Figure 2', dpi = 300, figsize=(7.5, 7.5))
 sizes   = []
 labels  = []
 l       = []
-
+demand_sum = str(round((df_elec[country]*(1+0.018)**(35)).sum()/10**6))
 for i in list(network.generators.index):
     if network.generators_t.p[i].sum() > 0:
         sizes = sizes + [network.generators_t.p[i].sum()]
         l = l + [i]
-        labels = labels + [i[:-6] + "\n" + str(round(network.generators_t.p[i].sum()/10**6,2)) + " TWh"]
+        # labels = labels + [i[:-6] + "\n" + str(round(network.generators_t.p[i].sum()/10**6,2)) + " TWh"]
+        labels = labels + [i[:-6] + "\nCap: " + str(round(network.generators.p_nom_opt[i]/10**3))+ ' GW\nProd: ' +str(round(network.generators_t.p[i].sum()/10**6)) + " TWh"]
     else:
         pass
 
 plt.pie(sizes, labels = labels, autopct='%.1f%%',
         colors = [colors[v] for v in l])
+plt.title('Energy produced in ' + country + ' 2050 = ' + demand_sum+' TWh\n with storage, but no CO2 constraint or sector coupling', size = 20)     
 
 plt.savefig('graphics/' + str(country) + '_D_mix.pdf', format = 'pdf', bbox_inches='tight') 
 

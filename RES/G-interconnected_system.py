@@ -8,7 +8,7 @@ import numpy as np
 import datetime
 import matplotlib.colors as mcolors
 
-country = 'DNK'
+country = 'DEU'
 allowance = 0.05 # [%] of 1990 CO2 levels
 co2_e     = 0.19 # [TonCO2/MWh]
 half      = 0.5
@@ -23,11 +23,11 @@ co2_dict = system_add.get_co2(full = True)
 if country == 'DNK':
     bus_df = pd.DataFrame(
         np.array([                          #Create numpy array with bus info
-        # ["Germany","DEU", 1_003_148_970*0.438],   
-        ["Denmark","DNK",    co2_dict['DNK']*half],
-        # ["France", "FRA",   376_699_660*0.132],
-        ["Sweden", "SWE",    co2_dict['SWE']*half],
-        ["Norway", "NOR",    co2_dict['NOR']*half],
+        ["Germany","DEU", co2_dict['DEU']*half],   
+        ["Denmark","DNK", co2_dict['DNK']*half],
+        ["France", "FRA", co2_dict['FRA']*half],
+        ["Sweden", "SWE", co2_dict['SWE']*half],
+        ["Norway", "NOR", co2_dict['NOR']*half],
         ],
         ),  
         columns = ["Country","Abbreviation","CO2_limit"])
@@ -101,9 +101,9 @@ system_add.carriers(network)
     
 for i in range(bus_df.shape[0]):
     system_add.generators(network,bus_df['Abbreviation'][i],network.buses.index[i])
-
+    system_add.storages(network,network.buses.index[i])
 #%% Add storage
-system_add.storages(network)
+# system_add.storages(network)
 
 #%% Add CO2 constraint
 
