@@ -20,7 +20,7 @@ import system_add as sa
 
 ip.set_plot_options()
 
-country = 'DNK'
+country = 'DEU'
 
 allowance = 0.05 # [%] CO2 allowance as percent of 1990 CO2 levels
 co2_limit = system_add.get_co2(country)
@@ -56,7 +56,7 @@ network.add("Load",
 network.add("Load",
             "heat load", 
             bus   = "heat bus", 
-            p_set = df_elec[country])
+            p_set = df_elec[country]*(1+0.018)**(35))
     
 #% Add the different carriers and generators ----------------------------------
 system_add.carriers(network)
@@ -90,7 +90,7 @@ network.add("Link",
             )
 
 #% Add storage ---------------------------------------------------------------
-system_add.storages(network)
+system_add.storages(network,network.buses.index[0])
 
 #%% CO2 limit
 # Get CO2 limit from the bus_df, by searching for the country name and getting

@@ -3,10 +3,11 @@ import pypsa
 from pypsa.linopt import get_var, linexpr, join_exprs, define_constraints
 import pandas as pd
 import matplotlib.pyplot as plt
-import system_add
+import system_add2
 import numpy as np
 import datetime
 import matplotlib.colors as mcolors
+import matplotlib.ticker as ticker
 
 country = 'DEU'
 allowance = 0.05 # [%] of 1990 CO2 levels
@@ -18,14 +19,12 @@ half      = 0.5
 # Dataframe with country data. All emission data from https://www.worldometers.info/co2-emissions/
 # CO2 Limit is the CO2 emission in 1990.
 
-co2_dict = system_add.get_co2(full = True)
+co2_dict = system_add2.get_co2(full = True)
 
 if country == 'DNK':
     bus_df = pd.DataFrame(
         np.array([                          #Create numpy array with bus info
-        ["Germany","DEU", co2_dict['DEU']*half],   
         ["Denmark","DNK", co2_dict['DNK']*half],
-        ["France", "FRA", co2_dict['FRA']*half],
         ["Sweden", "SWE", co2_dict['SWE']*half],
         ["Norway", "NOR", co2_dict['NOR']*half],
         ],
@@ -71,7 +70,7 @@ tech_inv  = 1000*float(tech_cost.loc[tech_cost['parameter'].str.startswith('inve
 tech_life = float(tech_cost.loc[tech_cost['parameter'].str.startswith('lifetime') & tech_cost['technology'].str.startswith(tech_name)].value)
 tech_FOM  = 0.01*float(tech_cost.loc[tech_cost['parameter'].str.startswith('FOM') & tech_cost['technology'].str.startswith(tech_name)].value)
   
-cc_hvac = system_add.annuity(tech_life,0.07)*tech_inv*(1+tech_FOM)
+cc_hvac = system_add2.annuity(tech_life,0.07)*tech_inv*(1+tech_FOM)
 
 j = 0
 for i in list(bus_df['Country'][1:]):         #i becomes each string in the array
@@ -97,11 +96,11 @@ for i in range(bus_df.shape[0]): #i becomes integers
         p_set   = df_elec[bus_df.Abbreviation[i]]*(1+0.018)**(35))       
     
 #%% Add the different carriers and generators
-system_add.carriers(network)
+system_add2.carriers(network)
     
 for i in range(bus_df.shape[0]):
-    system_add.generators(network,bus_df['Abbreviation'][i],network.buses.index[i])
-    system_add.storages(network,network.buses.index[i])
+    system_add2.generators(network,bus_df['Abbreviation'][i],network.buses.index[i])
+    system_add2.storages(network,bus_df['Abbreviation'][i],network.buses.index[i])
 #%% Add storage
 # system_add.storages(network)
 
@@ -144,7 +143,7 @@ network.lopf(
 
 
 fig1 = plt.figure('Figure 1')
-fig1, ax = plt.subplots(nrows=1, ncols=3, figsize=(20, 7.5), dpi = 300)
+fig1, ax = plt.subplots(nrows=1, ncols=3, figsize=(20, 20), dpi = 300)
 
 # colors = list(mcolors.TABLEAU_COLORS.keys())
 
@@ -158,51 +157,67 @@ for j in list(bus_df['Abbreviation']):
         gen = (network.generators.loc[network.generators['bus'].str.endswith('('+j+')')] & network.generators.loc[network.generators.index.str.endswith('('+j+')')]).index[i]
         cap = network.generators.loc[network.generators.index.str.endswith('('+j+')')].index[i]
         
-        colors = system_add.get_colors(j)
+        colors = system_add2.get_colors(j)
         
         if network.generators_t.p[gen].sum() > 0:
             sizes = sizes + [network.generators_t.p[gen].sum()]
             l       = l + [gen]
             labels1 = gen[:-6]
-            labels2 = "Produced: "+str(round(network.generators_t.p[gen].sum()/10**6)) + " TWh"
-            labels3 = "Capacity: " + str(round(network.generators.p_nom_opt[cap]/10**3)) + " GW"
-            labels  = labels + [labels1  + "\n" + labels2 + "\n" + labels3]
+            # labels2 = "Produced: "+str(round(network.generators_t.p[gen].sum()/10**6)) + " TWh"
+            # labels3 = "Capacity: " + str(round(network.generators.p_nom_opt[cap]/10**3)) + " GW"
+            labels  = labels + [labels1] #
         else:
             pass
     
-    ax[q].pie(sizes, labels = labels, autopct='%.1f%%',
-              colors = [colors[v] for v in l])
+    ax[q].pie(sizes, autopct='%.1f%%', # labels = labels
+              colors = [colors[v] for v in l], textprops={'fontsize': 15})
     
     cols = [col for col in network.generators_t.p.columns if j in col]
     gen_val = round(network.generators_t.p[cols].sum().sum()/10**6, 2)
     
-    ax[q].set_title(j + " - Energy demand: " + str(round(df_elec[j].sum()/10**6,2)) + " TWh \n " + j + " - Energy produced: " + str(gen_val) + "TWh")
+    ax[q].set_title(j + " demand: " + str(round(df_elec[j].sum()/10**6,2)) + " TWh,\nproduced: " + str(gen_val) + " TWh,\nstorage = " + str(round(network.stores.e_nom_opt[q]/10**3)) +' GW', fontsize = 20)
     q = q + 1
-    
+
+c = ['lightskyblue',    # Onshorewind
+     'tab:blue',        # Offshorewind
+     'orange',         # Solar utility 
+     'gold',           # Solar rooftop
+     'tab:purple',     # OCGT
+     'tab:red',        # Boiler
+     'darkorange',     # Heat pump
+          ]    
+
+ax[1].text(-1.8,0,'Link capacity:\n' + str(round(network.links.p_nom_opt[0]/10**3)) + ' GW', fontsize = 15, multialignment="center")
+ax[2].text(-1.8,0,'Link capacity:\n' + str(round(network.links.p_nom_opt[1]/10**3)) + ' GW', fontsize = 15, multialignment="center")
+colors = ['lightskyblue','tab:blue','orange','tab:purple']
+patches, texts = plt.pie(sizes, colors=colors)
+ax[1].legend(patches, labels[:], loc="lower center", ncol = 2, fontsize = 15)
+fig1.tight_layout()    
 plt.savefig('graphics/' + str(country) + '_G_mix.pdf', format = 'pdf', bbox_inches='tight') 
 
 print('\n')
 print(network.links.p_nom_opt.to_latex())
 
 #%%
-mean_DK7 = network.links_t.p0.iloc[:,0].resample('D').mean()
-mean_BE7 = network.links_t.p0.iloc[:,1].resample('D').mean()
+mean_DK7 = network.links_t.p0.iloc[:,0].resample('D').mean()/10**3
+mean_BE7 = network.links_t.p0.iloc[:,1].resample('D').mean()/10**3
 
-fig_PF, ax_PF = plt.subplots(2, 1, figsize=(16,9), dpi=300)
+fig_PF, ax_PF = plt.subplots(2, 1, figsize=(14,7.5), dpi=300)
 
 plt.sca(ax_PF[0])
 plt.xticks(fontsize=15, rotation = 45) 
 plt.yticks(fontsize=15)
-ax_PF[0].plot(network.links_t.p0.iloc[:,0],
+ax_PF[0].plot(network.links_t.p0.iloc[:,0]/10**3,
               label='Hourly',
               color = 'tab:red',)
 ax_PF[0].plot(mean_DK7, color='k',
               linewidth = 2,
               label = 'Daily')
 # ax_PF[0].set_xlabel('Time [hr]', fontsize = 15)
-ax_PF[0].set_ylabel('Powerflow [MW]', fontsize = 15)
+ax_PF[0].set_ylabel('Powerflow [GW]', fontsize = 15)
 ax_PF[0].get_xaxis().set_visible(False)
 ax_PF[0].set_xlim([datetime.date(2015, 1, 1), datetime.date(2015,12,31)])
+ax_PF[0].set_ylim([-125,125])
 ax_PF[0].set_title('Powerflow from '+ bus_df['Country'][0] + ' to ' + bus_df['Country'][1],
                     fontsize = 25)
 # ax_PF[0].set_ylim(-100,3000)
@@ -210,34 +225,39 @@ ax_PF[0].legend(loc="upper right",
                 fontsize = 15)
 
 ax_PF[0].text(1.01, 1, 
-               str(round(network.links_t.p0.iloc[:,0].describe(),1).reset_index().to_string(header=None, index=None)),
+               str(round((network.links_t.p0.iloc[:,0]/10**3).describe(),1).reset_index().to_string(header=None, index=None)),
                ha='left', va='top', 
                transform=ax_PF[0].transAxes,
                fontsize = 14)
 ax_PF[0].axhline(y=0, color='k', linestyle='--')
 ax_PF[0].grid()
+
+ax_PF[0].yaxis.set_major_locator(ticker.MultipleLocator(25))
+ax_PF[0].yaxis.set_minor_locator(ticker.MultipleLocator(5))
+
 plt.tight_layout()
 
 plt.sca(ax_PF[1])
 plt.xticks(fontsize=15, rotation = 45)
 plt.yticks(fontsize=15)
-ax_PF[1].plot(network.links_t.p0.iloc[:,1],
+ax_PF[1].plot(network.links_t.p0.iloc[:,1]/10**3,
               color = 'tab:blue',
               label = 'Hourly')
 ax_PF[1].plot(mean_BE7, color='k', 
                linewidth = 2,
                label = 'Daily')
 ax_PF[1].set_xlabel('Time [hr]', fontsize = 15)
-ax_PF[1].set_ylabel('Powerflow [MW]', fontsize = 15)
+ax_PF[1].set_ylabel('Powerflow [GW]', fontsize = 15)
 ax_PF[1].set_xlim([datetime.date(2015, 1, 1), datetime.date(2015,12,31)])
+ax_PF[1].set_ylim([-125,125])
 ax_PF[1].set_title('Powerflow from '+ bus_df['Country'][0] + ' to ' + bus_df['Country'][2],
                     fontsize = 25)
 # ax_PF[1].set_ylim(-100,3000)
-ax_PF[1].legend(loc="lower right",
+ax_PF[1].legend(loc="upper right",
                 fontsize = 15)
 
 ax_PF[1].text(1.01, 1, 
-               str(round(network.links_t.p0.iloc[:,1].describe(),1).reset_index().to_string(header=None, index=None)), 
+               str(round((network.links_t.p0.iloc[:,1]/10**3).describe(),1).reset_index().to_string(header=None, index=None)), 
                ha='left', va='top', 
                transform=ax_PF[1].transAxes,
                fontsize = 14)
@@ -245,6 +265,12 @@ ax_PF[1].text(1.01, 1,
 ax_PF[0].get_shared_x_axes().join(ax_PF[0], ax_PF[1])
 ax_PF[1].axhline(y=0, color='k', linestyle='--')
 ax_PF[1].grid()
+
+# ax_PF[1].xaxis.set_major_locator(ticker.MultipleLocator())
+ax_PF[1].xaxis.set_minor_locator(ticker.MultipleLocator(7))
+ax_PF[1].yaxis.set_major_locator(ticker.MultipleLocator(25))
+ax_PF[1].yaxis.set_minor_locator(ticker.MultipleLocator(5))
+
 plt.tight_layout()
 
 plt.savefig('graphics/' + str(country) + '_G_data.pdf', format = 'pdf', bbox_inches='tight') 
